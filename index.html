@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Finance Pro</title>
+<title>My Finance</title>
 <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -16,15 +16,28 @@
   --sub: #6b7a9a;
   --dim: #2a3450;
   --blue: #5b9cf6;
+  --blue-glow: rgba(91,156,246,0.18);
   --teal: #34d9b5;
+  --teal-glow: rgba(52,217,181,0.15);
   --amber: #f5a623;
   --red: #ff6b6b;
+  --green: #34d9b5;
   --font-head: 'Clash Display', sans-serif;
   --font-body: 'Instrument Sans', sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+/* FIX: Prevent background interaction when modal open */
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+}
 
 body {
   font-family: var(--font-body);
@@ -35,71 +48,97 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- FIX: Background Lock --- */
-body.modal-open {
-  height: 100vh;
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-}
-
-/* --- MESH BACKGROUND --- */
 .mesh { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .mesh-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.12; animation: float 12s ease-in-out infinite alternate; }
-.mb1 { width: 420px; height: 420px; background: #2563eb; top: -120px; right: -80px; }
+.mb1 { width: 420px; height: 420px; background: #2563eb; top: -120px; right: -80px; animation-delay: 0s; }
 .mb2 { width: 320px; height: 320px; background: #0f9b80; bottom: 60px; left: -100px; animation-delay: -4s; }
-.mesh::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 44px 44px; }
+.mb3 { width: 200px; height: 200px; background: #7c3aed; top: 45%; left: 40%; animation-delay: -8s; }
 
-@keyframes float { from { transform: translate(0, 0) scale(1); } to { transform: translate(20px, 30px) scale(1.05); } }
+@keyframes float {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(20px, 30px) scale(1.05); }
+}
 
-/* --- HEADER --- */
+.mesh::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
 header {
   position: sticky; top: 0; z-index: 100;
   padding: calc(var(--safe-top) + 14px) 20px 14px;
-  background: rgba(8,10,18,0.7); backdrop-filter: blur(24px) saturate(180%);
+  background: rgba(8,10,18,0.7); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;
 }
-.brand-name { font-family: var(--font-head); font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #fff 30%, var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.chip { padding: 5px 11px; border-radius: 99px; font-size: 11px; font-weight: 500; border: 1px solid var(--border); background: var(--card); }
 
-/* --- HERO CARD --- */
+.brand { display: flex; flex-direction: column; }
+.brand-name { font-family: var(--font-head); font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #fff 30%, var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.brand-sub { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub); margin-top: 1px; }
+
+.header-chips { display: flex; gap: 8px; align-items: center; }
+.chip { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 99px; font-size: 11px; font-weight: 500; border: 1px solid var(--border); background: var(--card); transition: all .25s; }
+.chip-score { color: var(--blue); border-color: rgba(91,156,246,0.25); background: rgba(91,156,246,0.08); }
+.chip-score .val { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+.chip-risk { color: var(--teal); border-color: rgba(52,217,181,0.25); background: rgba(52,217,181,0.07); }
+.chip-risk.warn { color: var(--amber); border-color: rgba(245,166,35,0.25); background: rgba(245,166,35,0.07); }
+.chip-risk.crit { color: var(--red); border-color: rgba(255,107,107,0.25); background: rgba(255,107,107,0.07); }
+
 .page { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 20px 16px 80px; }
+
 .hero-card {
   background: linear-gradient(135deg, #0e1830 0%, #0b1520 60%, #0a1d14 100%);
-  border: 1px solid var(--border); border-radius: 24px; padding: 28px 24px 24px; margin-bottom: 14px; position: relative; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 24px; padding: 28px 24px 24px; margin-bottom: 14px; position: relative; overflow: hidden; animation: fadeUp .5s ease both;
 }
-.hero-amount { font-family: var(--font-head); font-size: 42px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; margin-bottom: 22px; }
+.hero-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(91,156,246,0.6) 50%, transparent 100%); }
+.hero-eyebrow { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub); margin-bottom: 8px; }
+.hero-amount { font-family: var(--font-head); font-size: 42px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--text); margin-bottom: 4px; }
+.hero-currency { font-size: 16px; color: var(--sub); font-weight: 500; margin-right: 4px; }
+.hero-period { font-size: 12px; color: var(--sub); margin-bottom: 22px; }
+
+.prog-bar-wrap { margin-bottom: 20px; }
+.prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--sub); margin-bottom: 7px; }
+.prog-track { height: 6px; background: rgba(255,255,255,0.05); border-radius: 99px; position: relative; }
+.prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--teal), var(--blue)); box-shadow: 0 0 12px rgba(52,217,181,0.4); transition: width .7s cubic-bezier(.34,1.56,.64,1); position: relative; width: 0%; }
+
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .stat-tile { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px; }
 .stat-tile .tl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub); margin-bottom: 5px; }
-.stat-tile .tv { font-family: var(--font-head); font-size: 20px; font-weight: 600; }
+.stat-tile .tv { font-family: var(--font-head); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
 
-/* --- ACTION BUTTONS --- */
-.action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-.act-btn { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 18px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; transition: all .2s; }
-.act-btn:hover { background: var(--card2); transform: translateY(-2px); border-color: var(--border-hi); }
-.act-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 8px; }
+.action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; animation: fadeUp .5s .1s ease both; }
+.act-btn { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; transition: all .2s; text-align: center; }
+.act-btn:hover { background: var(--card2); border-color: var(--border-hi); transform: translateY(-2px); }
+.act-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .ai-income { background: rgba(52,217,181,0.12); color: var(--teal); }
 .ai-expense { background: rgba(255,107,107,0.12); color: var(--red); }
 .ai-ob { background: rgba(91,156,246,0.12); color: var(--blue); }
+.act-label { font-size: 11px; font-weight: 500; color: var(--sub); text-transform: uppercase; }
 
-/* --- OBLIGATION CHECKLIST --- */
-.ob-section { background: var(--card); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; margin-top: 14px; }
-.ob-item { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); transition: 0.3s; }
-.ob-item.settled { background: rgba(52,217,181,0.02); opacity: 0.7; }
-.ob-info { flex: 1; }
-.ob-name { font-size: 14px; font-weight: 600; color: var(--text); }
-.ob-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--dim); color: var(--sub); margin-left: 6px; vertical-align: middle; }
-.ob-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--dim); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-.settled .ob-check { background: var(--teal); border-color: var(--teal); color: #080a12; }
+.act-card { background: var(--card); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; animation: fadeUp .5s .2s ease both; }
+.act-card-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+.act-card-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; }
 
-/* --- MODAL --- */
-.overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(5,7,15,0.8); backdrop-filter: blur(12px); align-items: flex-end; justify-content: center; }
+.entry { display: flex; align-items: center; gap: 13px; padding: 13px 20px; border-bottom: 1px solid var(--border); animation: slideIn .3s ease both; }
+.entry-dot { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.dot-income { background: rgba(52,217,181,0.1); color: var(--teal); }
+.dot-expense { background: rgba(255,107,107,0.1); color: var(--red); }
+.dot-system { background: rgba(91,156,246,0.1); color: var(--blue); }
+
+.overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(5,7,15,0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: flex-end; justify-content: center; }
 .overlay.open { display: flex; }
-.sheet { width: 100%; max-width: 520px; background: var(--card); border-radius: 28px 28px 0 0; padding: 24px; animation: sheetUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-input, select { width: 100%; padding: 14px; background: var(--card2); border: 1px solid var(--border); color: #fff; border-radius: 14px; margin: 8px 0 16px; outline: none; }
-.btn-confirm { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--teal), var(--blue)); border: none; border-radius: 14px; font-family: var(--font-head); font-weight: 700; color: #080a12; cursor: pointer; }
+.sheet { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--border); border-radius: 28px 28px 0 0; padding: 12px 22px calc(env(safe-area-inset-bottom, 0px) + 32px); animation: sheetUp .32s cubic-bezier(.32,1.1,.65,1) both; position: relative; }
+@keyframes sheetUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+input, select { width: 100%; padding: 13px 14px; background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 13px; font-family: var(--font-body); font-size: 15px; outline: none; margin-top: 5px; }
+
+/* Obligation Item styles */
+.ob-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--card2); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; transition: opacity 0.3s; }
+.ob-item.settled { opacity: 0.5; border-color: var(--teal); }
+.ob-item .check-box { width: 22px; height: 22px; border: 2px solid var(--dim); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.ob-item.settled .check-box { background: var(--teal); border-color: var(--teal); color: var(--bg); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -107,107 +146,115 @@ input, select { width: 100%; padding: 14px; background: var(--card2); border: 1p
 <div class="mesh">
   <div class="mesh-blob mb1"></div>
   <div class="mesh-blob mb2"></div>
+  <div class="mesh-blob mb3"></div>
 </div>
 
 <header>
   <div class="brand">
     <div class="brand-name">My Finance</div>
-    <div style="font-size: 10px; color: var(--sub); text-transform: uppercase;">Tracker · TZS</div>
+    <div class="brand-sub">Personal tracker · TZS</div>
   </div>
-  <div class="chip" id="riskChip" style="color: var(--teal); border-color: rgba(52,217,181,0.2);">● Live</div>
+  <div class="header-chips">
+    <div class="chip chip-score"><span class="val" id="scoreVal">100</span></div>
+    <div class="chip chip-risk" id="riskChip">● Stable</div>
+  </div>
 </header>
 
 <div class="page">
   <div class="hero-card">
-    <div class="tl" style="font-size: 10px; color: var(--sub); letter-spacing: 1px;">WEEKLY BUDGET REMAINING</div>
-    <div class="hero-amount"><span style="font-size: 18px; color: var(--sub); margin-right: 8px;">TZS</span><span id="heroAmt">0</span></div>
-    
+    <div class="hero-eyebrow">Weekly Budget Remaining</div>
+    <div class="hero-amount"><span class="hero-currency">TZS</span><span id="heroAmt">0</span></div>
+    <div class="hero-period" id="heroPeriod">Enter salary to begin</div>
+
+    <div class="prog-bar-wrap">
+      <div class="prog-labels"><span>Spent</span><span id="progPct">0%</span><span>Budget</span></div>
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-tile">
         <div class="tl">Monthly Salary</div>
-        <div class="tv" id="salVal" style="color: var(--teal);">0</div>
+        <div class="tv" id="salVal" style="color:var(--teal)">0</div>
       </div>
       <div class="stat-tile">
         <div class="tl">Weekly Target</div>
-        <div class="tv" id="targetVal" style="color: var(--blue);">0</div>
+        <div class="tv" id="budgetVal" style="color:var(--blue)">0</div>
       </div>
     </div>
   </div>
 
   <div class="action-row">
-    <button class="act-btn" onclick="openModal('income')">
-      <div class="act-icon ai-income">↑</div>
-      <div class="tl" style="font-size: 10px; font-weight: 600;">SALARY</div>
-    </button>
-    <button class="act-btn" onclick="openModal('expense')">
-      <div class="act-icon ai-expense">↓</div>
-      <div class="tl" style="font-size: 10px; font-weight: 600;">EXPENSE</div>
-    </button>
-    <button class="act-btn" onclick="openModal('ob')">
-      <div class="act-icon ai-ob">◎</div>
-      <div class="tl" style="font-size: 10px; font-weight: 600;">OBLIG.</div>
-    </button>
+    <button class="act-btn" onclick="openModal('income')"><div class="act-icon ai-income">💰</div><div class="act-label">Salary</div></button>
+    <button class="act-btn" onclick="openModal('expense')"><div class="act-icon ai-expense">💸</div><div class="act-label">Expense</div></button>
+    <button class="act-btn" onclick="openModal('ob')"><div class="act-icon ai-ob">◎</div><div class="act-label">Oblig.</div></button>
   </div>
 
-  <div class="ob-section">
-    <div style="padding: 18px 20px; border-bottom: 1px solid var(--border); font-family: var(--font-head); font-size: 14px; font-weight: 600;">Monthly Obligations</div>
-    <div id="obList">
-      <div style="padding: 40px 20px; text-align: center; color: var(--sub); font-size: 13px;">No obligations added yet.</div>
-    </div>
+  <div class="act-card">
+    <div class="act-card-head"><div class="act-card-title">Activity & Obligations</div></div>
+    <div class="act-list" id="actList"></div>
   </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
-  <div class="sheet" id="sheetBody"></div>
+  <div class="sheet" id="sheet"><div id="sheetBody"></div></div>
 </div>
 
 <script>
 const FMT = n => Number(n).toLocaleString('en-TZ');
-let salary = 0, weeklyTarget = 0, spent = 0, obligations = [];
+let salary = 0, obligations = [], expenses = [], weeklyBudget = 0, entries = [];
 
 function openModal(type) {
-  const sheet = document.getElementById('sheetBody');
-  document.body.classList.add('modal-open');
-  document.getElementById('overlay').classList.add('open');
+  document.body.classList.add('modal-open'); // FIX: Lock background
+  const overlay = document.getElementById('overlay');
+  const body = document.getElementById('sheetBody');
+  overlay.classList.add('open');
 
   if (type === 'income') {
-    sheet.innerHTML = `
-      <h2 style="font-family:var(--font-head); margin-bottom:20px;">Monthly Setup</h2>
-      <label class="tl" style="font-size:10px; color:var(--sub);">MONTHLY SALARY (TZS)</label>
+    body.innerHTML = `
+      <div style="font-family:var(--font-head); font-size:20px; margin-bottom:20px;">Financial Setup</div>
+      <label style="font-size:10px; color:var(--sub); text-transform:uppercase;">Monthly Salary (TZS)</label>
       <input id="salIn" type="number" placeholder="0" value="${salary||''}">
-      <label class="tl" style="font-size:10px; color:var(--sub);">WEEKLY SPENDING TARGET (TZS)</label>
-      <input id="targetIn" type="number" placeholder="0" value="${weeklyTarget||''}">
-      <button class="btn-confirm" onclick="saveFinance()">Save & Lock Budget</button>
+      <label style="font-size:10px; color:var(--sub); text-transform:uppercase; margin-top:15px; display:block;">Weekly Spending Target (TZS)</label>
+      <input id="targetIn" type="number" placeholder="0" value="${weeklyBudget||''}">
+      <button onclick="saveSetup()" style="width:100%; padding:14px; background:linear-gradient(135deg, var(--teal), var(--blue)); border:none; border-radius:14px; font-weight:700; margin-top:20px; cursor:pointer;">Update Finance</button>
     `;
-  } else if (type === 'ob') {
-    sheet.innerHTML = `
-      <h2 style="font-family:var(--font-head); margin-bottom:20px;">New Obligation</h2>
-      <input id="obName" placeholder="Obligation Name (e.g. Rent)">
+  }
+
+  if (type === 'ob') {
+    body.innerHTML = `
+      <div style="font-family:var(--font-head); font-size:20px; margin-bottom:20px;">Manage Obligations</div>
+      <input id="obName" placeholder="Obligation Name (Rent, Loan...)">
       <input id="obAmt" type="number" placeholder="Amount (TZS)">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-        <input type="checkbox" id="obRec" style="width:20px; margin:0;">
-        <label style="font-size:13px; color:var(--sub);">Recurring monthly</label>
+      <div style="display:flex; align-items:center; gap:10px; margin: 15px 0;">
+         <input type="checkbox" id="obRec" style="width:20px; height:20px;">
+         <span style="font-size:13px; color:var(--sub);">Recurring monthly</span>
       </div>
-      <button class="btn-confirm" onclick="addOb()">Add Obligation</button>
+      <button onclick="addOb()" style="width:100%; padding:14px; background:var(--card2); border:1px solid var(--border); border-radius:14px; color:var(--text); cursor:pointer;">Add to List</button>
+      <div id="obChecklist" style="margin-top:20px; max-height:200px; overflow-y:auto;"></div>
+      <button onclick="closeModal()" style="width:100%; padding:12px; margin-top:10px; background:transparent; color:var(--sub); border:none; cursor:pointer;">Close</button>
     `;
-  } else if (type === 'expense') {
-    sheet.innerHTML = `
-      <h2 style="font-family:var(--font-head); margin-bottom:20px;">Log Expense</h2>
-      <input id="expAmt" type="number" placeholder="Amount (TZS)" autofocus>
-      <input id="expDesc" placeholder="Description">
-      <button class="btn-confirm" onclick="addExpense()">Record Spend</button>
+    renderObChecklist();
+  }
+
+  if (type === 'expense') {
+    body.innerHTML = `
+      <div style="font-family:var(--font-head); font-size:20px; margin-bottom:20px;">Log Expense</div>
+      <input id="expDesc" placeholder="What did you buy?">
+      <input id="expAmt" type="number" placeholder="Amount (TZS)">
+      <button onclick="saveExpense()" style="width:100%; padding:14px; background:var(--red); border:none; border-radius:14px; font-weight:700; color:white; margin-top:20px; cursor:pointer;">Record Spend</button>
     `;
   }
 }
 
 function closeModal() {
   document.getElementById('overlay').classList.remove('open');
-  document.body.classList.remove('modal-open');
+  document.body.classList.remove('modal-open'); // FIX: Unlock background
 }
 
-function saveFinance() {
+function saveSetup() {
   salary = Number(document.getElementById('salIn').value);
-  weeklyTarget = Number(document.getElementById('targetIn').value);
+  weeklyBudget = Number(document.getElementById('targetIn').value);
+  addEntry('💰', 'Salary & Target Updated', `Salary: ${FMT(salary)}`, 'income');
   update(); closeModal();
 }
 
@@ -217,45 +264,72 @@ function addOb() {
   const rec = document.getElementById('obRec').checked;
   if(name && amt) {
     obligations.push({ name, amt, rec, settled: false });
-    update(); closeModal();
+    renderObChecklist();
+    update();
   }
 }
 
-function addExpense() {
-  const amt = Number(document.getElementById('expAmt').value);
-  if(amt) {
-    spent += amt;
-    update(); closeModal();
-  }
-}
-
-function toggleOb(i) {
+function toggleSettled(i) {
   obligations[i].settled = !obligations[i].settled;
+  renderObChecklist();
   update();
 }
 
-function update() {
-  document.getElementById('salVal').textContent = FMT(salary);
-  document.getElementById('targetVal').textContent = FMT(weeklyTarget);
-  const rem = weeklyTarget - spent;
-  document.getElementById('heroAmt').textContent = FMT(rem);
-  document.getElementById('heroAmt').parentElement.style.color = rem < 0 ? 'var(--red)' : 'var(--text)';
-
-  const obList = document.getElementById('obList');
-  if(obligations.length === 0) {
-    obList.innerHTML = `<div style="padding:40px 20px; text-align:center; color:var(--sub); font-size:13px;">No obligations added yet.</div>`;
-  } else {
-    obList.innerHTML = obligations.map((ob, i) => `
-      <div class="ob-item ${ob.settled ? 'settled' : ''}">
-        <div class="ob-info">
-          <div class="ob-name">${ob.name} ${ob.rec ? '<span class="ob-tag">RECURRING</span>' : ''}</div>
-          <div style="font-size:11px; color:var(--sub); margin-top:2px;">TZS ${FMT(ob.amt)}</div>
-        </div>
-        <div class="ob-check" onclick="toggleOb(${i})">${ob.settled ? '✓' : ''}</div>
+function renderObChecklist() {
+  const container = document.getElementById('obChecklist');
+  if(!container) return;
+  container.innerHTML = obligations.map((o, i) => `
+    <div class="ob-item ${o.settled ? 'settled' : ''}">
+      <div>
+        <div style="font-size:14px; font-weight:600;">${o.name}</div>
+        <div style="font-size:10px; color:var(--sub);">${o.rec ? 'RECURRING' : 'ONCE-OFF'} • TZS ${FMT(o.amt)}</div>
       </div>
-    `).join('');
+      <div class="check-box" onclick="toggleSettled(${i})">${o.settled ? '✓' : ''}</div>
+    </div>
+  `).join('');
+}
+
+function saveExpense() {
+  const desc = document.getElementById('expDesc').value;
+  const amt = Number(document.getElementById('expAmt').value);
+  if(desc && amt) {
+    expenses.push({ desc, amt });
+    addEntry('💸', desc, `TZS ${FMT(amt)}`, 'expense');
+    update(); closeModal();
   }
 }
+
+function update() {
+  const spent = expenses.reduce((s, e) => s + e.amt, 0);
+  const rem = weeklyBudget - spent;
+  const pct = weeklyBudget > 0 ? Math.min((spent / weeklyBudget) * 100, 100) : 0;
+
+  document.getElementById('salVal').textContent = FMT(salary);
+  document.getElementById('budgetVal').textContent = FMT(weeklyBudget);
+  document.getElementById('heroAmt').textContent = FMT(Math.max(rem, 0));
+  document.getElementById('progPct').textContent = pct.toFixed(0) + '%';
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('heroPeriod').textContent = weeklyBudget > 0 ? `${pct.toFixed(0)}% of weekly target used` : "Set your target to begin";
+  
+  const hAmt = document.getElementById('heroAmt');
+  hAmt.style.color = rem < 0 ? 'var(--red)' : rem < weeklyBudget * 0.2 ? 'var(--amber)' : 'var(--text)';
+}
+
+function addEntry(icon, msg, sub, type) {
+  entries.unshift({ icon, msg, sub, type, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+  document.getElementById('actList').innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-dot dot-${e.type}">${e.icon}</div>
+      <div class="entry-info">
+        <div class="entry-msg">${e.msg}</div>
+        <div class="entry-meta">${e.sub}</div>
+      </div>
+      <div style="font-size:10px; color:var(--sub);">${e.time}</div>
+    </div>
+  `).join('');
+}
+
+update();
 </script>
 </body>
 </html>
