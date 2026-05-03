@@ -3,184 +3,297 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Financial OS</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>CFO Financial OS</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial;
-    background: #0b1220;
-    color: white;
+    background: #050b18;
+    color: #d1d5db;
 }
 
+/* HEADER */
+.header {
+    padding: 15px;
+    background: #0b1224;
+    border-bottom: 1px solid #1f2a44;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.sub {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* CONTAINER */
 .container {
     max-width: 520px;
     margin: auto;
     padding: 15px;
 }
 
+/* CARDS */
 .card {
-    background: #111a2e;
-    padding: 15px;
-    border-radius: 12px;
+    background: #0b1224;
+    border: 1px solid #1f2a44;
+    border-radius: 10px;
+    padding: 12px;
     margin-bottom: 10px;
 }
 
-h2,h3 { margin: 5px 0; }
-
+/* INPUTS */
 input, select, button {
     width: 100%;
     padding: 10px;
     margin: 5px 0;
+    background: #111a2e;
+    border: 1px solid #1f2a44;
+    color: white;
     border-radius: 8px;
-    border: none;
 }
 
 button {
-    background: #3b82f6;
-    color: white;
+    background: #2563eb;
     font-weight: bold;
 }
 
+/* STATUS COLORS */
+.green { color: #22c55e; }
+.yellow { color: #facc15; }
+.red { color: #ef4444; }
+
+/* LAYOUT */
 .row {
     display: flex;
     justify-content: space-between;
     gap: 10px;
 }
 
-.small { font-size: 12px; opacity: 0.7; }
-
-.green { color: #22c55e; }
-.red { color: #ef4444; }
-.yellow { color: #facc15; }
+.small {
+    font-size: 12px;
+    opacity: 0.7;
+}
 
 .item {
-    display:flex;
-    justify-content:space-between;
-    border-bottom:1px solid #1f2a44;
-    padding:8px 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #1f2a44;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
-<div class="card">
-<h2>💰 Financial OS</h2>
-<div class="small">Weekly Budget + Savings + Business + Life Tracker</div>
+<div class="header">
+    <div class="title">💼 CFO FINANCIAL CONTROL OS</div>
+    <div class="sub">Strict discipline · Weekly control · Financial intelligence</div>
 </div>
+
+<div class="container">
 
 <!-- DASHBOARD -->
 <div class="card">
-<div class="row">
-<div>
-<div class="small">Weekly Budget</div>
-<h3 id="budget">0</h3>
+    <div class="row">
+        <div>
+            <div class="small">Weekly Budget</div>
+            <h3 id="weeklyBudget">0</h3>
+        </div>
+
+        <div>
+            <div class="small">Spent</div>
+            <h3 class="red" id="spent">0</h3>
+        </div>
+
+        <div>
+            <div class="small">Remaining</div>
+            <h3 class="green" id="remaining">0</h3>
+        </div>
+    </div>
 </div>
 
-<div>
-<div class="small">Spent</div>
-<h3 class="red" id="spent">0</h3>
-</div>
-
-<div>
-<div class="small">Remaining</div>
-<h3 class="green" id="remaining">0</h3>
-</div>
-</div>
-</div>
-
-<!-- INPUT -->
+<!-- SCORE -->
 <div class="card">
-<input id="desc" placeholder="Description">
-<input id="amount" type="number" placeholder="Amount">
-
-<select id="type">
-<option value="expense">Expense</option>
-<option value="income">Income</option>
-<option value="saving">Saving</option>
-<option value="investment">Investment</option>
-</select>
-
-<select id="category">
-<option>Weekly Living</option>
-<option>Family Support</option>
-<option>Business</option>
-<option>Transport</option>
-<option>Food</option>
-</select>
-
-<button onclick="add()">Add Entry</button>
+    <div class="small">Hard Truth Score</div>
+    <h2 id="score">100</h2>
+    <div id="status" class="green">Financial Discipline: Strong</div>
 </div>
 
-<!-- LIST -->
+<!-- SALARY INPUT -->
 <div class="card">
-<h3>Transactions</h3>
-<div id="list"></div>
+    <h3>💰 Salary Entry (Trigger System)</h3>
+    <input id="salary" type="number" placeholder="Enter salary received">
+    <button onclick="processSalary()">Process Salary</button>
+</div>
+
+<!-- OBLIGATIONS -->
+<div class="card" id="obligationCard" style="display:none;">
+    <h3>⚙️ Monthly Obligations Setup</h3>
+    <input id="obName" placeholder="Obligation name">
+    <input id="obAmount" type="number" placeholder="Amount">
+    <button onclick="addObligation()">Add Obligation</button>
+    <div id="obList"></div>
+    <button onclick="confirmObligations()">Confirm & Lock Month</button>
+</div>
+
+<!-- EXPENSE INPUT -->
+<div class="card">
+    <h3>🧾 Expense Entry</h3>
+    <input id="desc" placeholder="Description">
+    <input id="amount" type="number" placeholder="Amount">
+
+    <select id="category">
+        <option>Food</option>
+        <option>Transport</option>
+        <option>Family</option>
+        <option>Business</option>
+        <option>Leisure</option>
+    </select>
+
+    <button onclick="addExpense()">Add Expense</button>
+</div>
+
+<!-- LOG -->
+<div class="card">
+    <h3>📊 Financial Log</h3>
+    <div id="log"></div>
 </div>
 
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("data")) || [];
 
-let weeklyBudget = 250000; // YOU CAN CHANGE THIS
+let salaryPool = 0;
+let obligations = [];
+let expenses = [];
+let weeklyBudget = 0;
+let locked = false;
 
-function add() {
+/* SALARY FLOW */
+function processSalary() {
+    salaryPool = Number(document.getElementById("salary").value);
+
+    if (!salaryPool) return;
+
+    document.getElementById("obligationCard").style.display = "block";
+}
+
+/* OBLIGATIONS */
+function addObligation() {
+    const name = document.getElementById("obName").value;
+    const amount = Number(document.getElementById("obAmount").value);
+
+    if (!name || !amount) return;
+
+    obligations.push({name, amount});
+
+    renderObligations();
+}
+
+function renderObligations() {
+    const div = document.getElementById("obList");
+    div.innerHTML = "";
+
+    obligations.forEach((o, i) => {
+        div.innerHTML += `<div class="item">${o.name} <span>${o.amount}</span></div>`;
+    });
+}
+
+function confirmObligations() {
+    let totalOb = obligations.reduce((sum, o) => sum + o.amount, 0);
+
+    let remaining = salaryPool - totalOb;
+
+    weeklyBudget = Math.floor(remaining / 4);
+
+    locked = true;
+
+    alert("Month locked. Weekly budget: " + weeklyBudget);
+
+    updateDashboard();
+}
+
+/* EXPENSES */
+function addExpense() {
+    if (!locked) {
+        alert("Process salary first");
+        return;
+    }
+
     const desc = document.getElementById("desc").value;
     const amount = Number(document.getElementById("amount").value);
-    const type = document.getElementById("type").value;
     const category = document.getElementById("category").value;
 
-    if (!desc || !amount) return;
-
-    data.push({desc, amount, type, category});
-    localStorage.setItem("data", JSON.stringify(data));
+    expenses.push({desc, amount, category});
 
     document.getElementById("desc").value = "";
     document.getElementById("amount").value = "";
 
-    render();
+    updateDashboard();
 }
 
-function render() {
-    let spent = 0;
-    let income = 0;
-
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-
-    data.forEach((t, i) => {
-
-        if (t.type === "expense") spent += t.amount;
-        if (t.type === "income") income += t.amount;
-
-        const div = document.createElement("div");
-        div.className = "item";
-
-        div.innerHTML = `
-            <div>
-                <b>${t.desc}</b><br>
-                <span class="small">${t.category} • ${t.type}</span>
-            </div>
-            <div>${t.amount}</div>
-        `;
-
-        list.appendChild(div);
-    });
-
-    document.getElementById("budget").innerText = weeklyBudget;
-    document.getElementById("spent").innerText = spent;
+/* DASHBOARD */
+function updateDashboard() {
+    let spent = expenses.reduce((sum, e) => sum + e.amount, 0);
 
     let remaining = weeklyBudget - spent;
+
+    document.getElementById("weeklyBudget").innerText = weeklyBudget;
+    document.getElementById("spent").innerText = spent;
     document.getElementById("remaining").innerText = remaining;
 
+    updateScore(spent);
+
+    renderLog();
 }
 
-render();
+/* SCORE ENGINE */
+function updateScore(spent) {
+
+    let ratio = spent / weeklyBudget;
+
+    let score = 100;
+
+    if (ratio > 1) score = 20;
+    else if (ratio > 0.8) score = 50;
+    else if (ratio > 0.6) score = 70;
+    else score = 90;
+
+    document.getElementById("score").innerText = score;
+
+    let status = document.getElementById("status");
+
+    if (score >= 80) {
+        status.innerText = "Financial Discipline: Strong";
+        status.className = "green";
+    } else if (score >= 50) {
+        status.innerText = "Financial Discipline: Warning";
+        status.className = "yellow";
+    } else {
+        status.innerText = "Financial Discipline: Critical Risk";
+        status.className = "red";
+    }
+}
+
+/* LOG */
+function renderLog() {
+    const div = document.getElementById("log");
+    div.innerHTML = "";
+
+    expenses.forEach(e => {
+        div.innerHTML += `
+        <div class="item">
+            ${e.desc} (${e.category})
+            <span>${e.amount}</span>
+        </div>`;
+    });
+}
+
 </script>
 
 </body>
