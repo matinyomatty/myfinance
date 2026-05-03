@@ -1,111 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Finance V3 (Synced)</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Finance V3 Synced</title>
+<style>
+:root{--bg:#080a12;--card:#111827;--accent:#4fd1c5;--text:#f1f5f9;--sub:#94a3b8}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
+.container{max-width:520px;margin:auto;padding:16px}
+.card{background:var(--card);padding:16px;border-radius:16px;margin-bottom:12px}
+input,select,button{width:100%;padding:12px;margin-top:8px;border-radius:10px;border:none}
+button{background:var(--accent);color:#000;font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.big{font-size:26px;font-weight:700}
+.sub{color:var(--sub);font-size:12px}
+.ob{display:flex;justify-content:space-between;margin-top:6px;background:#0b1220;padding:8px;border-radius:10px}
+.log{font-size:12px;color:var(--sub);margin-top:6px}
+.alert{padding:8px;border-radius:8px;margin-top:8px;font-size:12px}
+.green{background:#052e2b}.yellow{background:#3a2e05}.red{background:#3a0505}
+</style>
 </head>
 <body>
+<div class="container">
+
+<div class="card">
+<div class="sub">Balance</div>
+<div class="big">TZS <span id="balance">0</span></div>
+<div id="risk"></div>
+</div>
+
+<div class="card">
+<div class="row">
+<input id="salary" placeholder="Salary" type="number" />
+<input id="weekly" placeholder="Weekly target" type="number" />
+</div>
+<button onclick="setSalary()">Save</button>
+</div>
+
+<div class="card">
+<input id="expName" placeholder="Expense" />
+<input id="expAmt" placeholder="Amount" type="number" />
+<select id="expCat">
+<option>Food</option><option>Transport</option><option>Family</option><option>Business</option><option>Health</option>
+</select>
+<button onclick="addExpenseUI()">Add Expense</button>
+</div>
+
+<div class="card">
+<input id="obName" placeholder="Obligation" />
+<input id="obAmt" placeholder="Amount" type="number" />
+<button onclick="addObUI()">Add Obligation</button>
+<div id="obs"></div>
+</div>
+
+<div class="card">
+<div id="log"></div>
+</div>
+
+</div>
+
 <script>
-// 🔥 CLEAN CORE LOGIC WITH GOOGLE SHEETS SYNC
-
 const API = "https://script.google.com/macros/s/AKfycbyzB_oPLCkWJAxDe0D4_GPaWlJo5Ghpi0Jn_4qU-kM2YJ4778DWFAglFkHiiCrdvlTzrg/exec";
+let salary=0,weekly=0,expenses=[],obligations=[];
 
-let salary = 0;
-let weeklyTarget = 0;
-let expenses = [];
-let obligations = [];
-
-// ─── API CORE ───
-async function send(sheet, data) {
-  try {
-    await fetch(API + "?sheet=" + sheet, {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
-  } catch(e) {}
+async function send(sheet,data){
+ await fetch(API+"?sheet="+sheet,{method:"POST",body:JSON.stringify(data)});
+}
+async function fetchData(sheet){
+ const r=await fetch(API+"?sheet="+sheet);return await r.json();
 }
 
-async function fetchData(sheet) {
-  try {
-    const res = await fetch(API + "?sheet=" + sheet);
-    return await res.json();
-  } catch(e) {
-    return [];
-  }
+async function init(){
+ const inc=await fetchData("INCOME");
+ const exp=await fetchData("EXPENSES");
+ const obs=await fetchData("OBLIGATIONS");
+ const set=await fetchData("SETTLED");
+
+ salary=inc.length?Number(inc.at(-1).amount):0;
+
+ expenses=exp.map(e=>({name:e.description,amt:+e.amount,cat:e.category,date:new Date(e.timestamp||Date.now())}));
+
+ obligations=obs.map(o=>({name:o.name,amt:+o.amount,isPaid:set.find(s=>s.name===o.name)}));
+
+ render();
+ update();
 }
 
-// ─── LOAD ALL DATA ───
-async function init() {
-  const inc = await fetchData("INCOME");
-  const exp = await fetchData("EXPENSES");
-  const obs = await fetchData("OBLIGATIONS");
-  const set = await fetchData("SETTLED");
-
-  salary = inc.length ? Number(inc[inc.length-1].amount) : 0;
-
-  expenses = exp.map(e => ({
-    name: e.description,
-    amt: Number(e.amount),
-    cat: e.category,
-    date: new Date(e.timestamp || Date.now())
-  }));
-
-  obligations = obs.map(o => ({
-    name: o.name,
-    amt: Number(o.amount),
-    type: o.type,
-    isPaid: set.find(s => s.name === o.name)
-  }));
-
-  update();
+function setSalary(){
+ salary=+salaryInput().value;
+ weekly=+weeklyInput().value;
+ send("INCOME",{amount:salary});
+ update();
 }
 
-// ─── ACTIONS ───
-function setSalary(val, target) {
-  salary = val;
-  weeklyTarget = target;
-  send("INCOME", { amount: val });
-  update();
+function addExpenseUI(){
+ let n=expName.value,a=+expAmt.value,c=expCat.value;
+ if(!n||!a)return;
+ expenses.push({name:n,amt:a,cat:c,date:new Date()});
+ send("EXPENSES",{description:n,amount:a,category:c});
+ log(n+" "+a);
+ render();update();
 }
 
-function addExpense(name, amt, cat) {
-  expenses.push({ name, amt, cat, date: new Date() });
-  send("EXPENSES", { description: name, amount: amt, category: cat });
-  update();
+function addObUI(){
+ let n=obName.value,a=+obAmt.value;
+ if(!n||!a)return;
+ obligations.push({name:n,amt:a,isPaid:false});
+ send("OBLIGATIONS",{name:n,amount:a});
+ render();update();
 }
 
-function addOb(name, amt, type) {
-  obligations.push({ name, amt, type, isPaid:false });
-  send("OBLIGATIONS", { name, amount: amt, type });
-  update();
+function pay(i){
+ obligations[i].isPaid=true;
+ send("SETTLED",{name:obligations[i].name,amount:obligations[i].amt});
+ render();update();
 }
 
-function settle(name, amt) {
-  let ob = obligations.find(o=>o.name===name);
-  if(ob) ob.isPaid = true;
-  send("SETTLED", { name, amount: amt });
-  update();
+function render(){
+ obs.innerHTML=obligations.map((o,i)=>`<div class='ob'>${o.name} - ${o.amt} ${o.isPaid?"✔":"<button onclick='pay("+i+")'>Pay</button>"}</div>`).join('');
 }
 
-// ─── ENGINE ───
-function update() {
-  let spent = expenses.reduce((s,e)=>s+e.amt,0);
-  let paid = obligations.filter(o=>o.isPaid).reduce((s,o)=>s+o.amt,0);
-  let balance = salary - spent - paid;
+function update(){
+ let spent=expenses.reduce((s,e)=>s+e.amt,0);
+ let paid=obligations.filter(o=>o.isPaid).reduce((s,o)=>s+o.amt,0);
+ let balance=salary-spent-paid;
+ balanceEl().innerText=balance;
 
-  // REAL TIME ENGINE
-  let first = expenses.length ? expenses[0].date : new Date();
-  let days = Math.max(1,(Date.now()-first)/86400000);
-  let burn = spent/days;
-  let daysLeft = burn ? Math.floor(balance/burn) : 999;
-
-  console.log({balance, spent, burn, daysLeft});
-}
-
-// INIT
-init();
-
-</script>
-</body>
-</html>
+ let first=expenses.length?expenses[0].date:new Date();
+ let days=Math.max(1,(Date.now()-first)/86400000);
+ let burn=spent/days;
+ let daysLeft=burn?Math.floor(balance/burn):999;
