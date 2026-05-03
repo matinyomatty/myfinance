@@ -1,38 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Finance Dashboard</title>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial OS</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
     margin: 0;
     font-family: Arial;
-    background: #0f172a;
+    background: #0b1220;
     color: white;
 }
 
 .container {
-    max-width: 500px;
+    max-width: 520px;
     margin: auto;
     padding: 15px;
 }
 
 .card {
-    background: #1e293b;
+    background: #111a2e;
     padding: 15px;
     border-radius: 12px;
     margin-bottom: 10px;
 }
 
-.row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
+h2,h3 { margin: 5px 0; }
 
 input, select, button {
     width: 100%;
@@ -43,32 +38,28 @@ input, select, button {
 }
 
 button {
-    background: #2563eb;
+    background: #3b82f6;
     color: white;
     font-weight: bold;
 }
 
-.small {
-    font-size: 12px;
-    opacity: 0.7;
-}
-
-.income { color: #22c55e; }
-.expense { color: #ef4444; }
-
-.list-item {
+.row {
     display: flex;
     justify-content: space-between;
-    padding: 8px;
-    border-bottom: 1px solid #334155;
+    gap: 10px;
 }
 
-h2 { margin: 5px 0; }
+.small { font-size: 12px; opacity: 0.7; }
 
-canvas {
-    background: white;
-    border-radius: 10px;
-    padding: 10px;
+.green { color: #22c55e; }
+.red { color: #ef4444; }
+.yellow { color: #facc15; }
+
+.item {
+    display:flex;
+    justify-content:space-between;
+    border-bottom:1px solid #1f2a44;
+    padding:8px 0;
 }
 </style>
 </head>
@@ -77,73 +68,77 @@ canvas {
 
 <div class="container">
 
-    <div class="card">
-        <h2>💰 Finance Dashboard</h2>
-        <div class="small">Mobile-first personal finance system</div>
-    </div>
+<div class="card">
+<h2>💰 Financial OS</h2>
+<div class="small">Weekly Budget + Savings + Business + Life Tracker</div>
+</div>
 
-    <div class="card">
-        <div class="row">
-            <div>
-                <div class="small">Balance</div>
-                <h3 id="balance">0 TZS</h3>
-            </div>
-            <div>
-                <div class="small">Income</div>
-                <h3 class="income" id="income">0</h3>
-            </div>
-            <div>
-                <div class="small">Expenses</div>
-                <h3 class="expense" id="expense">0</h3>
-            </div>
-        </div>
-    </div>
+<!-- DASHBOARD -->
+<div class="card">
+<div class="row">
+<div>
+<div class="small">Weekly Budget</div>
+<h3 id="budget">0</h3>
+</div>
 
-    <div class="card">
-        <input id="desc" placeholder="Description">
-        <input id="amount" type="number" placeholder="Amount">
+<div>
+<div class="small">Spent</div>
+<h3 class="red" id="spent">0</h3>
+</div>
 
-        <select id="category">
-            <option>Business</option>
-            <option>Personal</option>
-            <option>Family</option>
-            <option>Transport</option>
-            <option>Food</option>
-        </select>
+<div>
+<div class="small">Remaining</div>
+<h3 class="green" id="remaining">0</h3>
+</div>
+</div>
+</div>
 
-        <select id="type">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-        </select>
+<!-- INPUT -->
+<div class="card">
+<input id="desc" placeholder="Description">
+<input id="amount" type="number" placeholder="Amount">
 
-        <button onclick="addTx()">+ Add Transaction</button>
-    </div>
+<select id="type">
+<option value="expense">Expense</option>
+<option value="income">Income</option>
+<option value="saving">Saving</option>
+<option value="investment">Investment</option>
+</select>
 
-    <div class="card">
-        <canvas id="chart"></canvas>
-    </div>
+<select id="category">
+<option>Weekly Living</option>
+<option>Family Support</option>
+<option>Business</option>
+<option>Transport</option>
+<option>Food</option>
+</select>
 
-    <div class="card">
-        <h3>Transactions</h3>
-        <div id="list"></div>
-    </div>
+<button onclick="add()">Add Entry</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+<h3>Transactions</h3>
+<div id="list"></div>
+</div>
 
 </div>
 
 <script>
-let tx = JSON.parse(localStorage.getItem("tx")) || [];
+let data = JSON.parse(localStorage.getItem("data")) || [];
 
-function addTx() {
+let weeklyBudget = 250000; // YOU CAN CHANGE THIS
+
+function add() {
     const desc = document.getElementById("desc").value;
     const amount = Number(document.getElementById("amount").value);
-    const category = document.getElementById("category").value;
     const type = document.getElementById("type").value;
+    const category = document.getElementById("category").value;
 
     if (!desc || !amount) return;
 
-    tx.push({ desc, amount, category, type, date: new Date() });
-
-    localStorage.setItem("tx", JSON.stringify(tx));
+    data.push({desc, amount, type, category});
+    localStorage.setItem("data", JSON.stringify(data));
 
     document.getElementById("desc").value = "";
     document.getElementById("amount").value = "";
@@ -151,61 +146,38 @@ function addTx() {
     render();
 }
 
-function deleteTx(i) {
-    tx.splice(i, 1);
-    localStorage.setItem("tx", JSON.stringify(tx));
-    render();
-}
-
 function render() {
+    let spent = 0;
     let income = 0;
-    let expense = 0;
 
     const list = document.getElementById("list");
     list.innerHTML = "";
 
-    tx.forEach((t, i) => {
+    data.forEach((t, i) => {
+
+        if (t.type === "expense") spent += t.amount;
         if (t.type === "income") income += t.amount;
-        else expense += t.amount;
 
         const div = document.createElement("div");
-        div.className = "list-item";
+        div.className = "item";
+
         div.innerHTML = `
             <div>
                 <b>${t.desc}</b><br>
-                <span class="small">${t.category}</span>
+                <span class="small">${t.category} • ${t.type}</span>
             </div>
-            <div>
-                <span class="${t.type}">
-                    ${t.type === "income" ? "+" : "-"}${t.amount}
-                </span>
-                <button onclick="deleteTx(${i})">x</button>
-            </div>
+            <div>${t.amount}</div>
         `;
+
         list.appendChild(div);
     });
 
-    document.getElementById("income").innerText = income;
-    document.getElementById("expense").innerText = expense;
-    document.getElementById("balance").innerText = (income - expense) + " TZS";
+    document.getElementById("budget").innerText = weeklyBudget;
+    document.getElementById("spent").innerText = spent;
 
-    drawChart(income, expense);
-}
+    let remaining = weeklyBudget - spent;
+    document.getElementById("remaining").innerText = remaining;
 
-function drawChart(income, expense) {
-    const ctx = document.getElementById("chart");
-
-    if (window.myChart) window.myChart.destroy();
-
-    window.myChart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-            labels: ["Income", "Expense"],
-            datasets: [{
-                data: [income, expense]
-            }]
-        }
-    });
 }
 
 render();
