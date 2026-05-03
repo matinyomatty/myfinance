@@ -2,173 +2,110 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Finance</title>
-<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Finance V3 (Synced)</title>
+</head>
+<body>
+<script>
+// 🔥 CLEAN CORE LOGIC WITH GOOGLE SHEETS SYNC
 
-:root {
-  --bg:        #080a12;
-  --card:      #0e1220;
-  --card2:     #131829;
-  --border:    rgba(255,255,255,0.06);
-  --border-hi: rgba(120,180,255,0.3);
-  --text:      #f0f4ff;
-  --sub:       #6b7a9a;
-  --dim:       #2a3450;
-  --blue:      #5b9cf6;
-  --blue-glow: rgba(91,156,246,0.18);
-  --teal:      #34d9b5;
-  --teal-glow: rgba(52,217,181,0.15);
-  --amber:     #f5a623;
-  --red:       #ff6b6b;
-  --green:     #34d9b5;
-  --font-head: 'Clash Display', sans-serif;
-  --font-body: 'Instrument Sans', sans-serif;
-  --safe-top:  env(safe-area-inset-top, 0px);
+const API = "https://script.google.com/macros/s/AKfycbyzB_oPLCkWJAxDe0D4_GPaWlJo5Ghpi0Jn_4qU-kM2YJ4778DWFAglFkHiiCrdvlTzrg/exec";
+
+let salary = 0;
+let weeklyTarget = 0;
+let expenses = [];
+let obligations = [];
+
+// ─── API CORE ───
+async function send(sheet, data) {
+  try {
+    await fetch(API + "?sheet=" + sheet, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  } catch(e) {}
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100dvh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+async function fetchData(sheet) {
+  try {
+    const res = await fetch(API + "?sheet=" + sheet);
+    return await res.json();
+  } catch(e) {
+    return [];
+  }
 }
 
-body.no-scroll {
-  overflow: hidden;
+// ─── LOAD ALL DATA ───
+async function init() {
+  const inc = await fetchData("INCOME");
+  const exp = await fetchData("EXPENSES");
+  const obs = await fetchData("OBLIGATIONS");
+  const set = await fetchData("SETTLED");
+
+  salary = inc.length ? Number(inc[inc.length-1].amount) : 0;
+
+  expenses = exp.map(e => ({
+    name: e.description,
+    amt: Number(e.amount),
+    cat: e.category,
+    date: new Date(e.timestamp || Date.now())
+  }));
+
+  obligations = obs.map(o => ({
+    name: o.name,
+    amt: Number(o.amount),
+    type: o.type,
+    isPaid: set.find(s => s.name === o.name)
+  }));
+
+  update();
 }
 
-.mesh {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-.mesh-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.12;
-  animation: float 12s ease-in-out infinite alternate;
-}
-.mb1 { width: 420px; height: 420px; background: #2563eb; top: -120px; right: -80px; animation-delay: 0s; }
-.mb2 { width: 320px; height: 320px; background: #0f9b80; bottom: 60px; left: -100px; animation-delay: -4s; }
-.mb3 { width: 200px; height: 200px; background: #7c3aed; top: 45%; left: 40%; animation-delay: -8s; }
-
-@keyframes float {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(20px, 30px) scale(1.05); }
+// ─── ACTIONS ───
+function setSalary(val, target) {
+  salary = val;
+  weeklyTarget = target;
+  send("INCOME", { amount: val });
+  update();
 }
 
-.mesh::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 44px 44px;
+function addExpense(name, amt, cat) {
+  expenses.push({ name, amt, cat, date: new Date() });
+  send("EXPENSES", { description: name, amount: amt, category: cat });
+  update();
 }
 
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  padding: calc(var(--safe-top) + 14px) 20px 14px;
-  background: rgba(8,10,18,0.7);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+function addOb(name, amt, type) {
+  obligations.push({ name, amt, type, isPaid:false });
+  send("OBLIGATIONS", { name, amount: amt, type });
+  update();
 }
 
-.brand { display: flex; flex-direction: column; }
-.brand-name {
-  font-family: var(--font-head); font-size: 18px; font-weight: 700;
-  background: linear-gradient(135deg, #fff 30%, var(--blue));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.brand-sub { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub); margin-top: 1px; }
-.header-chips { display: flex; gap: 8px; align-items: center; }
-
-.chip {
-  display: flex; align-items: center; gap: 5px; padding: 5px 11px;
-  border-radius: 99px; font-size: 11px; font-weight: 500;
-  border: 1px solid var(--border); background: var(--card); transition: all .25s;
-}
-.chip-score { color: var(--blue); border-color: rgba(91,156,246,0.25); background: rgba(91,156,246,0.08); }
-.chip-score .val { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
-.chip-risk { color: var(--teal); border-color: rgba(52,217,181,0.25); background: rgba(52,217,181,0.07); }
-.chip-risk.warn  { color: var(--amber); border-color: rgba(245,166,35,0.25); background: rgba(245,166,35,0.07); }
-.chip-risk.crit  { color: var(--red);   border-color: rgba(255,107,107,0.25); background: rgba(255,107,107,0.07); }
-
-.page { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 20px 16px 80px; }
-
-.hero-card {
-  background: linear-gradient(135deg, #0e1830 0%, #0b1520 60%, #0a1d14 100%);
-  border: 1px solid var(--border); border-radius: 24px;
-  padding: 28px 24px 24px; margin-bottom: 14px; position: relative; overflow: hidden;
-}
-.hero-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(91,156,246,0.6) 50%, transparent 100%);
-}
-.hero-eyebrow { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sub); margin-bottom: 8px; }
-.hero-amount { font-family: var(--font-head); font-size: 42px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--text); margin-bottom: 4px; }
-.hero-currency { font-size: 16px; color: var(--sub); font-weight: 500; margin-right: 4px; }
-.hero-period { font-size: 13px; color: var(--teal); margin-bottom: 22px; font-weight: 500; }
-
-.prog-bar-wrap { margin-bottom: 20px; }
-.prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--sub); margin-bottom: 7px; }
-.prog-track { height: 6px; background: rgba(255,255,255,0.05); border-radius: 99px; overflow: visible; position: relative; }
-.prog-fill {
-  height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--teal), var(--blue));
-  box-shadow: 0 0 12px rgba(52,217,181,0.4); transition: width .7s cubic-bezier(.34,1.56,.64,1);
-  position: relative; width: 0%;
+function settle(name, amt) {
+  let ob = obligations.find(o=>o.name===name);
+  if(ob) ob.isPaid = true;
+  send("SETTLED", { name, amount: amt });
+  update();
 }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.stat-tile { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px; }
-.stat-tile .tl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub); margin-bottom: 5px; }
-.stat-tile .tv { font-family: var(--font-head); font-size: 20px; font-weight: 600; }
-.tv.bad { color: var(--red); }
-.stat-tile .tc { font-size: 10px; color: var(--sub); margin-top: 2px; }
+// ─── ENGINE ───
+function update() {
+  let spent = expenses.reduce((s,e)=>s+e.amt,0);
+  let paid = obligations.filter(o=>o.isPaid).reduce((s,o)=>s+o.amt,0);
+  let balance = salary - spent - paid;
 
-.action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-.act-btn {
-  all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; padding: 18px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; transition: all .2s; text-align: center;
+  // REAL TIME ENGINE
+  let first = expenses.length ? expenses[0].date : new Date();
+  let days = Math.max(1,(Date.now()-first)/86400000);
+  let burn = spent/days;
+  let daysLeft = burn ? Math.floor(balance/burn) : 999;
+
+  console.log({balance, spent, burn, daysLeft});
 }
-.act-btn:hover { background: var(--card2); border-color: var(--border-hi); transform: translateY(-2px); }
-.act-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-.ai-income  { background: rgba(52,217,181,0.12); }
-.ai-expense { background: rgba(255,107,107,0.12); }
-.ai-ob      { background: rgba(91,156,246,0.12); }
-.act-label { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; color: var(--sub); text-transform: uppercase; }
 
-.act-card { background: var(--card); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; }
-.act-card-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
-.act-card-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; }
-.entry-count { font-size: 10px; letter-spacing: 0.08em; padding: 3px 10px; border-radius: 99px; background: var(--card2); color: var(--sub); border: 1px solid var(--border); }
-.act-empty { padding: 36px 20px; text-align: center; color: var(--sub); font-size: 13px; }
+// INIT
+init();
 
-.entry { display: flex; align-items: center; gap: 13px; padding: 13px 20px; border-bottom: 1px solid var(--border); }
-.entry:last-child { border-bottom: none; }
-.entry-dot { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-.dot-income  { background: rgba(52,217,181,0.1);  color: var(--teal); }
-.dot-expense { background: rgba(255,107,107,0.1); color: var(--red); }
-.dot-system  { background: rgba(91,156,246,0.1);  color: var(--blue); }
-.dot-alert   { background: rgba(245,166,35,0.1);  color: var(--amber); }
-
-.entry-info { flex: 1; min-width: 0; }
-.entry-msg
+</script>
+</body>
+</html>
