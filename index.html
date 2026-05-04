@@ -7,121 +7,139 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:         #070910;
-  --card:       #0d1117;
-  --card2:      #131a24;
-  --border:     rgba(255,255,255,0.07);
-  --border-hi:  rgba(99,179,237,0.35);
-  --text:       #eef2ff;
-  --sub:        #5a6a8a;
-  --dim:        #1e2a3a;
-  --blue:       #60a5fa;
-  --teal:       #2dd4bf;
-  --amber:      #fbbf24;
-  --red:        #f87171;
-  --green:      #34d399;
-  --purple:     #a78bfa;
-  --hd:         'Plus Jakarta Sans', sans-serif;
-  --bd:         'Inter', sans-serif;
+  --bg:        #070910;
+  --card:      #0d1117;
+  --card2:     #131a24;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(99,179,237,0.35);
+  --text:      #eef2ff;
+  --sub:       #5a6a8a;
+  --dim:       #1e2a3a;
+  --blue:      #60a5fa;
+  --teal:      #2dd4bf;
+  --amber:     #fbbf24;
+  --red:       #f87171;
+  --green:     #34d399;
+  --purple:    #a78bfa;
+  --hd:        'Plus Jakarta Sans', sans-serif;
+  --bd:        'Inter', sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:var(--bd);background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-/* ── BACKGROUND ── */
+/* ── BG ── */
 .bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.1;animation:drift 14s ease-in-out infinite alternate}
-.b1{width:500px;height:500px;background:#1d4ed8;top:-150px;right:-150px;animation-delay:0s}
+.blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.09;animation:drift 14s ease-in-out infinite alternate}
+.b1{width:500px;height:500px;background:#1d4ed8;top:-150px;right:-150px}
 .b2{width:350px;height:350px;background:#065f46;bottom:0;left:-100px;animation-delay:-5s}
 .b3{width:250px;height:250px;background:#5b21b6;top:40%;left:35%;animation-delay:-9s}
-@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(25px,35px) scale(1.06)}}
-.bg-fx::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:48px 48px}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(22px,30px)}}
+.bg-fx::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:48px 48px}
 
 /* ── HEADER ── */
-header{position:sticky;top:0;z-index:90;background:rgba(7,9,16,0.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 18px}
+header{position:sticky;top:0;z-index:90;background:rgba(7,9,16,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:13px 18px}
 .hrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.brand-name{font-family:var(--hd);font-size:17px;font-weight:800;letter-spacing:-0.01em;background:linear-gradient(120deg,#fff 20%,var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.brand-tag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub);margin-top:1px}
-.hchips{display:flex;gap:8px;align-items:center}
-.hchip{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--card);transition:all .25s}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-name{font-family:var(--hd);font-size:17px;font-weight:800;letter-spacing:-.01em;background:linear-gradient(120deg,#fff 20%,var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.brand-tag{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--sub)}
+.settings-btn{all:unset;cursor:pointer;width:32px;height:32px;border-radius:10px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.settings-btn:hover{border-color:var(--border-hi)}
+.hchips{display:flex;gap:7px;align-items:center}
+.hchip{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--card)}
 .hchip-score{color:var(--blue);border-color:rgba(96,165,250,.22);background:rgba(96,165,250,.07)}
-.hchip-score .snum{font-family:var(--hd);font-size:15px;font-weight:700;transition:color .4s}
+.hchip-score .snum{font-family:var(--hd);font-size:14px;font-weight:700;transition:color .4s}
 .hchip-risk{color:var(--teal);border-color:rgba(45,212,191,.22);background:rgba(45,212,191,.06)}
 .hchip-risk.warn{color:var(--amber);border-color:rgba(251,191,36,.22);background:rgba(251,191,36,.06)}
 .hchip-risk.crit{color:var(--red);border-color:rgba(248,113,113,.22);background:rgba(248,113,113,.06)}
-.salary-strip{display:flex;align-items:center;justify-content:space-between;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.12);border-radius:10px;padding:8px 14px}
-.ss-left{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
-.ss-right{font-family:var(--hd);font-size:15px;font-weight:700;color:var(--blue);letter-spacing:-.01em}
-.ss-right span{font-size:10px;color:var(--sub);font-weight:400;margin-right:4px}
+
+/* income strip */
+.inc-strip{display:flex;align-items:center;gap:10px}
+.inc-tile{flex:1;display:flex;align-items:center;justify-content:space-between;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.12);border-radius:10px;padding:8px 13px}
+.inc-tile.pay{background:rgba(45,212,191,.05);border-color:rgba(45,212,191,.12)}
+.it-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+.it-val{font-family:var(--hd);font-size:14px;font-weight:700;color:var(--blue);letter-spacing:-.01em}
+.it-val.teal{color:var(--teal)}
+.it-val span{font-size:9px;color:var(--sub);font-weight:400;margin-right:3px}
 
 /* ── PAGE ── */
-.page{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:18px 15px 80px}
+.page{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:16px 14px 80px}
+
+/* ── LOADER ── */
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-size:13px;color:var(--sub)}
 
 /* ── HERO ── */
-.hero{background:linear-gradient(145deg,#0d1a2e,#0a1520 55%,#091d18);border:1px solid var(--border);border-radius:22px;padding:24px 22px 20px;margin-bottom:13px;position:relative;overflow:hidden;animation:fadeUp .45s ease both}
-.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,.55),transparent)}
-.hero::after{content:'';position:absolute;bottom:-70px;right:-70px;width:220px;height:220px;background:radial-gradient(circle,rgba(45,212,191,.07),transparent 70%);pointer-events:none}
-.hero-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);margin-bottom:7px}
-.hero-amount{font-family:var(--hd);font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:4px;transition:color .4s}
-.hero-currency{font-size:16px;color:var(--sub);font-weight:500;margin-right:3px}
-.hero-sub{font-size:12px;color:var(--sub);margin-bottom:20px}
-.prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--sub);margin-bottom:6px}
-.prog-track{height:5px;background:rgba(255,255,255,.04);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.hero{background:linear-gradient(145deg,#0d1a2e,#0a1520 55%,#091d18);border:1px solid var(--border);border-radius:22px;padding:22px 20px 18px;margin-bottom:12px;position:relative;overflow:hidden;animation:fadeUp .4s ease both}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,.5),transparent)}
+.hero-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);margin-bottom:6px}
+.hero-amount{font-family:var(--hd);font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:4px;transition:color .4s}
+.hero-currency{font-size:15px;color:var(--sub);font-weight:500;margin-right:3px}
+.hero-sub{font-size:12px;color:var(--sub);margin-bottom:18px}
+.prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--sub);margin-bottom:5px}
+.prog-track{height:5px;background:rgba(255,255,255,.04);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--blue));box-shadow:0 0 10px rgba(45,212,191,.4);transition:width .7s cubic-bezier(.34,1.56,.64,1),background .4s;width:0%}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat-tile{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:13px;padding:12px 14px}
-.st-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:4px}
-.st-val{font-family:var(--hd);font-size:20px;font-weight:700;letter-spacing:-.02em;transition:color .4s}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat-tile{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:13px;padding:11px 13px}
+.st-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:3px}
+.st-val{font-family:var(--hd);font-size:19px;font-weight:700;letter-spacing:-.02em;transition:color .4s}
 .st-sub{font-size:10px;color:var(--sub);margin-top:2px}
 
-/* ── ACTION ROW ── */
-.action-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px;animation:fadeUp .45s .08s ease both}
-.act-btn{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:17px 8px;background:var(--card);border:1px solid var(--border);border-radius:17px;transition:all .2s;text-align:center}
-.act-btn:hover{background:var(--card2);border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,0,0,.35)}
+/* ── PAY CYCLE BANNER ── */
+.pay-banner{display:none;align-items:center;justify-content:space-between;background:rgba(45,212,191,.06);border:1px solid rgba(45,212,191,.18);border-radius:13px;padding:11px 15px;margin-bottom:12px;animation:fadeUp .4s .05s ease both}
+.pay-banner.show{display:flex}
+.pb-left{font-size:12px;font-weight:500;color:var(--teal)}
+.pb-right{font-size:11px;color:var(--sub)}
+
+/* ── ACTIONS ── */
+.action-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;animation:fadeUp .4s .08s ease both}
+.act-btn{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:15px 8px;background:var(--card);border:1px solid var(--border);border-radius:16px;transition:all .2s;text-align:center}
+.act-btn:hover{background:var(--card2);border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
 .act-btn:active{transform:scale(.97)}
-.act-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:19px}
+.act-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
 .ai-in{background:rgba(52,211,153,.1)}
 .ai-ex{background:rgba(248,113,113,.1)}
 .ai-ob{background:rgba(96,165,250,.1)}
-.act-lbl{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--sub)}
+.act-lbl{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--sub)}
 
 /* ── OBLIGATIONS ── */
-.ob-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:13px;animation:fadeUp .45s .14s ease both}
-.ob-card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid var(--border)}
-.card-title{font-family:var(--hd);font-size:13px;font-weight:700;letter-spacing:.02em}
-.ob-add-btn{all:unset;cursor:pointer;font-size:11px;color:var(--blue);padding:5px 12px;border:1px solid rgba(96,165,250,.25);border-radius:99px;background:rgba(96,165,250,.07);transition:all .2s}
+.ob-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px;animation:fadeUp .4s .12s ease both}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 17px 11px;border-bottom:1px solid var(--border)}
+.card-title{font-family:var(--hd);font-size:13px;font-weight:700}
+.card-badge{font-size:10px;letter-spacing:.06em;padding:3px 9px;border-radius:99px;background:var(--card2);color:var(--sub);border:1px solid var(--border)}
+.ob-add-btn{all:unset;cursor:pointer;font-size:11px;color:var(--blue);padding:5px 11px;border:1px solid rgba(96,165,250,.25);border-radius:99px;background:rgba(96,165,250,.07);transition:all .2s}
 .ob-add-btn:hover{background:rgba(96,165,250,.14)}
-.ob-list-wrap{padding:6px 0}
-.ob-empty{padding:22px;text-align:center;font-size:12px;color:var(--sub)}
-.ob-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);transition:background .15s}
+.ob-list-wrap{padding:4px 0}
+.ob-empty{padding:20px;text-align:center;font-size:12px;color:var(--sub)}
+.ob-row{display:flex;align-items:center;gap:11px;padding:10px 17px;border-bottom:1px solid var(--border);transition:background .15s}
 .ob-row:last-child{border-bottom:none}
 .ob-row:hover{background:rgba(255,255,255,.02)}
-.ob-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ob-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .ob-dot.pending{background:var(--amber)}
 .ob-dot.settled{background:var(--green)}
 .ob-info{flex:1;min-width:0}
 .ob-name{font-size:13px;font-weight:500}
 .ob-meta{font-size:10px;color:var(--sub);margin-top:2px;display:flex;gap:6px;align-items:center}
-.ob-tag{padding:2px 7px;border-radius:99px;font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+.ob-tag{padding:2px 6px;border-radius:99px;font-size:9px;letter-spacing:.05em;text-transform:uppercase}
 .ob-tag.recurring{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
 .ob-tag.once{background:rgba(251,191,36,.08);color:var(--amber);border:1px solid rgba(251,191,36,.18)}
-.ob-amt{font-family:var(--hd);font-size:13px;font-weight:700;margin-right:10px;white-space:nowrap}
+.ob-amt{font-family:var(--hd);font-size:12px;font-weight:700;margin-right:8px;white-space:nowrap}
 .ob-settle-btn{all:unset;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:99px;border:1px solid;transition:all .2s;white-space:nowrap}
 .ob-settle-btn.pending-btn{color:var(--amber);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)}
 .ob-settle-btn.pending-btn:hover{background:rgba(251,191,36,.14)}
 .ob-settle-btn.settled-btn{color:var(--green);border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.06);cursor:default}
 
 /* ── ACTIVITY ── */
-.act-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;animation:fadeUp .45s .2s ease both}
-.act-card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid var(--border)}
-.entry-count{font-size:10px;letter-spacing:.08em;padding:3px 10px;border-radius:99px;background:var(--card2);color:var(--sub);border:1px solid var(--border)}
-.act-empty{padding:36px 20px;text-align:center;color:var(--sub);font-size:13px}
-.act-empty .ee{font-size:28px;margin-bottom:8px}
-.entry{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);animation:slideIn .3s ease both;transition:background .15s}
+.act-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;animation:fadeUp .4s .16s ease both}
+.act-empty{padding:32px 18px;text-align:center;color:var(--sub);font-size:13px}
+.act-empty .ee{font-size:26px;margin-bottom:8px}
+.entry{display:flex;align-items:center;gap:11px;padding:11px 17px;border-bottom:1px solid var(--border);animation:slideIn .3s ease both;transition:background .15s}
 .entry:last-child{border-bottom:none}
 .entry:hover{background:rgba(255,255,255,.02)}
 @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-.entry-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.entry-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .ei-income{background:rgba(52,211,153,.1)}
 .ei-expense{background:rgba(248,113,113,.1)}
 .ei-system{background:rgba(96,165,250,.1)}
@@ -129,42 +147,44 @@ header{position:sticky;top:0;z-index:90;background:rgba(7,9,16,0.82);backdrop-fi
 .entry-info{flex:1;min-width:0}
 .entry-msg{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .entry-meta{font-size:10px;color:var(--sub);margin-top:2px}
-.entry-right{text-align:right;flex-shrink:0}
-.entry-time{font-size:10px;color:var(--sub)}
+.entry-time{font-size:10px;color:var(--sub);flex-shrink:0}
 
 /* ── MODAL ── */
-.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(5,7,14,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);align-items:flex-end;justify-content:center}
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(5,7,14,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);align-items:flex-end;justify-content:center}
 .overlay.open{display:flex}
-.sheet{width:100%;max-width:520px;background:var(--card);border:1px solid var(--border);border-radius:26px 26px 0 0;padding:10px 22px calc(env(safe-area-inset-bottom,0px) + 30px);animation:sheetUp .3s cubic-bezier(.32,1.1,.65,1) both;position:relative;overflow:hidden;max-height:90dvh;overflow-y:auto}
-.sheet::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,.5),transparent)}
+.sheet{width:100%;max-width:520px;background:var(--card);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:8px 20px calc(env(safe-area-inset-bottom,0px) + 28px);animation:sheetUp .3s cubic-bezier(.32,1.1,.65,1) both;position:relative;max-height:92dvh;overflow-y:auto}
+.sheet::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,.45),transparent)}
 @keyframes sheetUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.pill{width:38px;height:4px;background:var(--dim);border-radius:99px;margin:10px auto 20px}
-.sheet-title{font-family:var(--hd);font-size:21px;font-weight:800;letter-spacing:-.02em;margin-bottom:20px}
-.field{margin-bottom:13px}
+.pill{width:36px;height:4px;background:var(--dim);border-radius:99px;margin:10px auto 18px}
+.sheet-title{font-family:var(--hd);font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px}
+.field{margin-bottom:12px}
 .field label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);margin-bottom:6px;font-weight:500}
 .input-wrap{position:relative}
-.pfx{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--sub);font-weight:600;pointer-events:none;letter-spacing:.04em}
-input,select{width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:12px;font-family:var(--bd);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none}
-input.pfx-pad{padding-left:52px}
-input:focus,select:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(96,165,250,.09)}
+.pfx{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--sub);font-weight:600;pointer-events:none;letter-spacing:.04em}
+input,select{width:100%;padding:12px 13px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:11px;font-family:var(--bd);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none}
+input.pfx-pad{padding-left:50px}
+input:focus,select:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(96,165,250,.08)}
 input::placeholder{color:var(--dim)}
 select option{background:#0d1117}
-.toggle-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .tog-btn{all:unset;cursor:pointer;padding:11px;text-align:center;border-radius:11px;font-size:13px;font-weight:500;border:1px solid var(--border);background:var(--card2);color:var(--sub);transition:all .2s}
 .tog-btn.active{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:var(--blue)}
-.sheet-actions{display:grid;grid-template-columns:1fr 1.7fr;gap:10px;margin-top:18px}
-.btn-cancel{all:unset;cursor:pointer;padding:14px;text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:13px;font-size:14px;font-weight:500;color:var(--sub);transition:all .2s}
+.sheet-actions{display:grid;grid-template-columns:1fr 1.7fr;gap:9px;margin-top:16px}
+.btn-cancel{all:unset;cursor:pointer;padding:13px;text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;font-size:14px;font-weight:500;color:var(--sub);transition:all .2s}
 .btn-cancel:hover{color:var(--text);border-color:var(--border-hi)}
-.btn-confirm{all:unset;cursor:pointer;padding:14px;text-align:center;background:linear-gradient(135deg,var(--teal),var(--blue));border-radius:13px;font-family:var(--hd);font-size:15px;font-weight:700;color:#05090f;letter-spacing:.01em;transition:all .2s;box-shadow:0 4px 20px rgba(45,212,191,.22)}
+.btn-confirm{all:unset;cursor:pointer;padding:13px;text-align:center;background:linear-gradient(135deg,var(--teal),var(--blue));border-radius:12px;font-family:var(--hd);font-size:14px;font-weight:700;color:#05090f;transition:all .2s;box-shadow:0 4px 18px rgba(45,212,191,.2)}
 .btn-confirm:hover{opacity:.88;transform:translateY(-1px)}
 .btn-confirm:active{transform:scale(.98)}
-.hint{font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:16px}
+.hint{font-size:12px;color:var(--sub);line-height:1.65;margin-bottom:15px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.section-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);margin-bottom:8px;font-weight:500}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(14px);z-index:999;background:var(--card2);border:1px solid var(--border-hi);border-radius:12px;padding:10px 20px;font-size:13px;font-weight:500;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(12px);z-index:999;background:var(--card2);border:1px solid var(--border-hi);border-radius:11px;padding:9px 18px;font-size:13px;font-weight:500;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{border-color:rgba(248,113,113,.4);color:var(--red)}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:99px}
@@ -180,94 +200,133 @@ select option{background:#0d1117}
 
 <header>
   <div class="hrow">
-    <div>
-      <div class="brand-name">My Finance</div>
-      <div class="brand-tag">Personal Tracker · TZS</div>
-    </div>
-    <div class="hchips">
-      <div class="hchip hchip-score">
-        <span style="font-size:9px;color:var(--sub)">SCORE</span>
-        <span class="snum" id="scoreVal">—</span>
+    <div class="brand">
+      <div>
+        <div class="brand-name">My Finance</div>
+        <div class="brand-tag">Personal Tracker · TZS</div>
       </div>
-      <div class="hchip hchip-risk" id="riskChip">● Stable</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="hchips">
+        <div class="hchip hchip-score">
+          <span style="font-size:9px;color:var(--sub)">SCORE</span>
+          <span class="snum" id="scoreVal">—</span>
+        </div>
+        <div class="hchip hchip-risk" id="riskChip">● Stable</div>
+      </div>
+      <button class="settings-btn" onclick="openModal('settings')" title="Settings">⚙️</button>
     </div>
   </div>
-  <div class="salary-strip">
-    <div class="ss-left">Monthly Income</div>
-    <div class="ss-right"><span>TZS</span><span id="salaryDisplay">Not set</span></div>
+  <div class="inc-strip">
+    <div class="inc-tile">
+      <div>
+        <div class="it-label">Monthly Income</div>
+        <div class="it-val"><span>TZS</span><span id="salaryDisplay">—</span></div>
+      </div>
+    </div>
+    <div class="inc-tile pay">
+      <div>
+        <div class="it-label">Next Pay Date</div>
+        <div class="it-val teal" id="nextPayDisplay">—</div>
+      </div>
+    </div>
   </div>
 </header>
 
 <div class="page">
 
-  <div class="hero">
-    <div class="hero-label">Weekly Budget Remaining</div>
-    <div class="hero-amount" id="heroAmt">
-      <span class="hero-currency">TZS</span><span id="heroNum">0</span>
+  <!-- LOADER -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text">Syncing from Google Sheets…</div>
+  </div>
+
+  <!-- MAIN CONTENT (hidden until loaded) -->
+  <div id="mainContent" style="display:none">
+
+    <!-- PAY CYCLE BANNER -->
+    <div class="pay-banner" id="payBanner">
+      <div class="pb-left" id="payBannerText">🗓 Pay day approaching</div>
+      <div class="pb-right" id="payBannerSub"></div>
     </div>
-    <div class="hero-sub" id="heroSub">Tap "Set Target" to set your weekly goal</div>
-    <div class="prog-labels">
-      <span>Spent</span>
-      <span id="progPct">0%</span>
-      <span>Target</span>
-    </div>
-    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
-    <div class="stats-grid">
-      <div class="stat-tile">
-        <div class="st-label">Spent This Week</div>
-        <div class="st-val" id="spentVal" style="color:var(--red)">0</div>
-        <div class="st-sub">TZS</div>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-label">Weekly Budget Remaining</div>
+      <div class="hero-amount" id="heroAmt">
+        <span class="hero-currency">TZS</span><span id="heroNum">0</span>
       </div>
-      <div class="stat-tile">
-        <div class="st-label">Weekly Target</div>
-        <div class="st-val" id="targetVal" style="color:var(--blue)">0</div>
-        <div class="st-sub">TZS · set by you</div>
+      <div class="hero-sub" id="heroSub">Tap "Set Target" to set your weekly goal</div>
+      <div class="prog-labels">
+        <span>Spent</span>
+        <span id="progPct">0%</span>
+        <span>Target</span>
       </div>
-    </div>
-  </div>
-
-  <div class="action-row">
-    <button class="act-btn" onclick="openModal('income')">
-      <div class="act-icon ai-in">💰</div>
-      <div class="act-lbl">Income</div>
-    </button>
-    <button class="act-btn" onclick="openModal('expense')">
-      <div class="act-icon ai-ex">↓</div>
-      <div class="act-lbl">Expense</div>
-    </button>
-    <button class="act-btn" onclick="openModal('target')">
-      <div class="act-icon ai-ob">🎯</div>
-      <div class="act-lbl">Set Target</div>
-    </button>
-  </div>
-
-  <div class="ob-card">
-    <div class="ob-card-head">
-      <div class="card-title">Obligations</div>
-      <button class="ob-add-btn" onclick="openModal('ob')">+ Add</button>
-    </div>
-    <div class="ob-list-wrap" id="obList">
-      <div class="ob-empty">No obligations yet — tap + Add</div>
-    </div>
-  </div>
-
-  <div class="act-card">
-    <div class="act-card-head">
-      <div class="card-title">Activity</div>
-      <div class="entry-count" id="entryCount">0 entries</div>
-    </div>
-    <div id="actList">
-      <div class="act-empty">
-        <div class="ee">📊</div>
-        No transactions yet.<br>Add your salary to begin.
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+      <div class="stats-grid">
+        <div class="stat-tile">
+          <div class="st-label">Spent This Week</div>
+          <div class="st-val" id="spentVal" style="color:var(--red)">0</div>
+          <div class="st-sub">TZS</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">Weekly Target</div>
+          <div class="st-val" id="targetVal" style="color:var(--blue)">0</div>
+          <div class="st-sub">TZS · set by you</div>
+        </div>
       </div>
     </div>
-  </div>
 
+    <!-- ACTIONS -->
+    <div class="action-row">
+      <button class="act-btn" onclick="openModal('income')">
+        <div class="act-icon ai-in">💰</div>
+        <div class="act-lbl">Income</div>
+      </button>
+      <button class="act-btn" onclick="openModal('expense')">
+        <div class="act-icon ai-ex">↓</div>
+        <div class="act-lbl">Expense</div>
+      </button>
+      <button class="act-btn" onclick="openModal('target')">
+        <div class="act-icon ai-ob">🎯</div>
+        <div class="act-lbl">Set Target</div>
+      </button>
+    </div>
+
+    <!-- OBLIGATIONS -->
+    <div class="ob-card">
+      <div class="card-head">
+        <div class="card-title">Obligations</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="card-badge" id="obBadge">0 pending</div>
+          <button class="ob-add-btn" onclick="openModal('ob')">+ Add</button>
+        </div>
+      </div>
+      <div class="ob-list-wrap" id="obList">
+        <div class="ob-empty">No obligations yet — tap + Add</div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="act-card">
+      <div class="card-head">
+        <div class="card-title">Activity</div>
+        <div class="card-badge" id="entryCount">0 entries</div>
+      </div>
+      <div id="actList">
+        <div class="act-empty">
+          <div class="ee">📊</div>
+          No transactions yet.<br>Add your income to begin.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /mainContent -->
 </div>
 
+<!-- MODAL -->
 <div class="overlay" id="overlay">
-  <div class="sheet" id="sheet">
+  <div class="sheet">
     <div class="pill"></div>
     <div id="sheetBody"></div>
   </div>
@@ -276,37 +335,168 @@ select option{background:#0d1117}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ══════════════════════════════════════
+   CONFIG
+══════════════════════════════════════ */
 const API = "https://script.google.com/macros/s/AKfycbzsL1hm4qVplfGEBVyWvchauv9vzxt4RDzOUvwC1Aw9kqr6vos6X4jJ3jFJdKtfz_FtEQ/exec";
 const FMT = n => Number(n||0).toLocaleString('en');
 
-let salary = 0;
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let salary       = 0;
 let weeklyTarget = 0;
-let obligations = [];
-let expenses = [];
-let entries = [];
-let obType = 'recurring';
+let obligations  = [];
+let expenses     = [];
+let entries      = [];
+let settings     = { payDay: 10 };  // default pay day = 10th
+let obType       = 'recurring';
+let currentMonth = '';
+let currentWeek  = '';
 
-/* ── CLOUD ── */
-async function save(data) {
+/* ══════════════════════════════════════
+   CLOUD
+══════════════════════════════════════ */
+async function cloudSave(data) {
   try {
-    await fetch(API, {
-      method:"POST",
+    const res = await fetch(API, {
+      method: "POST",
       body: JSON.stringify(data),
-      headers:{"Content-Type":"application/json"}
+      headers: { "Content-Type": "application/json" }
     });
-    showToast("✓ Saved to Google Sheets");
+    const json = await res.json();
+    if (json.success) showToast("✓ Saved to Google Sheets");
+    else showToast("⚠ Save error: " + (json.error || 'unknown'), true);
   } catch(e) {
-    showToast("⚠ Could not save — check connection");
+    showToast("⚠ No connection — data not saved", true);
   }
 }
 
-/* ── MODAL ── */
+async function cloudLoad() {
+  try {
+    const res  = await fetch(API + "?t=" + Date.now());
+    const data = await res.json();
+
+    if (!data.success) {
+      showToast("⚠ Could not load data", true);
+      showMain();
+      return;
+    }
+
+    currentMonth = data.month;
+    currentWeek  = data.week;
+
+    // Settings
+    if (data.settings) {
+      if (data.settings.payDay) settings.payDay = Number(data.settings.payDay);
+    }
+
+    // Income — sum all income this month
+    salary = 0;
+    entries = [];
+    if (data.income && data.income.length) {
+      data.income.forEach(i => {
+        salary += Number(i.amount);
+        entries.push({
+          icon: '💰',
+          msg: `${i.source}: ${i.description}`,
+          sub: `TZS ${FMT(i.amount)}`,
+          type: 'income',
+          t: formatTs(i.timestamp)
+        });
+      });
+      document.getElementById('salaryDisplay').textContent = FMT(salary);
+    }
+
+    // Weekly target
+    weeklyTarget = Number(data.weeklyTarget) || 0;
+
+    // Expenses
+    expenses = [];
+    if (data.expenses && data.expenses.length) {
+      data.expenses.forEach(e => {
+        expenses.push({ name: e.description, cat: e.category, amt: Number(e.amount) });
+        entries.push({
+          icon: e.category ? e.category.split(' ')[0] : '🧾',
+          msg: e.description,
+          sub: `TZS ${FMT(e.amount)} · ${e.category}`,
+          type: 'expense',
+          t: formatTs(e.timestamp)
+        });
+      });
+    }
+
+    // Obligations
+    obligations = [];
+    if (data.obligations && data.obligations.length) {
+      data.obligations.forEach(o => {
+        obligations.push({
+          id:     o.id,
+          name:   o.name,
+          amt:    Number(o.amount),
+          type:   o.type,
+          status: o.status
+        });
+      });
+    }
+
+    // Sort entries newest first
+    entries.sort((a, b) => b.t.localeCompare(a.t));
+
+    showMain();
+    renderAll();
+    updatePayDay();
+
+  } catch(e) {
+    showToast("⚠ Failed to sync: " + e.message, true);
+    showMain();
+  }
+}
+
+function showMain() {
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+}
+
+function formatTs(ts) {
+  if (!ts) return '';
+  try {
+    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch(e) { return String(ts).slice(11,16); }
+}
+
+/* ══════════════════════════════════════
+   PAY DAY
+══════════════════════════════════════ */
+function updatePayDay() {
+  const today   = new Date();
+  const payDay  = Number(settings.payDay) || 10;
+  let   nextPay = new Date(today.getFullYear(), today.getMonth(), payDay);
+  if (nextPay <= today) nextPay = new Date(today.getFullYear(), today.getMonth() + 1, payDay);
+
+  const diff  = Math.ceil((nextPay - today) / 86400000);
+  const label = nextPay.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+
+  document.getElementById('nextPayDisplay').textContent = `${label} (${diff}d)`;
+
+  // banner if within 3 days
+  const banner = document.getElementById('payBanner');
+  if (diff <= 3) {
+    banner.classList.add('show');
+    document.getElementById('payBannerText').textContent = diff === 0 ? '🎉 Pay day today!' : `🗓 Pay day in ${diff} day${diff>1?'s':''}`;
+    document.getElementById('payBannerSub').textContent  = label;
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
 function openModal(type) {
   obType = 'recurring';
-  const ov = document.getElementById('overlay');
-  ov.classList.add('open');
+  document.getElementById('overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-
   let html = '';
 
   if (type === 'income') {
@@ -326,7 +516,7 @@ function openModal(type) {
         </select>
       </div>
       <div class="field">
-        <label>Description <span style="color:var(--sub);font-size:9px;letter-spacing:.06em">(optional)</span></label>
+        <label>Description <span style="color:var(--sub);font-size:9px">(optional)</span></label>
         <input id="incDesc" placeholder="e.g. March salary, Shop revenue…">
       </div>
       <div class="field">
@@ -338,31 +528,31 @@ function openModal(type) {
       </div>
       <div class="sheet-actions">
         <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-confirm" onclick="setSalary()">Record Income 💰</button>
+        <button class="btn-confirm" onclick="doIncome()">Record 💰</button>
       </div>`;
   }
 
   else if (type === 'target') {
     html = `
       <div class="sheet-title">Set Weekly Target</div>
-      <p class="hint">Your personal weekly spending goal — separate from obligations. Set it based on what you want to allow yourself each week.</p>
+      <p class="hint">Your personal weekly spending goal — separate from obligations. Only counts day-to-day expenses.</p>
       <div class="field">
         <label>Weekly Spending Target</label>
         <div class="input-wrap">
           <span class="pfx">TZS</span>
-          <input class="pfx-pad" id="tgtIn" type="number" inputmode="numeric" placeholder="0" autofocus value="${weeklyTarget || ''}">
+          <input class="pfx-pad" id="tgtIn" type="number" inputmode="numeric" placeholder="0" autofocus value="${weeklyTarget||''}">
         </div>
       </div>
       <div class="sheet-actions">
         <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-confirm" onclick="setTarget()">Set Target 🎯</button>
+        <button class="btn-confirm" onclick="doTarget()">Save Target 🎯</button>
       </div>`;
   }
 
   else if (type === 'ob') {
     html = `
       <div class="sheet-title">Add Obligation</div>
-      <p class="hint">Obligations are paid immediately when salary arrives. Mark each one as paid once settled.</p>
+      <p class="hint">Obligations are settled immediately when salary arrives. Mark each as paid once done.</p>
       <div class="field">
         <label>Name</label>
         <input id="obName" placeholder="e.g. Rent, School fees, DSTV…" autofocus>
@@ -383,7 +573,7 @@ function openModal(type) {
       </div>
       <div class="sheet-actions">
         <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-confirm" onclick="addOb()">Add Obligation</button>
+        <button class="btn-confirm" onclick="doOb()">Add Obligation</button>
       </div>`;
   }
 
@@ -418,7 +608,23 @@ function openModal(type) {
       </div>
       <div class="sheet-actions">
         <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-confirm" onclick="addExpense()">Save Expense ↓</button>
+        <button class="btn-confirm" onclick="doExpense()">Save Expense ↓</button>
+      </div>`;
+  }
+
+  else if (type === 'settings') {
+    html = `
+      <div class="sheet-title">⚙️ Settings</div>
+      <div class="field">
+        <label>Monthly Pay Date</label>
+        <select id="payDayIn">
+          ${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${settings.payDay==i+1?'selected':''}>${i+1}${nth(i+1)} of every month</option>`).join('')}
+        </select>
+      </div>
+      <p class="hint" style="margin-top:8px">The app will show a countdown to your next pay day and remind you when it arrives.</p>
+      <div class="sheet-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" onclick="doSettings()">Save Settings</button>
       </div>`;
   }
 
@@ -436,173 +642,178 @@ document.getElementById('overlay').addEventListener('click', function(e) {
 
 function setObType(t) {
   obType = t;
-  document.getElementById('tog-once').classList.toggle('active', t === 'once');
-  document.getElementById('tog-rec').classList.toggle('active',  t === 'recurring');
+  document.getElementById('tog-once').classList.toggle('active', t==='once');
+  document.getElementById('tog-rec').classList.toggle('active',  t==='recurring');
 }
 
-/* ── SALARY ── */
-function setSalary() {
+function nth(n) {
+  if(n>3&&n<21) return 'th';
+  switch(n%10){case 1:return'st';case 2:return'nd';case 3:return'rd';default:return'th';}
+}
+
+/* ══════════════════════════════════════
+   ACTIONS
+══════════════════════════════════════ */
+function doIncome() {
   const v      = Number(document.getElementById('salIn').value);
   const source = document.getElementById('incSource').value;
   const desc   = document.getElementById('incDesc').value.trim() || source;
-  if (!v || v <= 0) { showToast("Enter a valid amount"); return; }
-  salary = v;
-  document.getElementById('salaryDisplay').textContent = FMT(v);
+  if (!v||v<=0) { showToast("Enter a valid amount"); return; }
+  salary += v;
+  document.getElementById('salaryDisplay').textContent = FMT(salary);
   addEntry('💰', `${source}: ${desc}`, `TZS ${FMT(v)}`, 'income');
-  save({ type:"INCOME", description:desc, category:source, amount:v, recurring: source === 'Salary' ? 'monthly' : 'once', status:"received" });
+  cloudSave({ action:"SAVE_INCOME", source, description:desc, amount:v, recurring: source==='Salary'?'monthly':'once' });
   closeModal(); update();
 }
 
-/* ── TARGET ── */
-function setTarget() {
+function doTarget() {
   const v = Number(document.getElementById('tgtIn').value);
-  if (!v || v <= 0) { showToast("Enter a valid target"); return; }
+  if (!v||v<=0) { showToast("Enter a valid target"); return; }
   weeklyTarget = v;
-  addEntry('🎯', 'Weekly target set', `TZS ${FMT(v)} / week`, 'system');
-  save({ type:"TARGET", description:"Weekly Budget Target", category:"Settings", amount:v, recurring:"weekly", status:"active" });
+  addEntry('🎯','Weekly target set',`TZS ${FMT(v)} / week`,'system');
+  cloudSave({ action:"SAVE_TARGET", weeklyTarget:v });
   closeModal(); update();
 }
 
-/* ── OBLIGATIONS ── */
-function addOb() {
+function doOb() {
   const name = document.getElementById('obName').value.trim();
   const amt  = Number(document.getElementById('obAmt').value);
-  if (!name || !amt) { showToast("Fill in name and amount"); return; }
-  const ob = { id: Date.now(), name, amt, type: obType, status: 'pending' };
-  obligations.push(ob);
-  addEntry('⚙️', `Obligation: ${name}`, `TZS ${FMT(amt)} · ${obType === 'recurring' ? 'Monthly' : 'One-time'}`, 'system');
-  save({ type:"OBLIGATION", description:name, category: obType === 'recurring' ? "Recurring" : "Once-off", amount:amt, recurring:obType, status:"pending" });
-  closeModal();
-  renderObs();
+  if (!name||!amt) { showToast("Fill in name and amount"); return; }
+  const id = Date.now();
+  obligations.push({ id, name, amt, type:obType, status:'pending' });
+  addEntry('⚙️',`Obligation: ${name}`,`TZS ${FMT(amt)} · ${obType==='recurring'?'Monthly':'One-time'}`,'system');
+  cloudSave({ action:"SAVE_OBLIGATION", id, name, amount:amt, type:obType, status:'pending' });
+  closeModal(); renderObs();
 }
 
 function settleOb(id) {
-  const ob = obligations.find(o => o.id === id);
-  if (!ob || ob.status === 'settled') return;
+  const ob = obligations.find(o=>String(o.id)===String(id));
+  if (!ob||ob.status==='settled') return;
   ob.status = 'settled';
-  addEntry('✅', `Settled: ${ob.name}`, `TZS ${FMT(ob.amt)}`, 'income');
-  save({ type:"OBLIGATION_SETTLED", description:ob.name, category: ob.type === 'recurring' ? "Recurring" : "Once-off", amount:ob.amt, recurring:ob.type, status:"settled" });
-  // remove once-off obligations after settling
-  if (ob.type === 'once') {
-    setTimeout(() => {
-      obligations = obligations.filter(o => o.id !== id);
-      renderObs();
-    }, 1200);
-  } else {
-    renderObs();
-  }
+  addEntry('✅',`Settled: ${ob.name}`,`TZS ${FMT(ob.amt)}`,'income');
+  cloudSave({ action:"SETTLE_OBLIGATION", id:ob.id });
+  if (ob.type==='once') {
+    setTimeout(() => { obligations = obligations.filter(o=>String(o.id)!==String(id)); renderObs(); }, 1200);
+  } else renderObs();
 }
+
+function doExpense() {
+  const name = document.getElementById('expName').value.trim();
+  const amt  = Number(document.getElementById('expAmt').value);
+  const cat  = document.getElementById('expCat').value;
+  if (!name||!amt) { showToast("Fill in description and amount"); return; }
+  expenses.push({ name, cat, amt });
+  addEntry(cat.split(' ')[0], name, `TZS ${FMT(amt)} · ${cat}`, 'expense');
+  cloudSave({ action:"SAVE_EXPENSE", description:name, category:cat, amount:amt });
+  closeModal(); update();
+}
+
+function doSettings() {
+  const pd = Number(document.getElementById('payDayIn').value);
+  settings.payDay = pd;
+  cloudSave({ action:"SAVE_SETTING", key:"payDay", value:pd });
+  updatePayDay();
+  addEntry('⚙️','Pay date updated',`${pd}${nth(pd)} of every month`,'system');
+  closeModal();
+}
+
+/* ══════════════════════════════════════
+   ENGINE
+══════════════════════════════════════ */
+function update() {
+  const spent     = expenses.reduce((s,e)=>s+e.amt,0);
+  const remaining = weeklyTarget - spent;
+  const ratio     = spent / (weeklyTarget||1);
+  const pct       = Math.min(ratio*100,100);
+
+  document.getElementById('heroNum').textContent   = FMT(Math.max(remaining,0));
+  document.getElementById('spentVal').textContent  = FMT(spent);
+  document.getElementById('targetVal').textContent = FMT(weeklyTarget);
+
+  if (weeklyTarget>0) {
+    document.getElementById('heroSub').textContent = `${pct.toFixed(0)}% of weekly target used`;
+    document.getElementById('heroAmt').style.color = remaining<0?'var(--red)':remaining<weeklyTarget*.15?'var(--amber)':'var(--text)';
+  }
+
+  const fill = document.getElementById('progFill');
+  fill.style.width = pct+'%';
+  if (pct>90) { fill.style.background='linear-gradient(90deg,var(--amber),var(--red))'; fill.style.boxShadow='0 0 10px rgba(248,113,113,.45)'; }
+  else if (pct>70) { fill.style.background='linear-gradient(90deg,var(--blue),var(--amber))'; fill.style.boxShadow='0 0 10px rgba(251,191,36,.35)'; }
+  else { fill.style.background='linear-gradient(90deg,var(--teal),var(--blue))'; fill.style.boxShadow='0 0 10px rgba(45,212,191,.4)'; }
+  document.getElementById('progPct').textContent = pct.toFixed(0)+'%';
+
+  const score = weeklyTarget===0?null:remaining<0?20:ratio>.8?50:ratio>.6?70:90;
+  const sv = document.getElementById('scoreVal');
+  sv.textContent = score!==null?score:'—';
+  sv.style.color = !score?'var(--sub)':score>=80?'var(--teal)':score>=50?'var(--amber)':'var(--red)';
+
+  const rc = document.getElementById('riskChip');
+  if (!score||score>=80) { rc.textContent='● Stable';   rc.className='hchip hchip-risk'; }
+  else if (score>=50)    { rc.textContent='● Warning';  rc.className='hchip hchip-risk warn'; }
+  else                   { rc.textContent='● Critical'; rc.className='hchip hchip-risk crit'; }
+}
+
+function renderAll() { update(); renderObs(); renderEntries(); }
 
 function renderObs() {
   const wrap = document.getElementById('obList');
-  if (!obligations.length) {
-    wrap.innerHTML = '<div class="ob-empty">No obligations yet — tap + Add</div>';
-    return;
-  }
-  wrap.innerHTML = obligations.map(o => `
+  const pending = obligations.filter(o=>o.status==='pending').length;
+  document.getElementById('obBadge').textContent = `${pending} pending`;
+  if (!obligations.length) { wrap.innerHTML='<div class="ob-empty">No obligations yet — tap + Add</div>'; return; }
+  wrap.innerHTML = obligations.map(o=>`
     <div class="ob-row">
       <div class="ob-dot ${o.status}"></div>
       <div class="ob-info">
         <div class="ob-name">${o.name}</div>
         <div class="ob-meta">
-          <span class="ob-tag ${o.type === 'recurring' ? 'recurring' : 'once'}">${o.type === 'recurring' ? '↻ Monthly' : '✕ One-time'}</span>
-          <span>${o.status === 'settled' ? '✓ Settled' : 'Pending'}</span>
+          <span class="ob-tag ${o.type==='recurring'?'recurring':'once'}">${o.type==='recurring'?'↻ Monthly':'✕ One-time'}</span>
+          <span>${o.status==='settled'?'✓ Settled':'Pending'}</span>
         </div>
       </div>
       <div class="ob-amt">TZS ${FMT(o.amt)}</div>
-      <button class="ob-settle-btn ${o.status === 'settled' ? 'settled-btn' : 'pending-btn'}"
-        onclick="${o.status !== 'settled' ? `settleOb(${o.id})` : ''}">
-        ${o.status === 'settled' ? '✓ Paid' : 'Mark Paid'}
-      </button>
-    </div>
-  `).join('');
+      <button class="ob-settle-btn ${o.status==='settled'?'settled-btn':'pending-btn'}"
+        onclick="${o.status!=='settled'?`settleOb('${o.id}')`:''}">${o.status==='settled'?'✓ Paid':'Mark Paid'}</button>
+    </div>`).join('');
 }
 
-/* ── EXPENSE ── */
-function addExpense() {
-  const name = document.getElementById('expName').value.trim();
-  const amt  = Number(document.getElementById('expAmt').value);
-  const cat  = document.getElementById('expCat').value;
-  if (!name || !amt) { showToast("Fill in description and amount"); return; }
-  expenses.push({ name, cat, amt });
-  addEntry(cat.split(' ')[0], name, `TZS ${FMT(amt)} · ${cat}`, 'expense');
-  save({ type:"EXPENSE", description:name, category:cat, amount:amt, recurring:"once", status:"spent" });
-  closeModal(); update();
-}
-
-/* ── ENGINE ── */
-function update() {
-  const spent = expenses.reduce((s, e) => s + e.amt, 0);
-  const remaining = weeklyTarget - spent;
-  const ratio = spent / (weeklyTarget || 1);
-  const pct = Math.min(ratio * 100, 100);
-
-  document.getElementById('heroNum').textContent   = FMT(Math.max(remaining, 0));
-  document.getElementById('spentVal').textContent  = FMT(spent);
-  document.getElementById('targetVal').textContent = FMT(weeklyTarget);
-
-  if (weeklyTarget > 0) {
-    document.getElementById('heroSub').textContent = `${pct.toFixed(0)}% of weekly target used`;
-    document.getElementById('heroAmt').style.color = remaining < 0 ? 'var(--red)' : remaining < weeklyTarget * 0.15 ? 'var(--amber)' : 'var(--text)';
+function renderEntries() {
+  document.getElementById('entryCount').textContent = entries.length+' entries';
+  if (!entries.length) {
+    document.getElementById('actList').innerHTML='<div class="act-empty"><div class="ee">📊</div>No transactions yet.<br>Add your income to begin.</div>';
+    return;
   }
-
-  const fill = document.getElementById('progFill');
-  fill.style.width = pct + '%';
-  if (pct > 90) {
-    fill.style.background = 'linear-gradient(90deg,var(--amber),var(--red))';
-    fill.style.boxShadow  = '0 0 10px rgba(248,113,113,.45)';
-  } else if (pct > 70) {
-    fill.style.background = 'linear-gradient(90deg,var(--blue),var(--amber))';
-    fill.style.boxShadow  = '0 0 10px rgba(251,191,36,.35)';
-  } else {
-    fill.style.background = 'linear-gradient(90deg,var(--teal),var(--blue))';
-    fill.style.boxShadow  = '0 0 10px rgba(45,212,191,.4)';
-  }
-  document.getElementById('progPct').textContent = pct.toFixed(0) + '%';
-
-  const score = weeklyTarget === 0 ? null
-    : remaining < 0 ? 20
-    : ratio > 0.8 ? 50
-    : ratio > 0.6 ? 70 : 90;
-
-  const sv = document.getElementById('scoreVal');
-  sv.textContent = score !== null ? score : '—';
-  sv.style.color = !score ? 'var(--sub)' : score >= 80 ? 'var(--teal)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
-
-  const rc = document.getElementById('riskChip');
-  if (!score || score >= 80) { rc.textContent = '● Stable';   rc.className = 'hchip hchip-risk'; }
-  else if (score >= 50)      { rc.textContent = '● Warning';  rc.className = 'hchip hchip-risk warn'; }
-  else                       { rc.textContent = '● Critical'; rc.className = 'hchip hchip-risk crit'; }
-}
-
-/* ── LOG ── */
-function addEntry(icon, msg, sub, type) {
-  const t = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-  entries.unshift({ icon, msg, sub, type, t });
-  document.getElementById('entryCount').textContent = entries.length + ' entries';
-  document.getElementById('actList').innerHTML = entries.map(e => `
+  document.getElementById('actList').innerHTML = entries.map(e=>`
     <div class="entry">
       <div class="entry-icon ei-${e.type}">${e.icon}</div>
       <div class="entry-info">
         <div class="entry-msg">${e.msg}</div>
         <div class="entry-meta">${e.sub}</div>
       </div>
-      <div class="entry-right">
-        <div class="entry-time">${e.t}</div>
-      </div>
-    </div>
-  `).join('');
+      <div class="entry-time">${e.t}</div>
+    </div>`).join('');
 }
 
-/* ── TOAST ── */
-function showToast(msg) {
+function addEntry(icon,msg,sub,type) {
+  const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  entries.unshift({icon,msg,sub,type,t});
+  renderEntries();
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+function showToast(msg, isError=false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  t.className = 'toast show' + (isError?' error':'');
+  clearTimeout(t._to);
+  t._to = setTimeout(()=>{ t.className='toast'; },3000);
 }
 
-update();
+/* ══════════════════════════════════════
+   INIT — load from cloud on every open
+══════════════════════════════════════ */
+cloudLoad();
 </script>
 </body>
 </html>
