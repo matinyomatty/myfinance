@@ -200,33 +200,102 @@
 
 <script>
   (function() {
+    // ⚠️ IMPORTANT: Replace this URL with your actual Google Apps Script Web App URL
     const API = "https://script.google.com/macros/s/AKfycbwtVVB8unMf0Wc-cwaHVOMd_n-GcRnQUs57IdH3ZaszMStdF0hQbr1LyJj3AnZNZfNlbQ/exec";
     const FMT = n => Number(n||0).toLocaleString('en');
     const curMonth = () => new Date().toISOString().slice(0,7);
-
+    
+    // Local storage backup for when API fails
+    const STORAGE_KEY = 'myfinance_backup';
+    
     let S = {
       salary: 0, weeklyTarget: 0, obligations: [], expenses: [], entries: [],
       settings: { payDay: 10 }, confirmed: false, confirmedAt: null, confirmedMonth: '',
       obType: 'recurring'
     };
 
-    function url(p) { return API + '?' + Object.entries(p).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(String(v??''))).join('&') + '&_=' + Date.now(); }
-    async function api(p) {
+    // Load from localStorage as fallback
+    function loadLocalBackup() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          if (data.salary) S.salary = data.salary;
+          if (data.weeklyTarget) S.weeklyTarget = data.weeklyTarget;
+          if (data.obligations) S.obligations = data.obligations;
+          if (data.expenses) S.expenses = data.expenses;
+          if (data.settings) S.settings = {...S.settings, ...data.settings};
+          if (data.confirmed) S.confirmed = data.confirmed;
+          if (data.confirmedAt) S.confirmedAt = data.confirmedAt;
+          if (data.confirmedMonth) S.confirmedMonth = data.confirmedMonth;
+          return true;
+        }
+      } catch(e) { console.log('No local backup'); }
+      return false;
+    }
+
+    function saveLocalBackup() {
+      try {
+        const data = {
+          salary: S.salary,
+          weeklyTarget: S.weeklyTarget,
+          obligations: S.obligations,
+          expenses: S.expenses,
+          settings: S.settings,
+          confirmed: S.confirmed,
+          confirmedAt: S.confirmedAt,
+          confirmedMonth: S.confirmedMonth
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch(e) { console.log('Could not save local backup'); }
+    }
+
+    function url(p) { 
+      return API + '?' + Object.entries(p).map(([k,v]) => 
+        encodeURIComponent(k) + '=' + encodeURIComponent(String(v ?? ''))
+      ).join('&') + '&_=' + Date.now(); 
+    }
+    
+    async function api(p, silent = false) {
       dot('syn');
       try {
         const r = await fetch(url(p), { redirect: 'follow' });
         const t = await r.text();
-        const j = JSON.parse(t.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, ''));
+        console.log('API Raw Response:', t);
+        const cleaned = t.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, '');
+        const j = JSON.parse(cleaned);
         dot(j.success !== false ? 'ok' : 'err');
+        if (!silent && j.success === false) {
+          console.warn('API returned success:false', j);
+        }
         return j;
-      } catch(e) { dot('err'); throw e; }
+      } catch(e) { 
+        dot('err'); 
+        console.error('API call failed:', p, e);
+        if (!silent) saveLocalBackup(); // Save locally if API fails
+        throw e; 
+      }
     }
-    function dot(s) { document.getElementById('sdot').className = 'sdot ' + s; }
+    
+    function dot(s) { 
+      const el = document.getElementById('sdot');
+      if (el) el.className = 'sdot ' + s; 
+    }
 
     async function load() {
+      // First try to load from local backup for instant display
+      loadLocalBackup();
+      renderAll();
+      
       try {
-        const d = await api({ action: 'LOAD' });
-        if (!d.success) { toast('Could not load', true); return; }
+        const d = await api({ action: 'LOAD' }, true);
+        if (!d || !d.success) {
+          console.log('API load failed, using local data');
+          toast('📱 Using local data', false);
+          renderAll();
+          return;
+        }
+        
         S.salary = Number(d.totalIncome) || 0;
         S.weeklyTarget = Number(d.weeklyTarget) || 0;
         const cfg = d.settings || {};
@@ -234,206 +303,69 @@
         if (cfg.confirmedAt) S.confirmedAt = cfg.confirmedAt;
         if (cfg.confirmedMonth) S.confirmedMonth = cfg.confirmedMonth;
         S.confirmed = (S.confirmedMonth === curMonth());
-        S.obligations = (d.obligations || []).map(o => ({ id: String(o.id), name: o.name, amt: Number(o.amount)||0, type: o.type, status: o.status }));
-        S.expenses = (d.expenses || []).map(e => ({ name: e.description, cat: e.category, amt: Number(e.amount)||0 }));
+        
+        S.obligations = (d.obligations || []).map(o => ({ 
+          id: String(o.id), 
+          name: o.name, 
+          amt: Number(o.amount)||0, 
+          type: o.type || 'recurring', 
+          status: o.status || 'pending' 
+        }));
+        
+        S.expenses = (d.expenses || []).map(e => ({ 
+          name: e.description || e.name || '', 
+          cat: e.category || e.cat || '', 
+          amt: Number(e.amount)||0 
+        }));
+        
         S.entries = [];
-        (d.income||[]).forEach(i => S.entries.push({ icon:'💰', msg:`${i.source}: ${i.description}`, sub:`TZS ${FMT(i.amount)}`, type:'income', t: fts(i.timestamp) }));
-        (d.expenses||[]).forEach(e => S.entries.push({ icon:e.category?.split(' ')[0]||'🧾', msg:e.description, sub:`TZS ${FMT(e.amount)} · ${e.category}`, type:'expense', t: fts(e.timestamp) }));
+        (d.income||[]).forEach(i => S.entries.push({ 
+          icon:'💰', 
+          msg:`${i.source||'Income'}: ${i.description||''}`, 
+          sub:`TZS ${FMT(i.amount)}`, 
+          type:'income', 
+          t: fts(i.timestamp) 
+        }));
+        (d.expenses||[]).forEach(e => S.entries.push({ 
+          icon: (e.category||'🧾').split(' ')[0], 
+          msg: e.description || e.name || '', 
+          sub:`TZS ${FMT(e.amount)} · ${e.category||''}`, 
+          type:'expense', 
+          t: fts(e.timestamp) 
+        }));
         S.entries.sort((a,b) => b.t.localeCompare(a.t));
+        
+        saveLocalBackup();
         renderAll();
-      } catch(e) { toast('Sync failed', true); }
+        toast('✅ Data synced', false);
+      } catch(e) { 
+        console.log('Loading from API failed, using local backup');
+        toast('📱 Using local backup', false);
+        renderAll(); 
+      }
     }
 
-    function fts(ts) { try { return ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''; } catch(e) { return ''; } }
+    function fts(ts) { 
+      try { 
+        return ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''; 
+      } catch(e) { return ''; }
+    }
 
     function updatePayDay() {
       const pd = Number(S.settings.payDay) || 10, today = new Date();
       let nx = new Date(today.getFullYear(), today.getMonth(), pd);
       if (nx <= today) nx = new Date(today.getFullYear(), today.getMonth()+1, pd);
-      document.getElementById('payDisp').textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${Math.ceil((nx-today)/86400000)}d)`;
+      const el = document.getElementById('payDisp');
+      if (el) el.textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${Math.ceil((nx-today)/86400000)}d)`;
     }
 
-    function confirmSalary() {
+    async function confirmSalary() {
       if (S.salary <= 0) { toast('Record income first'); return; }
-      S.confirmed = true; S.confirmedAt = new Date().toISOString(); S.confirmedMonth = curMonth();
+      S.confirmed = true; 
+      S.confirmedAt = new Date().toISOString(); 
+      S.confirmedMonth = curMonth();
       entry('✅','Salary confirmed',`TZS ${FMT(S.salary)}`,'income');
-      api({ action: 'SAVE_SETTING', key: 'confirmedAt', value: S.confirmedAt });
-      api({ action: 'SAVE_SETTING', key: 'confirmedMonth', value: S.confirmedMonth });
-      renderSalCard(); renderAlerts(); toast('✓ Salary confirmed');
-    }
-
-    function renderSalCard() {
-      const totalObs = S.obligations.reduce((s,o) => s + o.amt, 0);
-      const totalExp = S.expenses.reduce((s,e) => s + e.amt, 0);
-      const bal = S.salary - totalObs - totalExp;
-      document.getElementById('scAmt').textContent = S.salary > 0 ? FMT(S.salary) : '—';
-      document.getElementById('scObs').textContent = 'TZS ' + FMT(totalObs);
-      document.getElementById('scExp').textContent = 'TZS ' + FMT(totalExp);
-      document.getElementById('scBal').textContent = 'TZS ' + FMT(bal);
-      document.getElementById('scBal').className = 'sc-sv ' + (bal < 0 ? 'r' : 'g');
-      const bd = document.getElementById('balDisp'); bd.textContent = 'TZS '+FMT(bal);
-      bd.className = 'sv ' + (bal < 0 ? 'r' : bal < S.salary*0.1 ? 'a' : 'g');
-      document.getElementById('balStrip').className = 'strip ' + (bal < 0 ? 'danger' : 'g');
-      const badge = document.getElementById('scBadge'), wrap = document.getElementById('cfmWrap');
-      if (S.confirmed) {
-        badge.textContent = '✓ Confirmed'; badge.className = 'sc-badge ok';
-        wrap.innerHTML = '<div class="cfm-done">✅ Receipt confirmed this month</div>';
-      } else {
-        badge.textContent = 'Not confirmed'; badge.className = 'sc-badge';
-        wrap.innerHTML = '<button class="cfm-btn" onclick="confirmSalary()">✓ Confirm Receipt of Salary</button>';
-      }
-    }
-
-    function renderAlerts() {
-      const db = document.getElementById('dangerBanner'), wb = document.getElementById('warnBanner');
-      db.classList.remove('show'); wb.classList.remove('show');
-      if (!S.confirmed) return;
-      const pend = S.obligations.filter(o => o.status === 'pending');
-      if (!pend.length) return;
-      const hrs = (Date.now() - new Date(S.confirmedAt||Date.now()).getTime()) / 3600000;
-      if (hrs >= 24) {
-        db.classList.add('show');
-        document.getElementById('dangerSub').textContent = `${pend.length} unsettled — ${Math.floor(hrs)}h since confirmation`;
-        document.getElementById('obCard').classList.add('danger');
-        document.getElementById('obBadge').classList.add('red');
-      } else {
-        wb.classList.add('show');
-        document.getElementById('warnTitle').textContent = `${pend.length} obligation${pend.length>1?'s':''} pending`;
-        document.getElementById('warnSub').textContent = `Confirmed ${Math.floor(hrs)}h ago`;
-        document.getElementById('obCard').classList.remove('danger');
-        document.getElementById('obBadge').classList.remove('red');
-      }
-    }
-
-    function openModal(type, editId) {
-      S.obType = 'recurring';
-      document.getElementById('ov').classList.add('open');
-      let h = '';
-      if (type === 'income') h = `<div class="stit">Record Income</div><div class="fld"><label>Source</label><select id="incSrc"><option value="Salary">💼 Salary</option><option value="Business">🏪 Business</option><option value="Freelance">💻 Freelance</option><option value="Other">💬 Other</option></select></div><div class="fld"><label>Description</label><input id="incDesc" placeholder="e.g. March salary"></div><div class="fld"><label>Amount</label><input id="incAmt" type="number" placeholder="0"></div><div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doIncome()">Record</button></div>`;
-      else if (type === 'target') h = `<div class="stit">Weekly Target</div><div class="fld"><label>Amount</label><input id="tgtAmt" type="number" placeholder="0" value="${S.weeklyTarget||''}"></div><div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doTarget()">Save</button></div>`;
-      else if (type === 'ob' || type === 'editob') {
-        const ed = editId ? S.obligations.find(o => o.id === editId) : null;
-        if (ed) S.obType = ed.type;
-        h = `<div class="stit">${ed?'Edit':'Add'} Obligation</div><div class="fld"><label>Name</label><input id="obName" placeholder="Rent, DSTV…" value="${ed?ed.name:''}"></div><div class="fld"><label>Amount</label><input id="obAmt" type="number" placeholder="0" value="${ed?ed.amt:''}"></div><div class="fld"><label>Type</label><div class="togrow"><button class="tog${S.obType==='once'?' on':''}" id="tog-once" onclick="setObt('once')">One-time</button><button class="tog${S.obType==='recurring'?' on':''}" id="tog-rec" onclick="setObt('recurring')">Monthly</button></div></div><div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="${ed?`doEditOb('${ed.id}')`:'doOb()'}">${ed?'Update':'Add'}</button></div>`;
-      } else if (type === 'expense') h = `<div class="stit">Log Expense</div><div class="fld"><label>Description</label><input id="expName" placeholder="What did you spend on?"></div><div class="fld"><label>Amount</label><input id="expAmt" type="number" placeholder="0"></div><div class="fld"><label>Category</label><select id="expCat"><option>🍛 Food</option><option>🚌 Transport</option><option>📱 Airtime</option><option>🛒 Shopping</option></select></div><div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doExpense()">Save</button></div>`;
-      else if (type === 'settings') h = `<div class="stit">Settings</div><div class="fld"><label>Pay Date</label><select id="pdIn">${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${(S.settings.payDay||10)==i+1?'selected':''}>${i+1}</option>`).join('')}</select></div><div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doSettings()">Save</button></div>`;
-      document.getElementById('shBody').innerHTML = h;
-    }
-    window.openModal = openModal;
-    window.closeModal = function() { document.getElementById('ov').classList.remove('open'); };
-    window.setObt = function(t) { S.obType = t; document.getElementById('tog-once').classList.toggle('on', t==='once'); document.getElementById('tog-rec').classList.toggle('on', t==='recurring'); };
-    document.getElementById('ov').addEventListener('click', e => { if (e.target === document.getElementById('ov')) closeModal(); });
-
-    async function doIncome() {
-      const v = Number(document.getElementById('incAmt').value);
-      if (!v || v <= 0) { toast('Enter amount'); return; }
-      const src = document.getElementById('incSrc').value, desc = document.getElementById('incDesc').value.trim() || src;
-      S.salary += v; S.confirmed = false; S.confirmedAt = null;
-      entry('💰',`${src}: ${desc}`,`TZS ${FMT(v)}`,'income');
-      closeModal(); renderAll();
-      await api({ action: 'SAVE_INCOME', source: src, description: desc, amount: v, recurring: src==='Salary'?'monthly':'once' });
-      toast('✓ Saved');
-    }
-    async function doTarget() {
-      const v = Number(document.getElementById('tgtAmt').value);
-      if (!v || v <= 0) { toast('Enter amount'); return; }
-      S.weeklyTarget = v; entry('🎯','Weekly target',`TZS ${FMT(v)}`,'system');
-      closeModal(); renderAll();
-      await api({ action: 'SAVE_TARGET', weeklyTarget: v }); toast('✓ Target saved');
-    }
-    async function doOb() {
-      const name = document.getElementById('obName').value.trim(), amt = Number(document.getElementById('obAmt').value);
-      if (!name || !amt) { toast('Fill fields'); return; }
-      S.obligations.push({ id: String(Date.now()), name, amt, type: S.obType, status: 'pending' });
-      entry('⚙️',`Obligation: ${name}`,`TZS ${FMT(amt)}`,'system');
-      closeModal(); renderObs(); renderSalCard();
-      await api({ action: 'SAVE_OBLIGATION', id: String(Date.now()), name, amount: amt, type: S.obType, status: 'pending' });
-      toast('✓ Saved');
-    }
-    async function doEditOb(id) {
-      const name = document.getElementById('obName').value.trim(), amt = Number(document.getElementById('obAmt').value);
-      if (!name || !amt) { toast('Fill fields'); return; }
-      const ob = S.obligations.find(o => o.id === id); if (!ob) return;
-      ob.name = name; ob.amt = amt; ob.type = S.obType;
-      entry('✏️',`Updated: ${name}`,`TZS ${FMT(amt)}`,'system');
-      closeModal(); renderObs(); renderSalCard();
-      await api({ action: 'SAVE_OBLIGATION', id, name, amount: amt, type: S.obType, status: ob.status });
-      toast('✓ Updated');
-    }
-    async function settleOb(id) {
-      const ob = S.obligations.find(o => o.id === id); if (!ob || ob.status === 'settled') return;
-      ob.status = 'settled'; entry('✅',`Settled: ${ob.name}`,`TZS ${FMT(ob.amt)}`,'income');
-      renderObs(); renderSalCard(); renderAlerts();
-      await api({ action: 'SETTLE_OBLIGATION', id }); toast('✓ Settled');
-    }
-    async function deleteOb(id) {
-      if (!confirm('Delete obligation?')) return;
-      S.obligations = S.obligations.filter(o => o.id !== id);
-      entry('🗑️','Deleted obligation','','system');
-      renderObs(); renderSalCard(); renderAlerts();
-      await api({ action: 'DELETE_OBLIGATION', id }); toast('✓ Deleted');
-    }
-    async function doExpense() {
-      const name = document.getElementById('expName').value.trim(), amt = Number(document.getElementById('expAmt').value), cat = document.getElementById('expCat').value;
-      if (!name || !amt) { toast('Fill fields'); return; }
-      S.expenses.push({ name, cat, amt });
-      entry(cat.split(' ')[0], name, `TZS ${FMT(amt)} · ${cat}`, 'expense');
-      closeModal(); renderAll();
-      await api({ action: 'SAVE_EXPENSE', description: name, category: cat, amount: amt }); toast('✓ Saved');
-    }
-    async function doSettings() {
-      S.settings.payDay = Number(document.getElementById('pdIn').value);
-      closeModal(); updatePayDay();
-      await api({ action: 'SAVE_SETTING', key: 'payDay', value: S.settings.payDay }); toast('✓ Saved');
-    }
-
-    function renderObs() {
-      const wrap = document.getElementById('obList'), pend = S.obligations.filter(o => o.status==='pending').length;
-      document.getElementById('obBadge').textContent = `${pend} pending`;
-      if (!S.obligations.length) { wrap.innerHTML = '<div class="ob-empty">No obligations</div>'; return; }
-      const overdue = S.confirmed && S.confirmedAt && (Date.now() - new Date(S.confirmedAt).getTime()) >= 86400000;
-      wrap.innerHTML = S.obligations.map(o => {
-        const dc = o.status==='settled' ? 'settled' : (overdue && o.status==='pending' ? 'overdue' : 'pending');
-        return `<div class="ob-row"><div class="od ${dc}"></div><div class="oi"><div class="on">${o.name}</div><div class="om"><span class="otag ${o.type==='recurring'?'r':'o'}">${o.type==='recurring'?'↻ Monthly':'✕ Once'}</span></div></div><div class="oamt">TZS ${FMT(o.amt)}</div><div class="ob-actions">${o.status!=='settled'?`<button class="osb pend" onclick="settleOb('${o.id}')">Pay</button>`:`<button class="osb done">✓</button>`}<button class="oedit" onclick="openModal('editob','${o.id}')">✏️</button><button class="odel" onclick="deleteOb('${o.id}')">✕</button></div></div>`;
-      }).join('');
-    }
-
-    function renderEntries() {
-      document.getElementById('enCount').textContent = S.entries.length + ' entries';
-      document.getElementById('enList').innerHTML = S.entries.length ? S.entries.map(e => `<div class="en"><div class="eico ei-${e.type}">${e.icon}</div><div class="ei"><div class="em">${e.msg}</div><div class="es">${e.sub}</div></div><div class="et">${e.t}</div></div>`).join('') : '<div class="en-empty">📊 No transactions</div>';
-    }
-
-    function renderHero() {
-      const spent = S.expenses.reduce((s,e) => s+e.amt, 0), rem = S.weeklyTarget - spent, ratio = spent / (S.weeklyTarget||1), pct = Math.min(ratio*100,100);
-      document.getElementById('wkRem').textContent = FMT(Math.max(rem,0));
-      document.getElementById('wkSpent').textContent = FMT(spent);
-      document.getElementById('wkTgt').textContent = FMT(S.weeklyTarget);
-      document.getElementById('progFill').style.width = pct + '%';
-      document.getElementById('progPct').textContent = pct.toFixed(0) + '%';
-      const score = S.weeklyTarget===0 ? null : (rem<0 ? 20 : ratio>.8 ? 50 : ratio>.6 ? 70 : 90);
-      document.getElementById('scoreVal').textContent = score ?? '—';
-      document.getElementById('salDisp').textContent = S.salary > 0 ? FMT(S.salary) : '—';
-    }
-
-    function entry(icon, msg, sub, type) {
-      S.entries.unshift({ icon, msg, sub, type, t: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) });
-      renderEntries();
-    }
-
-    function renderAll() { renderHero(); renderSalCard(); renderObs(); renderEntries(); updatePayDay(); renderAlerts(); }
-    window.settleOb = settleOb; window.deleteOb = deleteOb; window.doOb = doOb; window.doEditOb = doEditOb;
-    window.doIncome = doIncome; window.doTarget = doTarget; window.doExpense = doExpense; window.doSettings = doSettings;
-
-    let _tt;
-    function toast(msg, err) {
-      const el = document.getElementById('toast'); el.textContent = msg; el.className = 'toast show' + (err ? ' err' : '');
-      clearTimeout(_tt); _tt = setTimeout(() => el.className = 'toast', 3000);
-    }
-    window.toast = toast;
-
-    setInterval(() => { renderAlerts(); renderObs(); }, 300000);
-    renderAll(); load();
-  })();
-</script>
-</body>
-</html>
+      
+      // Save to API
+      try {
+        await api({ action: 'SAVE_SETTING', key: 'confirmedAt', value: S.confirmedAt }, true
