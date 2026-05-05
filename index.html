@@ -16,7 +16,6 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--bd);background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-/* BG */
 .bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .blob{position:absolute;border-radius:50%;filter:blur(110px);opacity:.08;animation:drift 16s ease-in-out infinite alternate}
 .b1{width:480px;height:480px;background:#1d4ed8;top:-140px;right:-140px}
@@ -41,27 +40,22 @@ header{position:sticky;top:0;z-index:90;background:rgba(7,9,16,.9);backdrop-filt
 .gear-btn{all:unset;cursor:pointer;width:32px;height:32px;border-radius:10px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;transition:border-color .2s}
 .gear-btn:hover{border-color:var(--border-hi)}
 
-/* SYNC status bar */
-.sync-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sync-bar{display:flex;align-items:center;gap:8px}
 .inc-tiles{display:flex;gap:8px;flex:1}
 .inc-tile{flex:1;display:flex;flex-direction:column;justify-content:center;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.12);border-radius:10px;padding:7px 12px}
 .inc-tile.teal-tile{background:rgba(45,212,191,.05);border-color:rgba(45,212,191,.12)}
 .it-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:3px}
 .it-val{font-family:var(--hd);font-size:14px;font-weight:700;color:var(--blue);letter-spacing:-.01em}
 .it-val.teal{color:var(--teal)}
-.it-val .pfx{font-size:9px;color:var(--sub);font-weight:400;margin-right:2px}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--sub);margin-left:10px;flex-shrink:0;transition:background .4s}
-.sync-dot.syncing{background:var(--amber);animation:pulse .8s ease-in-out infinite alternate}
+.it-val .cp{font-size:9px;color:var(--sub);font-weight:400;margin-right:2px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--sub);flex-shrink:0;transition:background .4s}
+.sync-dot.syncing{background:var(--amber);animation:pulse .7s ease-in-out infinite alternate}
 .sync-dot.ok{background:var(--green)}
 .sync-dot.err{background:var(--red)}
-@keyframes pulse{from{opacity:.4}to{opacity:1}}
+@keyframes pulse{from{opacity:.3}to{opacity:1}}
 
 /* PAGE */
 .page{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:14px 14px 80px}
-
-/* SKELETON */
-.skeleton{border-radius:13px;background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
-@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 
 /* PAY BANNER */
 .pay-banner{display:none;align-items:center;justify-content:space-between;background:rgba(45,212,191,.06);border:1px solid rgba(45,212,191,.18);border-radius:13px;padding:10px 14px;margin-bottom:11px}
@@ -113,7 +107,7 @@ header{position:sticky;top:0;z-index:90;background:rgba(7,9,16,.9);backdrop-filt
 .ob-dot.settled{background:var(--green)}
 .ob-info{flex:1;min-width:0}
 .ob-name{font-size:13px;font-weight:500}
-.ob-meta{font-size:10px;color:var(--sub);margin-top:2px;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.ob-meta{font-size:10px;color:var(--sub);margin-top:2px;display:flex;gap:5px;align-items:center}
 .ob-tag{padding:2px 6px;border-radius:99px;font-size:9px;letter-spacing:.05em;text-transform:uppercase}
 .ob-tag.recurring{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
 .ob-tag.once{background:rgba(251,191,36,.08);color:var(--amber);border:1px solid rgba(251,191,36,.18)}
@@ -201,24 +195,22 @@ select option{background:#0d1117}
       <button class="gear-btn" onclick="openModal('settings')">⚙️</button>
     </div>
   </div>
-
   <div class="sync-bar">
     <div class="inc-tiles">
       <div class="inc-tile">
         <div class="it-label">Monthly Income</div>
-        <div class="it-val"><span class="pfx">TZS </span><span id="salaryDisplay">—</span></div>
+        <div class="it-val"><span class="cp">TZS </span><span id="salaryDisplay">—</span></div>
       </div>
       <div class="inc-tile teal-tile">
         <div class="it-label">Next Pay Day</div>
         <div class="it-val teal" id="nextPayDisplay">—</div>
       </div>
     </div>
-    <div class="sync-dot syncing" id="syncDot" title="Sync status"></div>
+    <div class="sync-dot syncing" id="syncDot" title="Cloud sync status"></div>
   </div>
 </header>
 
 <div class="page">
-
   <div class="pay-banner" id="payBanner">
     <div class="pb-left" id="payBannerText"></div>
     <div class="pb-right" id="payBannerSub"></div>
@@ -285,7 +277,6 @@ select option{background:#0d1117}
       <div class="act-empty"><div class="ee">📊</div>No transactions yet.<br>Add your income to begin.</div>
     </div>
   </div>
-
 </div>
 
 <div class="overlay" id="overlay">
@@ -294,170 +285,135 @@ select option{background:#0d1117}
 <div class="toast" id="toast"></div>
 
 <script>
-/* ════════════════════════════════
+/* ══════════════════════════════
    CONFIG
-════════════════════════════════ */
+══════════════════════════════ */
 const API = "https://script.google.com/macros/s/AKfycbzsL1hm4qVplfGEBVyWvchauv9vzxt4RDzOUvwC1Aw9kqr6vos6X4jJ3jFJdKtfz_FtEQ/exec";
-const FMT = n => Number(n||0).toLocaleString('en');
-const CACHE_KEY = "mf_cache_v1";
+const FMT  = n => Number(n||0).toLocaleString('en');
+const enc  = encodeURIComponent;
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    STATE
-════════════════════════════════ */
+══════════════════════════════ */
 let S = {
-  salary:       0,
-  weeklyTarget: 0,
-  obligations:  [],
-  expenses:     [],
-  entries:      [],
-  settings:     { payDay: 10 },
-  obType:       'recurring'
+  salary:0, weeklyTarget:0,
+  obligations:[], expenses:[], entries:[],
+  settings:{payDay:10}, obType:'recurring'
 };
 
-/* ════════════════════════════════
-   CACHE — sessionStorage only
-   (avoids stale data across days)
-════════════════════════════════ */
-function cacheLoad() {
-  try {
-    const raw = sessionStorage.getItem(CACHE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return null;
+/* ══════════════════════════════
+   API — all via GET params
+   No CORS issues with Apps Script
+══════════════════════════════ */
+function buildUrl(params) {
+  const qs = Object.entries(params)
+    .map(([k,v]) => `${enc(k)}=${enc(String(v))}`)
+    .join('&');
+  return `${API}?${qs}&_=${Date.now()}`;
 }
 
-function cacheSave(data) {
-  try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e) {}
-}
-
-/* ════════════════════════════════
-   SYNC DOT
-════════════════════════════════ */
-function syncState(state) { // 'syncing' | 'ok' | 'err'
-  const d = document.getElementById('syncDot');
-  d.className = 'sync-dot ' + state;
-}
-
-/* ════════════════════════════════
-   CLOUD SAVE
-════════════════════════════════ */
-async function cloudSave(data) {
+async function apiCall(params) {
   syncState('syncing');
   try {
-    const res = await fetch(API, {
-      method:"POST",
-      body: JSON.stringify(data),
-      headers:{"Content-Type":"application/json"}
-    });
-    const j = await res.json();
-    if (j.success) {
-      syncState('ok');
-      showToast("✓ Saved to Google Sheets");
-    } else {
-      syncState('err');
-      showToast("⚠ Save error", true);
-    }
+    const res = await fetch(buildUrl(params), { redirect:'follow' });
+    const text = await res.text();
+    // Apps Script sometimes wraps in callback — strip if needed
+    const clean = text.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, '');
+    const data  = JSON.parse(clean);
+    if (data.success !== false) syncState('ok');
+    else syncState('err');
+    return data;
   } catch(e) {
     syncState('err');
-    showToast("⚠ No connection — not saved", true);
+    throw e;
   }
 }
 
-/* ════════════════════════════════
-   CLOUD LOAD — full sync
-════════════════════════════════ */
-async function cloudLoad(silent) {
-  if (!silent) syncState('syncing');
-  try {
-    const res  = await fetch(API + "?v=" + Date.now());
-    const data = await res.json();
-    if (!data.success) { syncState('err'); return; }
+/* ══════════════════════════════
+   SYNC DOT
+══════════════════════════════ */
+function syncState(s) {
+  document.getElementById('syncDot').className = 'sync-dot ' + s;
+}
 
-    // ── restore state ──
+/* ══════════════════════════════
+   CLOUD LOAD
+══════════════════════════════ */
+async function cloudLoad() {
+  syncState('syncing');
+  try {
+    const data = await apiCall({ action:'LOAD' });
+    if (!data.success) { syncState('err'); showToast('⚠ Could not load data', true); return; }
+
     S.salary       = Number(data.totalIncome) || 0;
     S.weeklyTarget = Number(data.weeklyTarget) || 0;
-    if (data.settings && data.settings.payDay) {
-      S.settings.payDay = Number(data.settings.payDay);
-    }
+    if (data.settings?.payDay) S.settings.payDay = Number(data.settings.payDay);
 
-    // obligations
-    S.obligations = (data.obligations||[]).map(o => ({
-      id:     String(o.id),
-      name:   o.name,
-      amt:    Number(o.amount)||0,
-      type:   o.type,
-      status: o.status
+    S.obligations = (data.obligations||[]).map(o=>({
+      id:String(o.id), name:o.name, amt:Number(o.amount)||0, type:o.type, status:o.status
     }));
 
-    // expenses (this week)
-    S.expenses = (data.expenses||[]).map(e => ({
-      name: e.description,
-      cat:  e.category,
-      amt:  Number(e.amount)||0
+    S.expenses = (data.expenses||[]).map(e=>({
+      name:e.description, cat:e.category, amt:Number(e.amount)||0
     }));
 
-    // rebuild activity entries
     S.entries = [];
-    (data.income||[]).forEach(i => {
-      S.entries.push({ icon:'💰', msg:`${i.source}: ${i.description}`, sub:`TZS ${FMT(i.amount)}`, type:'income', t: fmtTs(i.timestamp) });
-    });
-    (data.expenses||[]).forEach(e => {
-      S.entries.push({ icon: e.category?e.category.split(' ')[0]:'🧾', msg:e.description, sub:`TZS ${FMT(e.amount)} · ${e.category}`, type:'expense', t: fmtTs(e.timestamp) });
-    });
+    (data.income||[]).forEach(i => S.entries.push({
+      icon:'💰', msg:`${i.source}: ${i.description}`,
+      sub:`TZS ${FMT(i.amount)}`, type:'income', t:fmtTs(i.timestamp)
+    }));
+    (data.expenses||[]).forEach(e => S.entries.push({
+      icon:e.category?e.category.split(' ')[0]:'🧾',
+      msg:e.description, sub:`TZS ${FMT(e.amount)} · ${e.category}`,
+      type:'expense', t:fmtTs(e.timestamp)
+    }));
     S.entries.sort((a,b) => b.t.localeCompare(a.t));
-
-    // cache it
-    cacheSave({ salary:S.salary, weeklyTarget:S.weeklyTarget, obligations:S.obligations, expenses:S.expenses, entries:S.entries, settings:S.settings });
 
     renderAll();
     syncState('ok');
 
   } catch(e) {
     syncState('err');
-    if (!silent) showToast("⚠ Sync failed: " + e.message, true);
+    showToast('⚠ Sync failed — check connection', true);
   }
 }
 
 function fmtTs(ts) {
   if (!ts) return '';
   try { return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
-  catch(e){ return String(ts).slice(11,16)||''; }
+  catch(e){ return ''; }
 }
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    PAY DAY
-════════════════════════════════ */
+══════════════════════════════ */
 function updatePayDay() {
-  const today  = new Date();
-  const payDay = Number(S.settings.payDay)||10;
-  let next = new Date(today.getFullYear(), today.getMonth(), payDay);
-  if (next <= today) next = new Date(today.getFullYear(), today.getMonth()+1, payDay);
-  const diff  = Math.ceil((next - today) / 86400000);
-  const label = next.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  document.getElementById('nextPayDisplay').textContent = `${label} (${diff}d)`;
-  const banner = document.getElementById('payBanner');
-  if (diff <= 3) {
-    banner.classList.add('show');
-    document.getElementById('payBannerText').textContent = diff===0?'🎉 Pay day today!':`🗓 Pay day in ${diff} day${diff>1?'s':''}`;
-    document.getElementById('payBannerSub').textContent  = label;
-  } else {
-    banner.classList.remove('show');
-  }
+  const today=new Date(), pd=Number(S.settings.payDay)||10;
+  let next=new Date(today.getFullYear(),today.getMonth(),pd);
+  if(next<=today) next=new Date(today.getFullYear(),today.getMonth()+1,pd);
+  const diff=Math.ceil((next-today)/86400000);
+  const lbl=next.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('nextPayDisplay').textContent=`${lbl} (${diff}d)`;
+  const b=document.getElementById('payBanner');
+  if(diff<=3){
+    b.classList.add('show');
+    document.getElementById('payBannerText').textContent=diff===0?'🎉 Pay day today!':`🗓 Pay day in ${diff} day${diff>1?'s':''}`;
+    document.getElementById('payBannerSub').textContent=lbl;
+  } else b.classList.remove('show');
 }
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    MODAL
-════════════════════════════════ */
+══════════════════════════════ */
 function openModal(type) {
-  S.obType = 'recurring';
+  S.obType='recurring';
   document.getElementById('overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  let html = '';
+  document.body.style.overflow='hidden';
+  let html='';
 
-  if (type==='income') html = `
+  if(type==='income') html=`
     <div class="sheet-title">Record Income</div>
-    <div class="field">
-      <label>Income Source</label>
+    <div class="field"><label>Income Source</label>
       <select id="incSrc">
         <option value="Salary">💼 Salary</option>
         <option value="Business">🏪 Business</option>
@@ -469,14 +425,11 @@ function openModal(type) {
         <option value="Other">💬 Other</option>
       </select>
     </div>
-    <div class="field">
-      <label>Description <span style="font-size:9px;color:var(--sub)">(optional)</span></label>
+    <div class="field"><label>Description <span style="font-size:9px;color:var(--sub)">(optional)</span></label>
       <input id="incDesc" placeholder="e.g. March salary, Shop revenue…">
     </div>
-    <div class="field">
-      <label>Amount</label>
-      <div class="input-wrap">
-        <span class="ipfx">TZS</span>
+    <div class="field"><label>Amount</label>
+      <div class="input-wrap"><span class="ipfx">TZS</span>
         <input class="pp" id="incAmt" type="number" inputmode="numeric" placeholder="0" autofocus>
       </div>
     </div>
@@ -485,13 +438,11 @@ function openModal(type) {
       <button class="btn-ok" onclick="doIncome()">Record 💰</button>
     </div>`;
 
-  else if (type==='target') html = `
+  else if(type==='target') html=`
     <div class="sheet-title">Set Weekly Target</div>
-    <p class="hint">Your personal weekly spending goal — separate from obligations. Only counts day-to-day expenses.</p>
-    <div class="field">
-      <label>Weekly Spending Target</label>
-      <div class="input-wrap">
-        <span class="ipfx">TZS</span>
+    <p class="hint">Your personal weekly spending goal — separate from obligations.</p>
+    <div class="field"><label>Weekly Spending Target</label>
+      <div class="input-wrap"><span class="ipfx">TZS</span>
         <input class="pp" id="tgtAmt" type="number" inputmode="numeric" placeholder="0" autofocus value="${S.weeklyTarget||''}">
       </div>
     </div>
@@ -500,22 +451,18 @@ function openModal(type) {
       <button class="btn-ok" onclick="doTarget()">Save Target 🎯</button>
     </div>`;
 
-  else if (type==='ob') html = `
+  else if(type==='ob') html=`
     <div class="sheet-title">Add Obligation</div>
-    <p class="hint">Obligations are settled immediately when salary arrives. Mark each as paid once done.</p>
-    <div class="field">
-      <label>Name</label>
+    <p class="hint">Settled immediately when salary arrives. Mark as paid once done.</p>
+    <div class="field"><label>Name</label>
       <input id="obName" placeholder="e.g. Rent, School fees, DSTV…" autofocus>
     </div>
-    <div class="field">
-      <label>Amount</label>
-      <div class="input-wrap">
-        <span class="ipfx">TZS</span>
+    <div class="field"><label>Amount</label>
+      <div class="input-wrap"><span class="ipfx">TZS</span>
         <input class="pp" id="obAmt" type="number" inputmode="numeric" placeholder="0">
       </div>
     </div>
-    <div class="field">
-      <label>Payment Type</label>
+    <div class="field"><label>Payment Type</label>
       <div class="toggle-row">
         <button class="tog" id="tog-once" onclick="setObType('once')">One-time</button>
         <button class="tog on" id="tog-rec" onclick="setObType('recurring')">Monthly</button>
@@ -526,32 +473,23 @@ function openModal(type) {
       <button class="btn-ok" onclick="doOb()">Add Obligation</button>
     </div>`;
 
-  else if (type==='expense') html = `
+  else if(type==='expense') html=`
     <div class="sheet-title">Log Expense</div>
-    <div class="field">
-      <label>Description</label>
+    <div class="field"><label>Description</label>
       <input id="expName" placeholder="What did you spend on?" autofocus>
     </div>
-    <div class="field">
-      <label>Amount</label>
-      <div class="input-wrap">
-        <span class="ipfx">TZS</span>
+    <div class="field"><label>Amount</label>
+      <div class="input-wrap"><span class="ipfx">TZS</span>
         <input class="pp" id="expAmt" type="number" inputmode="numeric" placeholder="0">
       </div>
     </div>
-    <div class="field">
-      <label>Category</label>
+    <div class="field"><label>Category</label>
       <select id="expCat">
-        <option>🍛 Food</option>
-        <option>🚌 Transport</option>
-        <option>👨‍👩‍👧 Family</option>
-        <option>💼 Business</option>
-        <option>🎉 Leisure</option>
-        <option>🏥 Health</option>
-        <option>📱 Airtime / Data</option>
-        <option>🏫 Education</option>
-        <option>🛒 Shopping</option>
-        <option>💡 Utilities</option>
+        <option>🍛 Food</option><option>🚌 Transport</option>
+        <option>👨‍👩‍👧 Family</option><option>💼 Business</option>
+        <option>🎉 Leisure</option><option>🏥 Health</option>
+        <option>📱 Airtime / Data</option><option>🏫 Education</option>
+        <option>🛒 Shopping</option><option>💡 Utilities</option>
       </select>
     </div>
     <div class="sheet-actions">
@@ -559,134 +497,151 @@ function openModal(type) {
       <button class="btn-ok" onclick="doExpense()">Save Expense ↓</button>
     </div>`;
 
-  else if (type==='settings') {
-    const pd = S.settings.payDay||10;
-    html = `
+  else if(type==='settings'){
+    const pd=S.settings.payDay||10;
+    html=`
     <div class="sheet-title">⚙️ Settings</div>
-    <div class="field">
-      <label>Monthly Pay Date</label>
+    <div class="field"><label>Monthly Pay Date</label>
       <select id="payDayIn">
         ${Array.from({length:28},(_,i)=>{
-          const n=i+1; const s=n>3&&n<21?'th':[,'st','nd','rd'][n%10]||'th';
-          return `<option value="${n}" ${pd==n?'selected':''}>${n}${s} of every month</option>`;
+          const n=i+1,s=n>3&&n<21?'th':[,'st','nd','rd'][n%10]||'th';
+          return `<option value="${n}"${pd==n?' selected':''}>${n}${s} of every month</option>`;
         }).join('')}
       </select>
     </div>
-    <p class="hint">The app counts down to your next pay day and shows a banner when it's within 3 days.</p>
+    <p class="hint">App shows a countdown and banner when pay day is within 3 days.</p>
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-ok" onclick="doSettings()">Save Settings</button>
     </div>`;
   }
 
-  document.getElementById('sheetBody').innerHTML = html;
+  document.getElementById('sheetBody').innerHTML=html;
 }
 
-function closeModal() {
+function closeModal(){
   document.getElementById('overlay').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';
 }
-document.getElementById('overlay').addEventListener('click', e => { if(e.target===document.getElementById('overlay')) closeModal(); });
+document.getElementById('overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('overlay')) closeModal();
+});
 
-function setObType(t) {
-  S.obType = t;
-  document.getElementById('tog-once').classList.toggle('on', t==='once');
-  document.getElementById('tog-rec').classList.toggle('on',  t==='recurring');
+function setObType(t){
+  S.obType=t;
+  document.getElementById('tog-once').classList.toggle('on',t==='once');
+  document.getElementById('tog-rec').classList.toggle('on',t==='recurring');
 }
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    ACTIONS
-════════════════════════════════ */
-function doIncome() {
-  const v = Number(document.getElementById('incAmt').value);
-  if (!v||v<=0) { showToast("Enter a valid amount"); return; }
-  const src  = document.getElementById('incSrc').value;
-  const desc = document.getElementById('incDesc').value.trim() || src;
-  S.salary += v;
-  document.getElementById('salaryDisplay').textContent = FMT(S.salary);
-  addEntry('💰', `${src}: ${desc}`, `TZS ${FMT(v)}`, 'income');
-  cloudSave({ action:"SAVE_INCOME", source:src, description:desc, amount:v, recurring: src==='Salary'?'monthly':'once' });
+══════════════════════════════ */
+async function doIncome(){
+  const v=Number(document.getElementById('incAmt').value);
+  if(!v||v<=0){showToast('Enter a valid amount');return;}
+  const src=document.getElementById('incSrc').value;
+  const desc=document.getElementById('incDesc').value.trim()||src;
+  S.salary+=v;
+  document.getElementById('salaryDisplay').textContent=FMT(S.salary);
+  addEntry('💰',`${src}: ${desc}`,`TZS ${FMT(v)}`,'income');
   closeModal(); update();
+  try {
+    await apiCall({action:'SAVE_INCOME',source:src,description:desc,amount:v,recurring:src==='Salary'?'monthly':'once'});
+    showToast('✓ Income saved to Google Sheets');
+  } catch(e){ showToast('⚠ Not saved — check connection',true); }
 }
 
-function doTarget() {
-  const v = Number(document.getElementById('tgtAmt').value);
-  if (!v||v<=0) { showToast("Enter a valid amount"); return; }
-  S.weeklyTarget = v;
+async function doTarget(){
+  const v=Number(document.getElementById('tgtAmt').value);
+  if(!v||v<=0){showToast('Enter a valid amount');return;}
+  S.weeklyTarget=v;
   addEntry('🎯','Weekly target set',`TZS ${FMT(v)} / week`,'system');
-  cloudSave({ action:"SAVE_TARGET", weeklyTarget:v });
   closeModal(); update();
+  try {
+    await apiCall({action:'SAVE_TARGET',weeklyTarget:v});
+    showToast('✓ Target saved to Google Sheets');
+  } catch(e){ showToast('⚠ Not saved — check connection',true); }
 }
 
-function doOb() {
-  const name = document.getElementById('obName').value.trim();
-  const amt  = Number(document.getElementById('obAmt').value);
-  if (!name||!amt) { showToast("Fill in name and amount"); return; }
-  const id = String(Date.now());
-  S.obligations.push({ id, name, amt, type:S.obType, status:'pending' });
+async function doOb(){
+  const name=document.getElementById('obName').value.trim();
+  const amt=Number(document.getElementById('obAmt').value);
+  if(!name||!amt){showToast('Fill in name and amount');return;}
+  const id=String(Date.now());
+  S.obligations.push({id,name,amt,type:S.obType,status:'pending'});
   addEntry('⚙️',`Obligation: ${name}`,`TZS ${FMT(amt)} · ${S.obType==='recurring'?'Monthly':'One-time'}`,'system');
-  cloudSave({ action:"SAVE_OBLIGATION", id, name, amount:amt, type:S.obType, status:'pending' });
   closeModal(); renderObs();
+  try {
+    await apiCall({action:'SAVE_OBLIGATION',id,name,amount:amt,type:S.obType,status:'pending'});
+    showToast('✓ Obligation saved');
+  } catch(e){ showToast('⚠ Not saved — check connection',true); }
 }
 
-function settleOb(id) {
-  const ob = S.obligations.find(o=>o.id===String(id));
-  if (!ob||ob.status==='settled') return;
-  ob.status = 'settled';
+async function settleOb(id){
+  const ob=S.obligations.find(o=>o.id===String(id));
+  if(!ob||ob.status==='settled') return;
+  ob.status='settled';
   addEntry('✅',`Settled: ${ob.name}`,`TZS ${FMT(ob.amt)}`,'income');
-  cloudSave({ action:"SETTLE_OBLIGATION", id:ob.id });
-  if (ob.type==='once') {
-    setTimeout(()=>{ S.obligations=S.obligations.filter(o=>o.id!==String(id)); renderObs(); },1400);
-  } else renderObs();
+  renderObs();
+  try {
+    await apiCall({action:'SETTLE_OBLIGATION',id:ob.id});
+    showToast('✓ Obligation settled');
+    if(ob.type==='once') setTimeout(()=>{ S.obligations=S.obligations.filter(o=>o.id!==String(id)); renderObs(); },1400);
+  } catch(e){ showToast('⚠ Not saved — check connection',true); }
 }
 
-function doExpense() {
-  const name = document.getElementById('expName').value.trim();
-  const amt  = Number(document.getElementById('expAmt').value);
-  const cat  = document.getElementById('expCat').value;
-  if (!name||!amt) { showToast("Fill in description and amount"); return; }
-  S.expenses.push({ name, cat, amt });
-  addEntry(cat.split(' ')[0], name, `TZS ${FMT(amt)} · ${cat}`, 'expense');
-  cloudSave({ action:"SAVE_EXPENSE", description:name, category:cat, amount:amt });
+async function doExpense(){
+  const name=document.getElementById('expName').value.trim();
+  const amt=Number(document.getElementById('expAmt').value);
+  const cat=document.getElementById('expCat').value;
+  if(!name||!amt){showToast('Fill in description and amount');return;}
+  S.expenses.push({name,cat,amt});
+  addEntry(cat.split(' ')[0],name,`TZS ${FMT(amt)} · ${cat}`,'expense');
   closeModal(); update();
+  try {
+    await apiCall({action:'SAVE_EXPENSE',description:name,category:cat,amount:amt});
+    showToast('✓ Expense saved');
+  } catch(e){ showToast('⚠ Not saved — check connection',true); }
 }
 
-function doSettings() {
-  const pd = Number(document.getElementById('payDayIn').value);
-  S.settings.payDay = pd;
-  cloudSave({ action:"SAVE_SETTING", key:"payDay", value:pd });
+async function doSettings(){
+  const pd=Number(document.getElementById('payDayIn').value);
+  S.settings.payDay=pd;
   addEntry('⚙️','Pay date updated',`${pd}th of every month`,'system');
-  updatePayDay();
-  closeModal();
+  updatePayDay(); closeModal();
+  try {
+    await apiCall({action:'SAVE_SETTING',key:'payDay',value:pd});
+    showToast('✓ Settings saved');
+  } catch(e){ showToast('⚠ Not saved — check connection',true); }
 }
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    ENGINE
-════════════════════════════════ */
-function update() {
-  const spent = S.expenses.reduce((s,e)=>s+e.amt,0);
-  const rem   = S.weeklyTarget - spent;
-  const ratio = spent / (S.weeklyTarget||1);
-  const pct   = Math.min(ratio*100,100);
+══════════════════════════════ */
+function update(){
+  const spent=S.expenses.reduce((s,e)=>s+e.amt,0);
+  const rem=S.weeklyTarget-spent;
+  const ratio=spent/(S.weeklyTarget||1);
+  const pct=Math.min(ratio*100,100);
 
-  document.getElementById('heroNum').textContent   = FMT(Math.max(rem,0));
-  document.getElementById('spentVal').textContent  = FMT(spent);
-  document.getElementById('targetVal').textContent = FMT(S.weeklyTarget);
-  document.getElementById('salaryDisplay').textContent = S.salary>0 ? FMT(S.salary) : '—';
+  document.getElementById('heroNum').textContent=FMT(Math.max(rem,0));
+  document.getElementById('spentVal').textContent=FMT(spent);
+  document.getElementById('targetVal').textContent=FMT(S.weeklyTarget);
+  document.getElementById('salaryDisplay').textContent=S.salary>0?FMT(S.salary):'—';
 
-  if (S.weeklyTarget>0) {
-    document.getElementById('heroSub').textContent = `${pct.toFixed(0)}% of weekly target used`;
-    document.getElementById('heroAmt').style.color = rem<0?'var(--red)':rem<S.weeklyTarget*.15?'var(--amber)':'var(--text)';
+  if(S.weeklyTarget>0){
+    document.getElementById('heroSub').textContent=`${pct.toFixed(0)}% of weekly target used`;
+    document.getElementById('heroAmt').style.color=rem<0?'var(--red)':rem<S.weeklyTarget*.15?'var(--amber)':'var(--text)';
   }
 
   const fill=document.getElementById('progFill');
   fill.style.width=pct+'%';
-  if (pct>90){fill.style.background='linear-gradient(90deg,var(--amber),var(--red))';fill.style.boxShadow='0 0 10px rgba(248,113,113,.45)';}
+  if(pct>90){fill.style.background='linear-gradient(90deg,var(--amber),var(--red))';fill.style.boxShadow='0 0 10px rgba(248,113,113,.45)';}
   else if(pct>70){fill.style.background='linear-gradient(90deg,var(--blue),var(--amber))';fill.style.boxShadow='0 0 10px rgba(251,191,36,.35)';}
   else{fill.style.background='linear-gradient(90deg,var(--teal),var(--blue))';fill.style.boxShadow='0 0 10px rgba(45,212,191,.4)';}
-  document.getElementById('progPct').textContent = pct.toFixed(0)+'%';
+  document.getElementById('progPct').textContent=pct.toFixed(0)+'%';
 
-  const score = S.weeklyTarget===0?null:rem<0?20:ratio>.8?50:ratio>.6?70:90;
+  const score=S.weeklyTarget===0?null:rem<0?20:ratio>.8?50:ratio>.6?70:90;
   const sv=document.getElementById('scoreVal');
   sv.textContent=score!==null?score:'—';
   sv.style.color=!score?'var(--sub)':score>=80?'var(--teal)':score>=50?'var(--amber)':'var(--red)';
@@ -696,10 +651,10 @@ function update() {
   else{rc.textContent='● Critical';rc.className='hchip hchip-risk crit';}
 }
 
-function renderObs() {
+function renderObs(){
   const wrap=document.getElementById('obList');
-  const pending=S.obligations.filter(o=>o.status==='pending').length;
-  document.getElementById('obBadge').textContent=`${pending} pending`;
+  const pend=S.obligations.filter(o=>o.status==='pending').length;
+  document.getElementById('obBadge').textContent=`${pend} pending`;
   if(!S.obligations.length){wrap.innerHTML='<div class="ob-empty">No obligations yet — tap + Add</div>';return;}
   wrap.innerHTML=S.obligations.map(o=>`
     <div class="ob-row">
@@ -717,7 +672,7 @@ function renderObs() {
     </div>`).join('');
 }
 
-function renderEntries() {
+function renderEntries(){
   document.getElementById('entryCount').textContent=S.entries.length+' entries';
   if(!S.entries.length){
     document.getElementById('actList').innerHTML='<div class="act-empty"><div class="ee">📊</div>No transactions yet.<br>Add your income to begin.</div>';
@@ -734,43 +689,31 @@ function renderEntries() {
     </div>`).join('');
 }
 
-function addEntry(icon,msg,sub,type) {
+function addEntry(icon,msg,sub,type){
   const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   S.entries.unshift({icon,msg,sub,type,t});
   renderEntries();
 }
 
-function renderAll() { update(); renderObs(); renderEntries(); updatePayDay(); }
+function renderAll(){ update(); renderObs(); renderEntries(); updatePayDay(); }
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    TOAST
-════════════════════════════════ */
-let _toastTimer;
-function showToast(msg,isErr=false) {
+══════════════════════════════ */
+let _tt;
+function showToast(msg,isErr=false){
   const el=document.getElementById('toast');
   el.textContent=msg;
   el.className='toast show'+(isErr?' err':'');
-  clearTimeout(_toastTimer);
-  _toastTimer=setTimeout(()=>el.className='toast',3000);
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>el.className='toast',3000);
 }
 
-/* ════════════════════════════════
+/* ══════════════════════════════
    INIT
-   1. Show cached data instantly
-   2. Fetch fresh from cloud in bg
-════════════════════════════════ */
-(function init() {
-  // Step 1: restore from session cache immediately (no spinner)
-  const cached = cacheLoad();
-  if (cached) {
-    Object.assign(S, cached);
-    renderAll();
-    syncState('syncing');
-  }
-
-  // Step 2: full cloud sync (silently updates UI when done)
-  cloudLoad(!!cached);
-})();
+══════════════════════════════ */
+renderAll(); // show blank UI immediately
+cloudLoad(); // sync from Google Sheets
 </script>
 </body>
 </html>
