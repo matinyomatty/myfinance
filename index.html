@@ -159,7 +159,7 @@
     </div>
   </div>
   <div class="strips">
-    <div class="strip"><div><div class="sl">Income</div><div class="sv" id="salDisp">—</div></div><div class="sdot syn" id="sdot"></div></div>
+    <div class="strip"><div><div class="sl">Income</div><div class="sv" id="salDisp">—</div></div><div class="sdot ok" id="sdot"></div></div>
     <div class="strip t"><div><div class="sl">Pay Day</div><div class="sv t" id="payDisp">—</div></div></div>
     <div class="strip g" id="balStrip"><div><div class="sl">Balance</div><div class="sv g" id="balDisp">—</div></div></div>
   </div>
@@ -199,173 +199,179 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  (function() {
-    // ⚠️ IMPORTANT: Replace this URL with your actual Google Apps Script Web App URL
-    const API = "https://script.google.com/macros/s/AKfycbwtVVB8unMf0Wc-cwaHVOMd_n-GcRnQUs57IdH3ZaszMStdF0hQbr1LyJj3AnZNZfNlbQ/exec";
-    const FMT = n => Number(n||0).toLocaleString('en');
-    const curMonth = () => new Date().toISOString().slice(0,7);
-    
-    // Local storage backup for when API fails
-    const STORAGE_KEY = 'myfinance_backup';
-    
-    let S = {
-      salary: 0, weeklyTarget: 0, obligations: [], expenses: [], entries: [],
-      settings: { payDay: 10 }, confirmed: false, confirmedAt: null, confirmedMonth: '',
-      obType: 'recurring'
-    };
+(function() {
+  // ✅ YOUR API URL
+  const API = "https://script.google.com/macros/s/AKfycbwhewdZZtWXLSBq4tExHDI1N81OFeArpVS3ufggh157KTZiMdDWhM2l5ZWiBX9GqR9V/exec";
+  const FMT = n => Number(n||0).toLocaleString('en');
+  const curMonth = () => new Date().toISOString().slice(0,7);
+  
+  const STORAGE_KEY = 'myfinance_data';
+  
+  let S = {
+    salary: 0, weeklyTarget: 0, obligations: [], expenses: [], entries: [],
+    settings: { payDay: 10 }, confirmed: false, confirmedAt: null, confirmedMonth: '',
+    obType: 'recurring'
+  };
+  
+  let syncTimeout = null;
 
-    // Load from localStorage as fallback
-    function loadLocalBackup() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const data = JSON.parse(saved);
-          if (data.salary) S.salary = data.salary;
-          if (data.weeklyTarget) S.weeklyTarget = data.weeklyTarget;
-          if (data.obligations) S.obligations = data.obligations;
-          if (data.expenses) S.expenses = data.expenses;
-          if (data.settings) S.settings = {...S.settings, ...data.settings};
-          if (data.confirmed) S.confirmed = data.confirmed;
-          if (data.confirmedAt) S.confirmedAt = data.confirmedAt;
-          if (data.confirmedMonth) S.confirmedMonth = data.confirmedMonth;
-          return true;
-        }
-      } catch(e) { console.log('No local backup'); }
-      return false;
-    }
+  // ⚡ INSTANT LOAD from localStorage
+  function loadLocalData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const d = JSON.parse(raw);
+      if (d.salary !== undefined) S.salary = d.salary;
+      if (d.weeklyTarget !== undefined) S.weeklyTarget = d.weeklyTarget;
+      if (d.obligations) S.obligations = d.obligations;
+      if (d.expenses) S.expenses = d.expenses;
+      if (d.settings) S.settings = {...S.settings, ...d.settings};
+      if (d.confirmed !== undefined) S.confirmed = d.confirmed;
+      if (d.confirmedAt) S.confirmedAt = d.confirmedAt;
+      if (d.confirmedMonth) S.confirmedMonth = d.confirmedMonth;
+      if (d.entries) S.entries = d.entries;
+      return true;
+    } catch(e) { return false; }
+  }
 
-    function saveLocalBackup() {
-      try {
-        const data = {
-          salary: S.salary,
-          weeklyTarget: S.weeklyTarget,
-          obligations: S.obligations,
-          expenses: S.expenses,
-          settings: S.settings,
-          confirmed: S.confirmed,
-          confirmedAt: S.confirmedAt,
-          confirmedMonth: S.confirmedMonth
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch(e) { console.log('Could not save local backup'); }
-    }
+  function saveLocalData() {
+    try {
+      const d = {
+        salary: S.salary, weeklyTarget: S.weeklyTarget,
+        obligations: S.obligations, expenses: S.expenses,
+        settings: S.settings, confirmed: S.confirmed,
+        confirmedAt: S.confirmedAt, confirmedMonth: S.confirmedMonth,
+        entries: S.entries.slice(0, 50)
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+    } catch(e) {}
+  }
 
-    function url(p) { 
-      return API + '?' + Object.entries(p).map(([k,v]) => 
-        encodeURIComponent(k) + '=' + encodeURIComponent(String(v ?? ''))
-      ).join('&') + '&_=' + Date.now(); 
-    }
-    
-    async function api(p, silent = false) {
-      dot('syn');
-      try {
-        const r = await fetch(url(p), { redirect: 'follow' });
-        const t = await r.text();
-        console.log('API Raw Response:', t);
-        const cleaned = t.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, '');
-        const j = JSON.parse(cleaned);
-        dot(j.success !== false ? 'ok' : 'err');
-        if (!silent && j.success === false) {
-          console.warn('API returned success:false', j);
-        }
-        return j;
-      } catch(e) { 
-        dot('err'); 
-        console.error('API call failed:', p, e);
-        if (!silent) saveLocalBackup(); // Save locally if API fails
-        throw e; 
-      }
-    }
-    
-    function dot(s) { 
-      const el = document.getElementById('sdot');
-      if (el) el.className = 'sdot ' + s; 
-    }
+  // 🔄 Background sync
+  function scheduleSync(delay = 1000) {
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(syncWithServer, delay);
+  }
 
-    async function load() {
-      // First try to load from local backup for instant display
-      loadLocalBackup();
-      renderAll();
+  async function syncWithServer() {
+    try {
+      const payload = {
+        action: 'SYNC_ALL',
+        salary: S.salary,
+        weeklyTarget: S.weeklyTarget,
+        obligations: JSON.stringify(S.obligations),
+        expenses: JSON.stringify(S.expenses),
+        settings: JSON.stringify(S.settings),
+        confirmedAt: S.confirmedAt || '',
+        confirmedMonth: S.confirmedMonth || ''
+      };
       
-      try {
-        const d = await api({ action: 'LOAD' }, true);
-        if (!d || !d.success) {
-          console.log('API load failed, using local data');
-          toast('📱 Using local data', false);
-          renderAll();
-          return;
-        }
+      const r = await fetch(API + '?' + new URLSearchParams(payload).toString() + '&_=' + Date.now());
+      if (r.ok) {
+        document.getElementById('sdot').className = 'sdot ok';
+        console.log('✅ Synced');
+      }
+    } catch(e) {
+      document.getElementById('sdot').className = 'sdot err';
+      console.log('⚠️ Sync failed, retrying...');
+      setTimeout(syncWithServer, 10000);
+    }
+  }
+
+  async function loadFromServer() {
+    try {
+      const r = await fetch(API + '?action=LOAD&_=' + Date.now());
+      const t = await r.text();
+      const j = JSON.parse(t.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, ''));
+      
+      if (j && j.success !== false) {
+        if (j.totalIncome !== undefined) S.salary = Number(j.totalIncome) || 0;
+        if (j.weeklyTarget !== undefined) S.weeklyTarget = Number(j.weeklyTarget) || 0;
         
-        S.salary = Number(d.totalIncome) || 0;
-        S.weeklyTarget = Number(d.weeklyTarget) || 0;
-        const cfg = d.settings || {};
+        const cfg = j.settings || {};
         if (cfg.payDay) S.settings.payDay = Number(cfg.payDay);
         if (cfg.confirmedAt) S.confirmedAt = cfg.confirmedAt;
         if (cfg.confirmedMonth) S.confirmedMonth = cfg.confirmedMonth;
         S.confirmed = (S.confirmedMonth === curMonth());
         
-        S.obligations = (d.obligations || []).map(o => ({ 
-          id: String(o.id), 
-          name: o.name, 
-          amt: Number(o.amount)||0, 
-          type: o.type || 'recurring', 
-          status: o.status || 'pending' 
+        if (j.obligations) S.obligations = j.obligations.map(o => ({
+          id: String(o.id), name: o.name, amt: Number(o.amount)||0,
+          type: o.type || 'recurring', status: o.status || 'pending'
         }));
         
-        S.expenses = (d.expenses || []).map(e => ({ 
-          name: e.description || e.name || '', 
-          cat: e.category || e.cat || '', 
-          amt: Number(e.amount)||0 
+        if (j.expenses) S.expenses = j.expenses.map(e => ({
+          name: e.description || e.name || '', cat: e.category || e.cat || '',
+          amt: Number(e.amount)||0
         }));
         
         S.entries = [];
-        (d.income||[]).forEach(i => S.entries.push({ 
-          icon:'💰', 
-          msg:`${i.source||'Income'}: ${i.description||''}`, 
-          sub:`TZS ${FMT(i.amount)}`, 
-          type:'income', 
-          t: fts(i.timestamp) 
+        (j.income||[]).forEach(i => S.entries.push({
+          icon:'💰', msg:`${i.source||'Income'}: ${i.description||''}`,
+          sub:`TZS ${FMT(i.amount)}`, type:'income', t: fts(i.timestamp)
         }));
-        (d.expenses||[]).forEach(e => S.entries.push({ 
-          icon: (e.category||'🧾').split(' ')[0], 
-          msg: e.description || e.name || '', 
-          sub:`TZS ${FMT(e.amount)} · ${e.category||''}`, 
-          type:'expense', 
-          t: fts(e.timestamp) 
+        (j.expenses||[]).forEach(e => S.entries.push({
+          icon: (e.category||'🧾').split(' ')[0], msg: e.description||'',
+          sub:`TZS ${FMT(e.amount)}`, type:'expense', t: fts(e.timestamp)
         }));
         S.entries.sort((a,b) => b.t.localeCompare(a.t));
         
-        saveLocalBackup();
-        renderAll();
-        toast('✅ Data synced', false);
-      } catch(e) { 
-        console.log('Loading from API failed, using local backup');
-        toast('📱 Using local backup', false);
-        renderAll(); 
+        saveLocalData();
+        document.getElementById('sdot').className = 'sdot ok';
+        return true;
       }
-    }
+    } catch(e) { console.log('Server load failed, using local data'); }
+    document.getElementById('sdot').className = 'sdot err';
+    return false;
+  }
 
-    function fts(ts) { 
-      try { 
-        return ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''; 
-      } catch(e) { return ''; }
-    }
+  function fts(ts) {
+    try { return ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''; }
+    catch(e) { return ''; }
+  }
 
-    function updatePayDay() {
-      const pd = Number(S.settings.payDay) || 10, today = new Date();
-      let nx = new Date(today.getFullYear(), today.getMonth(), pd);
-      if (nx <= today) nx = new Date(today.getFullYear(), today.getMonth()+1, pd);
-      const el = document.getElementById('payDisp');
-      if (el) el.textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${Math.ceil((nx-today)/86400000)}d)`;
-    }
+  // 🚀 Initialize
+  function init() {
+    loadLocalData();
+    renderAll();
+    
+    setTimeout(async () => {
+      const serverLoaded = await loadFromServer();
+      if (serverLoaded) renderAll();
+    }, 300);
+    
+    setInterval(async () => {
+      await loadFromServer();
+      renderAll();
+    }, 60000);
+    
+    setInterval(() => {
+      renderAlerts();
+      renderObs();
+    }, 30000);
+  }
 
-    async function confirmSalary() {
-      if (S.salary <= 0) { toast('Record income first'); return; }
-      S.confirmed = true; 
-      S.confirmedAt = new Date().toISOString(); 
-      S.confirmedMonth = curMonth();
-      entry('✅','Salary confirmed',`TZS ${FMT(S.salary)}`,'income');
-      
-      // Save to API
-      try {
-        await api({ action: 'SAVE_SETTING', key: 'confirmedAt', value: S.confirmedAt }, true
+  function updatePayDay() {
+    const pd = Number(S.settings.payDay) || 10;
+    const today = new Date();
+    let nx = new Date(today.getFullYear(), today.getMonth(), pd);
+    if (nx <= today) nx = new Date(today.getFullYear(), today.getMonth()+1, pd);
+    const el = document.getElementById('payDisp');
+    if (el) el.textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${Math.ceil((nx-today)/86400000)}d)`;
+  }
+
+  function confirmSalary() {
+    if (S.salary <= 0) { toast('Record income first'); return; }
+    S.confirmed = true;
+    S.confirmedAt = new Date().toISOString();
+    S.confirmedMonth = curMonth();
+    addEntry('✅','Salary confirmed',`TZS ${FMT(S.salary)}`,'income');
+    saveLocalData();
+    scheduleSync();
+    renderSalCard();
+    renderAlerts();
+    toast('✓ Salary confirmed');
+  }
+
+  function renderSalCard() {
+    const totalObs = S.obligations.reduce((s,o) => s + (o.status==='pending'?o.amt:0), 0);
+   
