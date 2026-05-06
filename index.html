@@ -155,7 +155,7 @@
     <div class="hr">
       <div class="chip chip-s"><span style="font-size:7px;">SCORE</span><span class="snum" id="scoreVal">—</span></div>
       <div class="chip chip-r" id="riskChip">● Stable</div>
-      <button class="gbtn" onclick="openModal('settings')">⚙️</button>
+      <button class="gbtn" data-action="settings">⚙️</button>
     </div>
   </div>
   <div class="strips">
@@ -166,11 +166,11 @@
 </header>
 
 <div class="page">
-  <div class="banner danger" id="dangerBanner"><div class="bi">🚨</div><div class="bb"><div class="bt">Risk: Unsettled obligations</div><div class="bs" id="dangerSub">Over 24h since salary confirmed</div></div><button class="bbtn" onclick="document.getElementById('obCard').scrollIntoView({behavior:'smooth'})">Fix ↓</button></div>
-  <div class="banner warn" id="warnBanner"><div class="bi">⏰</div><div class="bb"><div class="bt" id="warnTitle">Settle obligations</div><div class="bs" id="warnSub">Pending after confirmation</div></div><button class="bbtn" onclick="document.getElementById('obCard').scrollIntoView({behavior:'smooth'})">Go ↓</button></div>
+  <div class="banner danger" id="dangerBanner"><div class="bi">🚨</div><div class="bb"><div class="bt">Risk: Unsettled obligations</div><div class="bs" id="dangerSub">Over 24h since salary confirmed</div></div><button class="bbtn" data-scroll="obCard">Fix ↓</button></div>
+  <div class="banner warn" id="warnBanner"><div class="bi">⏰</div><div class="bb"><div class="bt" id="warnTitle">Settle obligations</div><div class="bs" id="warnSub">Pending after confirmation</div></div><button class="bbtn" data-scroll="obCard">Go ↓</button></div>
 
   <div class="sal-card">
-    <div class="sc-top"><div><div class="sc-lbl">Monthly Salary</div><div class="sc-amt"><span class="sc-pfx">TZS</span><span id="scAmt">—</span></div></div><div class="sc-badge" id="scBadge">Not confirmed</div></div>
+    <div class="sc-top"><div><div class="sc-lbl" id="scLbl">Monthly Salary</div><div class="sc-amt"><span class="sc-pfx">TZS</span><span id="scAmt">—</span></div></div><div class="sc-badge" id="scBadge">Not confirmed</div></div>
     <div class="sc-stats"><div class="sc-stat"><div class="sc-sl">Obligations</div><div class="sc-sv r" id="scObs">0</div></div><div class="sc-stat"><div class="sc-sl">Expenses</div><div class="sc-sv r" id="scExp">0</div></div><div class="sc-stat"><div class="sc-sl">Balance</div><div class="sc-sv g" id="scBal">0</div></div></div>
     <div id="cfmWrap"></div>
   </div>
@@ -182,13 +182,13 @@
   </div>
 
   <div class="act-row">
-    <button class="abtn" onclick="openModal('income')"><div class="aico ai1">💰</div><div class="albl">Income</div></button>
-    <button class="abtn" onclick="openModal('expense')"><div class="aico ai2">↓</div><div class="albl">Expense</div></button>
-    <button class="abtn" onclick="openModal('target')"><div class="aico ai3">🎯</div><div class="albl">Target</div></button>
+    <button class="abtn" data-action="income"><div class="aico ai1">💰</div><div class="albl">Income</div></button>
+    <button class="abtn" data-action="expense"><div class="aico ai2">↓</div><div class="albl">Expense</div></button>
+    <button class="abtn" data-action="target"><div class="aico ai3">🎯</div><div class="albl">Target</div></button>
   </div>
 
   <div class="card" id="obCard">
-    <div class="ch"><div class="ct">Obligations</div><div style="display:flex;gap:4px;align-items:center"><div class="cbadge" id="obBadge">0 pending</div><button class="add-btn" onclick="openModal('ob')">+ Add</button></div></div>
+    <div class="ch"><div class="ct">Obligations</div><div style="display:flex;gap:4px;align-items:center"><div class="cbadge" id="obBadge">0 pending</div><button class="add-btn" data-action="ob">+ Add</button></div></div>
     <div id="obList"><div class="ob-empty">No obligations yet</div></div>
   </div>
 
@@ -200,7 +200,6 @@
 
 <script>
 (function() {
-  // ✅ YOUR API URL
   const API = "https://script.google.com/macros/s/AKfycbwhewdZZtWXLSBq4tExHDI1N81OFeArpVS3ufggh157KTZiMdDWhM2l5ZWiBX9GqR9V/exec";
   const FMT = n => Number(n||0).toLocaleString('en');
   const curMonth = () => new Date().toISOString().slice(0,7);
@@ -208,9 +207,21 @@
   const STORAGE_KEY = 'myfinance_data';
   
   let S = {
-    salary: 0, weeklyTarget: 0, obligations: [], expenses: [], entries: [],
-    settings: { payDay: 10 }, confirmed: false, confirmedAt: null, confirmedMonth: '',
-    obType: 'recurring'
+    salary: 0,          // total confirmed income this month
+    weeklyTarget: 0,
+    obligations: [],
+    expenses: [],
+    entries: [],
+    settings: {
+      payDay: 10,
+      salaryAmount: 0,      // expected monthly salary
+      salaryFrequency: 'monthly' // monthly, bi-weekly, etc.
+    },
+    confirmed: false,
+    confirmedAt: null,
+    confirmedMonth: '',
+    obType: 'recurring',
+    editingObId: null
   };
   
   let syncTimeout = null;
@@ -225,7 +236,7 @@
       if (d.weeklyTarget !== undefined) S.weeklyTarget = d.weeklyTarget;
       if (d.obligations) S.obligations = d.obligations;
       if (d.expenses) S.expenses = d.expenses;
-      if (d.settings) S.settings = {...S.settings, ...d.settings};
+      if (d.settings) S.settings = { ...S.settings, ...d.settings };
       if (d.confirmed !== undefined) S.confirmed = d.confirmed;
       if (d.confirmedAt) S.confirmedAt = d.confirmedAt;
       if (d.confirmedMonth) S.confirmedMonth = d.confirmedMonth;
@@ -237,10 +248,14 @@
   function saveLocalData() {
     try {
       const d = {
-        salary: S.salary, weeklyTarget: S.weeklyTarget,
-        obligations: S.obligations, expenses: S.expenses,
-        settings: S.settings, confirmed: S.confirmed,
-        confirmedAt: S.confirmedAt, confirmedMonth: S.confirmedMonth,
+        salary: S.salary,
+        weeklyTarget: S.weeklyTarget,
+        obligations: S.obligations,
+        expenses: S.expenses,
+        settings: S.settings,
+        confirmed: S.confirmed,
+        confirmedAt: S.confirmedAt,
+        confirmedMonth: S.confirmedMonth,
         entries: S.entries.slice(0, 50)
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
@@ -265,15 +280,10 @@
         confirmedAt: S.confirmedAt || '',
         confirmedMonth: S.confirmedMonth || ''
       };
-      
-      const r = await fetch(API + '?' + new URLSearchParams(payload).toString() + '&_=' + Date.now());
-      if (r.ok) {
-        document.getElementById('sdot').className = 'sdot ok';
-        console.log('✅ Synced');
-      }
+      await fetch(API + '?' + new URLSearchParams(payload).toString() + '&_=' + Date.now());
+      document.getElementById('sdot').className = 'sdot ok';
     } catch(e) {
       document.getElementById('sdot').className = 'sdot err';
-      console.log('⚠️ Sync failed, retrying...');
       setTimeout(syncWithServer, 10000);
     }
   }
@@ -283,27 +293,24 @@
       const r = await fetch(API + '?action=LOAD&_=' + Date.now());
       const t = await r.text();
       const j = JSON.parse(t.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, ''));
-      
       if (j && j.success !== false) {
         if (j.totalIncome !== undefined) S.salary = Number(j.totalIncome) || 0;
         if (j.weeklyTarget !== undefined) S.weeklyTarget = Number(j.weeklyTarget) || 0;
-        
         const cfg = j.settings || {};
         if (cfg.payDay) S.settings.payDay = Number(cfg.payDay);
+        if (cfg.salaryAmount) S.settings.salaryAmount = Number(cfg.salaryAmount);
+        if (cfg.salaryFrequency) S.settings.salaryFrequency = cfg.salaryFrequency;
         if (cfg.confirmedAt) S.confirmedAt = cfg.confirmedAt;
         if (cfg.confirmedMonth) S.confirmedMonth = cfg.confirmedMonth;
         S.confirmed = (S.confirmedMonth === curMonth());
-        
         if (j.obligations) S.obligations = j.obligations.map(o => ({
           id: String(o.id), name: o.name, amt: Number(o.amount)||0,
           type: o.type || 'recurring', status: o.status || 'pending'
         }));
-        
         if (j.expenses) S.expenses = j.expenses.map(e => ({
           name: e.description || e.name || '', cat: e.category || e.cat || '',
           amt: Number(e.amount)||0
         }));
-        
         S.entries = [];
         (j.income||[]).forEach(i => S.entries.push({
           icon:'💰', msg:`${i.source||'Income'}: ${i.description||''}`,
@@ -314,12 +321,11 @@
           sub:`TZS ${FMT(e.amount)}`, type:'expense', t: fts(e.timestamp)
         }));
         S.entries.sort((a,b) => b.t.localeCompare(a.t));
-        
         saveLocalData();
         document.getElementById('sdot').className = 'sdot ok';
         return true;
       }
-    } catch(e) { console.log('Server load failed, using local data'); }
+    } catch(e) { console.log('Server load failed'); }
     document.getElementById('sdot').className = 'sdot err';
     return false;
   }
@@ -333,21 +339,88 @@
   function init() {
     loadLocalData();
     renderAll();
-    
     setTimeout(async () => {
       const serverLoaded = await loadFromServer();
       if (serverLoaded) renderAll();
     }, 300);
-    
     setInterval(async () => {
       await loadFromServer();
       renderAll();
     }, 60000);
-    
     setInterval(() => {
       renderAlerts();
       renderObs();
     }, 30000);
+    setupDelegation();
+  }
+
+  // Event delegation to avoid inline onclick with eval
+  function setupDelegation() {
+    document.body.addEventListener('click', function(e) {
+      const target = e.target.closest('[data-action]');
+      if (target) {
+        const action = target.getAttribute('data-action');
+        e.preventDefault();
+        handleAction(action);
+      }
+    });
+
+    document.getElementById('shBody').addEventListener('click', function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      if (btn.classList.contains('bcanc')) { closeModal(); return; }
+      if (btn.classList.contains('bok')) {
+        const formAction = btn.getAttribute('data-form-action');
+        if (formAction) handleFormAction(formAction);
+        return;
+      }
+      if (btn.id === 'tog-once') { setObt('once'); return; }
+      if (btn.id === 'tog-rec') { setObt('recurring'); return; }
+    });
+
+    document.getElementById('obList').addEventListener('click', function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      if (btn.classList.contains('osb') && btn.classList.contains('pend')) {
+        settleOb(id);
+      } else if (btn.classList.contains('oedit')) {
+        openModal('editob', id);
+      } else if (btn.classList.contains('odel')) {
+        deleteOb(id);
+      }
+    });
+
+    document.body.addEventListener('click', function(e) {
+      const scrollBtn = e.target.closest('[data-scroll]');
+      if (scrollBtn) {
+        const targetId = scrollBtn.getAttribute('data-scroll');
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({behavior:'smooth'});
+      }
+    });
+  }
+
+  function handleAction(action) {
+    switch(action) {
+      case 'income': openModal('income'); break;
+      case 'expense': openModal('expense'); break;
+      case 'target': openModal('target'); break;
+      case 'ob': openModal('ob'); break;
+      case 'settings': openModal('settings'); break;
+    }
+  }
+
+  function handleFormAction(formAction) {
+    switch(formAction) {
+      case 'income': doIncome(); break;
+      case 'expense': doExpense(); break;
+      case 'target': doTarget(); break;
+      case 'ob': doOb(); break;
+      case 'editob': doEditOb(); break;
+      case 'settings': doSettings(); break;
+    }
   }
 
   function updatePayDay() {
@@ -359,17 +432,26 @@
     if (el) el.textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${Math.ceil((nx-today)/86400000)}d)`;
   }
 
+  // Confirm receipt of salary (adds configured salary amount)
   function confirmSalary() {
-    if (S.salary <= 0) { toast('Record income first'); return; }
+    const amt = Number(S.settings.salaryAmount);
+    if (!amt || amt <= 0) {
+      toast('Set your salary amount in Settings first');
+      return;
+    }
+    if (S.confirmed) {
+      toast('Salary already confirmed this month');
+      return;
+    }
+    S.salary += amt;                 // add the configured salary to monthly total
     S.confirmed = true;
     S.confirmedAt = new Date().toISOString();
     S.confirmedMonth = curMonth();
-    addEntry('✅','Salary confirmed',`TZS ${FMT(S.salary)}`,'income');
+    addEntry('✅', 'Salary confirmed', `TZS ${FMT(amt)}`, 'income');
     saveLocalData();
     scheduleSync();
-    renderSalCard();
-    renderAlerts();
-    toast('✓ Salary confirmed');
+    renderAll();
+    toast('✓ Salary confirmed! Start tracking obligations.');
   }
 
   function renderSalCard() {
@@ -398,6 +480,11 @@
     const balStrip = document.getElementById('balStrip');
     if (balStrip) balStrip.className = 'strip ' + (bal < 0 ? 'danger' : 'g');
     
+    // Salary card label & badge
+    const scLbl = document.getElementById('scLbl');
+    const freq = S.settings.salaryFrequency || 'monthly';
+    if (scLbl) scLbl.textContent = `Expected Salary (${freq})`;
+    
     const badge = document.getElementById('scBadge');
     const wrap = document.getElementById('cfmWrap');
     if (S.confirmed) {
@@ -405,7 +492,13 @@
       if (wrap) wrap.innerHTML = '<div class="cfm-done">✅ Receipt confirmed this month</div>';
     } else {
       if (badge) { badge.textContent = 'Not confirmed'; badge.className = 'sc-badge'; }
-      if (wrap) wrap.innerHTML = '<button class="cfm-btn" onclick="confirmSalary()">✓ Confirm Receipt of Salary</button>';
+      if (wrap) {
+        wrap.innerHTML = '<button class="cfm-btn" id="confirmSalaryBtn">✓ Confirm Receipt of Salary</button>';
+        setTimeout(() => {
+          const btn = document.getElementById('confirmSalaryBtn');
+          if (btn) btn.addEventListener('click', confirmSalary);
+        }, 0);
+      }
     }
     
     document.getElementById('salDisp').textContent = S.salary > 0 ? FMT(S.salary) : '—';
@@ -442,37 +535,40 @@
 
   function openModal(type, editId) {
     S.obType = 'recurring';
+    S.editingObId = editId || null;
     document.getElementById('ov').classList.add('open');
     let h = '';
     
     if (type === 'income') {
       h = `<div class="stit">Record Income</div>
       <div class="fld"><label>Source</label><select id="incSrc"><option value="Salary">💼 Salary</option><option value="Business">🏪 Business</option><option value="Freelance">💻 Freelance</option><option value="Other">💬 Other</option></select></div>
-      <div class="fld"><label>Description</label><input id="incDesc" placeholder="e.g. March salary"></div>
+      <div class="fld"><label>Description</label><input id="incDesc" placeholder="e.g. Bonus, side gig"></div>
       <div class="fld"><label>Amount</label><input id="incAmt" type="number" placeholder="0"></div>
-      <div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doIncome()">Record</button></div>`;
+      <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="income">Record</button></div>`;
     } else if (type === 'target') {
       h = `<div class="stit">Weekly Target</div>
       <div class="fld"><label>Amount</label><input id="tgtAmt" type="number" placeholder="0" value="${S.weeklyTarget||''}"></div>
-      <div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doTarget()">Save</button></div>`;
+      <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="target">Save</button></div>`;
     } else if (type === 'ob' || type === 'editob') {
-      const ed = editId ? S.obligations.find(o => o.id === editId) : null;
+      const ed = type === 'editob' ? S.obligations.find(o => o.id === editId) : null;
       if (ed) S.obType = ed.type || 'recurring';
       h = `<div class="stit">${ed?'Edit':'Add'} Obligation</div>
       <div class="fld"><label>Name</label><input id="obName" placeholder="Rent, DSTV…" value="${ed?ed.name:''}"></div>
       <div class="fld"><label>Amount</label><input id="obAmt" type="number" placeholder="0" value="${ed?ed.amt:''}"></div>
-      <div class="fld"><label>Type</label><div class="togrow"><button class="tog${S.obType==='once'?' on':''}" id="tog-once" onclick="setObt('once')">One-time</button><button class="tog${S.obType==='recurring'?' on':''}" id="tog-rec" onclick="setObt('recurring')">Monthly</button></div></div>
-      <div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="${ed?`doEditOb('${ed.id}')`:'doOb()'}">${ed?'Update':'Add'}</button></div>`;
+      <div class="fld"><label>Type</label><div class="togrow"><button class="tog${S.obType==='once'?' on':''}" id="tog-once">One-time</button><button class="tog${S.obType==='recurring'?' on':''}" id="tog-rec">Monthly</button></div></div>
+      <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="${ed?'editob':'ob'}">${ed?'Update':'Add'}</button></div>`;
     } else if (type === 'expense') {
       h = `<div class="stit">Log Expense</div>
       <div class="fld"><label>Description</label><input id="expName" placeholder="What did you spend on?"></div>
       <div class="fld"><label>Amount</label><input id="expAmt" type="number" placeholder="0"></div>
       <div class="fld"><label>Category</label><select id="expCat"><option>🍛 Food</option><option>🚌 Transport</option><option>📱 Airtime</option><option>🛒 Shopping</option><option>💡 Utilities</option></select></div>
-      <div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doExpense()">Save</button></div>`;
+      <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="expense">Save</button></div>`;
     } else if (type === 'settings') {
-      h = `<div class="stit">Settings</div>
-      <div class="fld"><label>Pay Date (1-28)</label><select id="pdIn">${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${(S.settings.payDay||10)==i+1?'selected':''}>${i+1}</option>`).join('')}</select></div>
-      <div class="sa"><button class="bcanc" onclick="closeModal()">Cancel</button><button class="bok" onclick="doSettings()">Save</button></div>`;
+      h = `<div class="stit">⚙️ Salary & Settings</div>
+      <div class="fld"><label>Expected Monthly Salary (TZS)</label><input id="setSalaryAmt" type="number" placeholder="e.g. 500000" value="${S.settings.salaryAmount||''}"></div>
+      <div class="fld"><label>Frequency</label><select id="setFreq"><option value="monthly" ${S.settings.salaryFrequency==='monthly'?'selected':''}>Monthly</option><option value="bi-weekly" ${S.settings.salaryFrequency==='bi-weekly'?'selected':''}>Bi-weekly</option><option value="weekly" ${S.settings.salaryFrequency==='weekly'?'selected':''}>Weekly</option></select></div>
+      <div class="fld"><label>Pay Day (1-28)</label><select id="setPayDay">${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${(S.settings.payDay||10)==i+1?'selected':''}>${i+1}</option>`).join('')}</select></div>
+      <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="settings">Save</button></div>`;
     }
     
     document.getElementById('shBody').innerHTML = h;
@@ -480,6 +576,7 @@
 
   function closeModal() {
     document.getElementById('ov').classList.remove('open');
+    S.editingObId = null;
   }
 
   function setObt(t) {
@@ -497,10 +594,14 @@
   }
 
   function doIncome() {
-    const v = Number(document.getElementById('incAmt')?.value);
+    const amtEl = document.getElementById('incAmt');
+    const srcEl = document.getElementById('incSrc');
+    const descEl = document.getElementById('incDesc');
+    if (!amtEl || !srcEl) return;
+    const v = Number(amtEl.value);
     if (!v || v <= 0) { toast('Enter amount'); return; }
-    const src = document.getElementById('incSrc')?.value || 'Income';
-    const desc = document.getElementById('incDesc')?.value?.trim() || src;
+    const src = srcEl.value;
+    const desc = descEl ? descEl.value.trim() || src : src;
     
     S.salary += v;
     S.confirmed = false;
@@ -516,9 +617,10 @@
   }
 
   function doTarget() {
-    const v = Number(document.getElementById('tgtAmt')?.value);
+    const el = document.getElementById('tgtAmt');
+    if (!el) return;
+    const v = Number(el.value);
     if (!v || v <= 0) { toast('Enter amount'); return; }
-    
     S.weeklyTarget = v;
     addEntry('🎯', 'Weekly target updated', `TZS ${FMT(v)}`, 'system');
     closeModal();
@@ -529,8 +631,11 @@
   }
 
   function doOb() {
-    const name = document.getElementById('obName')?.value?.trim();
-    const amt = Number(document.getElementById('obAmt')?.value);
+    const nameEl = document.getElementById('obName');
+    const amtEl = document.getElementById('obAmt');
+    if (!nameEl || !amtEl) return;
+    const name = nameEl.value.trim();
+    const amt = Number(amtEl.value);
     if (!name || !amt) { toast('Fill all fields'); return; }
     
     const id = 'ob_' + Date.now();
@@ -543,12 +648,16 @@
     toast('✓ Obligation added');
   }
 
-  function doEditOb(id) {
-    const name = document.getElementById('obName')?.value?.trim();
-    const amt = Number(document.getElementById('obAmt')?.value);
+  function doEditOb() {
+    if (!S.editingObId) return;
+    const nameEl = document.getElementById('obName');
+    const amtEl = document.getElementById('obAmt');
+    if (!nameEl || !amtEl) return;
+    const name = nameEl.value.trim();
+    const amt = Number(amtEl.value);
     if (!name || !amt) { toast('Fill all fields'); return; }
     
-    const ob = S.obligations.find(o => o.id === id);
+    const ob = S.obligations.find(o => o.id === S.editingObId);
     if (!ob) return;
     ob.name = name;
     ob.amt = amt;
@@ -585,9 +694,13 @@
   }
 
   function doExpense() {
-    const name = document.getElementById('expName')?.value?.trim();
-    const amt = Number(document.getElementById('expAmt')?.value);
-    const cat = document.getElementById('expCat')?.value || 'Expense';
+    const nameEl = document.getElementById('expName');
+    const amtEl = document.getElementById('expAmt');
+    const catEl = document.getElementById('expCat');
+    if (!nameEl || !amtEl) return;
+    const name = nameEl.value.trim();
+    const amt = Number(amtEl.value);
+    const cat = catEl ? catEl.value : 'Expense';
     if (!name || !amt) { toast('Fill all fields'); return; }
     
     S.expenses.push({ name, cat, amt });
@@ -600,15 +713,18 @@
   }
 
   function doSettings() {
-    const pd = Number(document.getElementById('pdIn')?.value);
-    if (pd && pd >= 1 && pd <= 28) {
-      S.settings.payDay = pd;
-      closeModal();
-      saveLocalData();
-      scheduleSync(500);
-      updatePayDay();
-      toast('✓ Settings saved');
-    }
+    const salaryAmt = Number(document.getElementById('setSalaryAmt')?.value) || 0;
+    const freq = document.getElementById('setFreq')?.value || 'monthly';
+    const payDay = Number(document.getElementById('setPayDay')?.value) || 10;
+    S.settings.salaryAmount = salaryAmt;
+    S.settings.salaryFrequency = freq;
+    S.settings.payDay = payDay;
+    closeModal();
+    saveLocalData();
+    scheduleSync(500);
+    updatePayDay();
+    renderSalCard();
+    toast('✓ Settings saved');
   }
 
   function renderObs() {
@@ -638,9 +754,9 @@
           </div>
           <div class="oamt">TZS ${FMT(o.amt)}</div>
           <div class="ob-actions">
-            ${o.status!=='settled'?`<button class="osb pend" onclick="settleOb('${o.id}')">Pay</button>`:`<button class="osb done">✓</button>`}
-            <button class="oedit" onclick="openModal('editob','${o.id}')">✏️</button>
-            <button class="odel" onclick="deleteOb('${o.id}')">✕</button>
+            ${o.status!=='settled' ? `<button class="osb pend" data-id="${o.id}">Pay</button>` : `<button class="osb done">✓</button>`}
+            <button class="oedit" data-id="${o.id}">✏️</button>
+            <button class="odel" data-id="${o.id}">✕</button>
           </div>
         </div>`;
       }).join('');
@@ -651,7 +767,6 @@
     const el = document.getElementById('enList');
     const count = document.getElementById('enCount');
     if (count) count.textContent = S.entries.length + ' entries';
-    
     if (el) {
       if (!S.entries.length) {
         el.innerHTML = '<div class="en-empty">📊 No transactions</div>';
@@ -674,16 +789,13 @@
     
     const wkRem = document.getElementById('wkRem');
     if (wkRem) wkRem.textContent = FMT(Math.max(rem, 0));
-    
     const wkSpent = document.getElementById('wkSpent');
     if (wkSpent) wkSpent.textContent = FMT(spent);
-    
     const wkTgt = document.getElementById('wkTgt');
     if (wkTgt) wkTgt.textContent = FMT(S.weeklyTarget);
     
     const progFill = document.getElementById('progFill');
     if (progFill) progFill.style.width = pct + '%';
-    
     const progPct = document.getElementById('progPct');
     if (progPct) progPct.textContent = pct.toFixed(0) + '%';
     
@@ -719,26 +831,6 @@
     toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
   }
 
-  // Expose functions globally
-  window.openModal = openModal;
-  window.closeModal = closeModal;
-  window.setObt = setObt;
-  window.settleOb = settleOb;
-  window.deleteOb = deleteOb;
-  window.doOb = doOb;
-  window.doEditOb = doEditOb;
-  window.doIncome = doIncome;
-  window.doTarget = doTarget;
-  window.doExpense = doExpense;
-  window.doSettings = doSettings;
-  window.confirmSalary = confirmSalary;
-
-  // Close modal on overlay click
-  document.getElementById('ov').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
-
-  // Start everything
   init();
 })();
 </script>
