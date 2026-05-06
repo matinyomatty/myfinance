@@ -91,12 +91,15 @@
     .prog-track { height: 4px; background: rgba(255,255,255,.04); border-radius: 99px; overflow: hidden; }
     .prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,var(--teal),var(--blue)); width: 0%; transition: width .6s cubic-bezier(.34,1.56,.64,1); }
 
-    .act-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 8px; }
+    .act-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 8px; }
     .abtn { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 5px; background: var(--card); border: 1px solid var(--bdr); border-radius: 11px; transition: all .18s; text-align: center; }
     .abtn:active { transform: scale(.97); }
     .aico { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-    .ai1 { background: rgba(52,211,153,.1); } .ai2 { background: rgba(248,113,113,.1); } .ai3 { background: rgba(96,165,250,.1); }
-    .albl { font-size: 8px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--sub); }
+    .ai1 { background: rgba(52,211,153,.1); } .ai2 { background: rgba(248,113,113,.1); } .ai3 { background: rgba(96,165,250,.1); } .ai4 { background: rgba(167,139,250,.1); }
+
+    .quick-add-row { display: flex; gap: 5px; overflow-x: auto; padding: 6px 0; margin-bottom: 8px; }
+    .quick-chip { all: unset; cursor: pointer; padding: 5px 10px; border-radius: 99px; font-size: 9px; background: var(--card); border: 1px solid var(--bdr); white-space: nowrap; }
+    .quick-chip:active { background: var(--card2); }
 
     .card { background: var(--card); border: 1px solid var(--bdr); border-radius: 12px; overflow: hidden; margin-bottom: 8px; }
     .card.danger { border-color: rgba(248,113,113,.3); }
@@ -134,7 +137,8 @@
     .spill { width: 28px; height: 3px; background: var(--dim); border-radius: 99px; margin: 6px auto 12px; }
     .stit { font-family: var(--hd); font-size: 16px; font-weight: 800; margin-bottom: 12px; }
     .fld { margin-bottom: 9px; } .fld label { font-size: 7px; letter-spacing: .1em; text-transform: uppercase; color: var(--sub); display: block; margin-bottom: 3px; }
-    input, select { width: 100%; padding: 9px 10px; background: var(--card2); border: 1px solid var(--bdr); color: var(--txt); border-radius: 8px; font-family: var(--bd); font-size: 13px; outline: none; }
+    input, select, textarea { width: 100%; padding: 9px 10px; background: var(--card2); border: 1px solid var(--bdr); color: var(--txt); border-radius: 8px; font-family: var(--bd); font-size: 13px; outline: none; }
+    textarea { resize: vertical; }
     .togrow { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
     .tog { all: unset; cursor: pointer; padding: 8px; text-align: center; border-radius: 8px; font-size: 11px; border: 1px solid var(--bdr); background: var(--card2); color: var(--sub); }
     .tog.on { background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.28); color: var(--blue); }
@@ -144,6 +148,12 @@
     .bok { background: linear-gradient(135deg,var(--teal),var(--blue)); color: #05090f; }
     .toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--card2); border: 1px solid var(--bhi); border-radius: 8px; padding: 6px 14px; font-size: 10px; opacity: 0; transition: .3s; pointer-events: none; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+    @media print {
+      body { background: white; color: black; }
+      header, .bg, .banner, .act-row, .quick-add-row, .sal-card, .hero, .card, .ob-row, .en, .toast, .ov { break-inside: avoid; }
+      .page { overflow: visible; }
+    }
   </style>
 </head>
 <body>
@@ -151,7 +161,7 @@
 
 <header>
   <div class="hrow">
-    <div><div class="brand">My Finance</div><div class="brand-sub">Personal · TZS</div></div>
+    <div><div class="brand">My Finance</div><div class="brand-sub" id="brandSub">Personal · TZS</div></div>
     <div class="hr">
       <div class="chip chip-s"><span style="font-size:7px;">SCORE</span><span class="snum" id="scoreVal">—</span></div>
       <div class="chip chip-r" id="riskChip">● Stable</div>
@@ -159,40 +169,53 @@
     </div>
   </div>
   <div class="strips">
-    <div class="strip"><div><div class="sl">Income</div><div class="sv" id="salDisp">—</div></div><div class="sdot ok" id="sdot"></div></div>
-    <div class="strip t"><div><div class="sl">Pay Day</div><div class="sv t" id="payDisp">—</div></div></div>
-    <div class="strip g" id="balStrip"><div><div class="sl">Balance</div><div class="sv g" id="balDisp">—</div></div></div>
+    <div class="strip"><div><div class="sl" id="incLabel">Income</div><div class="sv" id="salDisp">—</div></div><div class="sdot ok" id="sdot"></div></div>
+    <div class="strip t"><div><div class="sl" id="payLabel">Pay Day</div><div class="sv t" id="payDisp">—</div></div></div>
+    <div class="strip g" id="balStrip"><div><div class="sl" id="balLabel">Balance</div><div class="sv g" id="balDisp">—</div></div></div>
   </div>
 </header>
 
 <div class="page">
-  <div class="banner danger" id="dangerBanner"><div class="bi">🚨</div><div class="bb"><div class="bt">Risk: Unsettled obligations</div><div class="bs" id="dangerSub">Over 24h since salary confirmed</div></div><button class="bbtn" data-scroll="obCard">Fix ↓</button></div>
+  <div class="banner danger" id="dangerBanner"><div class="bi">🚨</div><div class="bb"><div class="bt" id="dangerTitle">Risk: Unsettled obligations</div><div class="bs" id="dangerSub">Over 24h since salary confirmed</div></div><button class="bbtn" data-scroll="obCard">Fix ↓</button></div>
   <div class="banner warn" id="warnBanner"><div class="bi">⏰</div><div class="bb"><div class="bt" id="warnTitle">Settle obligations</div><div class="bs" id="warnSub">Pending after confirmation</div></div><button class="bbtn" data-scroll="obCard">Go ↓</button></div>
 
   <div class="sal-card">
     <div class="sc-top"><div><div class="sc-lbl" id="scLbl">Monthly Salary</div><div class="sc-amt"><span class="sc-pfx">TZS</span><span id="scAmt">—</span></div></div><div class="sc-badge" id="scBadge">Not confirmed</div></div>
-    <div class="sc-stats"><div class="sc-stat"><div class="sc-sl">Obligations</div><div class="sc-sv r" id="scObs">0</div></div><div class="sc-stat"><div class="sc-sl">Expenses</div><div class="sc-sv r" id="scExp">0</div></div><div class="sc-stat"><div class="sc-sl">Balance</div><div class="sc-sv g" id="scBal">0</div></div></div>
+    <div class="sc-stats"><div class="sc-stat"><div class="sc-sl" id="obsLabel">Obligations</div><div class="sc-sv r" id="scObs">0</div></div><div class="sc-stat"><div class="sc-sl" id="expLabel">Expenses</div><div class="sc-sv r" id="scExp">0</div></div><div class="sc-stat"><div class="sc-sl" id="balShortLabel">Balance</div><div class="sc-sv g" id="scBal">0</div></div></div>
     <div id="cfmWrap"></div>
   </div>
 
   <div class="hero">
-    <div class="hero-grid"><div class="hg"><div class="hl">Wk Remaining</div><div class="hv" id="wkRem">0</div></div><div class="hg"><div class="hl">Wk Spent</div><div class="hv" id="wkSpent" style="color:var(--red)">0</div></div><div class="hg"><div class="hl">Wk Target</div><div class="hv" id="wkTgt" style="color:var(--blue)">0</div></div></div>
-    <div class="prog-lbl"><span>Spent</span><span id="progPct">0%</span><span>Target</span></div>
+    <div class="hero-grid"><div class="hg"><div class="hl" id="wkRemLabel">Wk Remaining</div><div class="hv" id="wkRem">0</div></div><div class="hg"><div class="hl" id="wkSpentLabel">Wk Spent</div><div class="hv" id="wkSpent" style="color:var(--red)">0</div></div><div class="hg"><div class="hl" id="wkTgtLabel">Wk Target</div><div class="hv" id="wkTgt" style="color:var(--blue)">0</div></div></div>
+    <div class="prog-lbl"><span id="spentLabel">Spent</span><span id="progPct">0%</span><span id="targetLabel">Target</span></div>
     <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
   </div>
 
   <div class="act-row">
-    <button class="abtn" data-action="income"><div class="aico ai1">💰</div><div class="albl">Income</div></button>
-    <button class="abtn" data-action="expense"><div class="aico ai2">↓</div><div class="albl">Expense</div></button>
-    <button class="abtn" data-action="target"><div class="aico ai3">🎯</div><div class="albl">Target</div></button>
+    <button class="abtn" data-action="income"><div class="aico ai1">💰</div><div class="albl" id="incomeBtn">Income</div></button>
+    <button class="abtn" data-action="expense"><div class="aico ai2">↓</div><div class="albl" id="expenseBtn">Expense</div></button>
+    <button class="abtn" data-action="target"><div class="aico ai3">🎯</div><div class="albl" id="targetBtn">Target</div></button>
+    <button class="abtn" data-action="sms"><div class="aico ai4">📩</div><div class="albl" id="smsBtn">SMS</div></button>
+  </div>
+
+  <div class="quick-add-row">
+    <button class="quick-chip" data-quick="🍛 Food">🍛 Food</button>
+    <button class="quick-chip" data-quick="🚌 Transport">🚌 Transport</button>
+    <button class="quick-chip" data-quick="📱 Airtime">📱 Airtime</button>
+    <button class="quick-chip" data-quick="🛒 Shopping">🛒 Shopping</button>
+    <button class="quick-chip" data-quick="🤝 Mchango">🤝 Mchango</button>
+    <button class="quick-chip" data-quick="💡 Utilities">💡 Utilities</button>
   </div>
 
   <div class="card" id="obCard">
-    <div class="ch"><div class="ct">Obligations</div><div style="display:flex;gap:4px;align-items:center"><div class="cbadge" id="obBadge">0 pending</div><button class="add-btn" data-action="ob">+ Add</button></div></div>
-    <div id="obList"><div class="ob-empty">No obligations yet</div></div>
+    <div class="ch"><div class="ct" id="obTitle">Obligations</div><div style="display:flex;gap:4px;align-items:center"><div class="cbadge" id="obBadge">0 pending</div><button class="add-btn" data-action="ob">+ Add</button></div></div>
+    <div id="obList"><div class="ob-empty" id="obEmpty">No obligations yet</div></div>
   </div>
 
-  <div class="card"><div class="ch"><div class="ct">Activity</div><div class="cbadge" id="enCount">0 entries</div></div><div id="enList"><div class="en-empty">📊 No transactions</div></div></div>
+  <div class="card">
+    <div class="ch"><div class="ct" id="activityTitle">Activity</div><div style="display:flex;gap:4px;align-items:center"><div class="cbadge" id="enCount">0 entries</div><button class="add-btn" data-action="print">🖨️</button></div></div>
+    <div id="enList"><div class="en-empty" id="enEmpty">📊 No transactions</div></div>
+  </div>
 </div>
 
 <div class="ov" id="ov"><div class="sh"><div class="spill"></div><div id="shBody"></div></div></div>
@@ -206,27 +229,51 @@
   
   const STORAGE_KEY = 'myfinance_data';
   
+  // 🌍 Translations
+  const LANG = {
+    en: {
+      brandSub: "Personal · TZS", incLabel: "Income", payLabel: "Pay Day", balLabel: "Balance",
+      scLbl: "Monthly Salary", scBadge: "Not confirmed", scBadgeOk: "✓ Confirmed",
+      obsLabel: "Obligations", expLabel: "Expenses", balShortLabel: "Balance",
+      wkRemLabel: "Wk Remaining", wkSpentLabel: "Wk Spent", wkTgtLabel: "Wk Target",
+      spentLabel: "Spent", targetLabel: "Target",
+      incomeBtn: "Income", expenseBtn: "Expense", targetBtn: "Target", smsBtn: "SMS",
+      obTitle: "Obligations", obEmpty: "No obligations yet", activityTitle: "Activity",
+      enEmpty: "📊 No transactions", confirmBtn: "✓ Confirm Receipt of Salary",
+      cfmDone: "✅ Receipt confirmed this month"
+    },
+    sw: {
+      brandSub: "Binafsi · TZS", incLabel: "Mapato", payLabel: "Siku ya Mshahara", balLabel: "Salio",
+      scLbl: "Mshahara wa Mwezi", scBadge: "Haijathibitishwa", scBadgeOk: "✓ Imethibitishwa",
+      obsLabel: "Majukumu", expLabel: "Matumizi", balShortLabel: "Salio",
+      wkRemLabel: "Wiki Salio", wkSpentLabel: "Wiki Tumia", wkTgtLabel: "Wiki Lengo",
+      spentLabel: "Tumia", targetLabel: "Lengo",
+      incomeBtn: "Mapato", expenseBtn: "Matumizi", targetBtn: "Lengo", smsBtn: "SMS",
+      obTitle: "Majukumu", obEmpty: "Hakuna majukumu", activityTitle: "Shughuli",
+      enEmpty: "📊 Hakuna muamala", confirmBtn: "✓ Thibitisha Kupokea Mshahara",
+      cfmDone: "✅ Mshahara umethibitishwa mwezi huu"
+    }
+  };
+  let currentLang = 'en'; // default
+  
+  function t(key) {
+    return (LANG[currentLang] && LANG[currentLang][key]) || (LANG.en[key] || key);
+  }
+  
   let S = {
-    salary: 0,          // total confirmed income this month
-    weeklyTarget: 0,
-    obligations: [],
-    expenses: [],
-    entries: [],
+    salary: 0, weeklyTarget: 0, obligations: [], expenses: [], entries: [],
     settings: {
       payDay: 10,
-      salaryAmount: 0,      // expected monthly salary
-      salaryFrequency: 'monthly' // monthly, bi-weekly, etc.
+      salaryAmount: 0,
+      salaryFrequency: 'monthly',
+      language: 'en'
     },
-    confirmed: false,
-    confirmedAt: null,
-    confirmedMonth: '',
-    obType: 'recurring',
-    editingObId: null
+    confirmed: false, confirmedAt: null, confirmedMonth: '',
+    obType: 'recurring', editingObId: null
   };
   
   let syncTimeout = null;
 
-  // ⚡ INSTANT LOAD from localStorage
   function loadLocalData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -241,6 +288,7 @@
       if (d.confirmedAt) S.confirmedAt = d.confirmedAt;
       if (d.confirmedMonth) S.confirmedMonth = d.confirmedMonth;
       if (d.entries) S.entries = d.entries;
+      if (S.settings.language) currentLang = S.settings.language;
       return true;
     } catch(e) { return false; }
   }
@@ -248,21 +296,16 @@
   function saveLocalData() {
     try {
       const d = {
-        salary: S.salary,
-        weeklyTarget: S.weeklyTarget,
-        obligations: S.obligations,
-        expenses: S.expenses,
-        settings: S.settings,
-        confirmed: S.confirmed,
-        confirmedAt: S.confirmedAt,
-        confirmedMonth: S.confirmedMonth,
+        salary: S.salary, weeklyTarget: S.weeklyTarget,
+        obligations: S.obligations, expenses: S.expenses,
+        settings: S.settings, confirmed: S.confirmed,
+        confirmedAt: S.confirmedAt, confirmedMonth: S.confirmedMonth,
         entries: S.entries.slice(0, 50)
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
     } catch(e) {}
   }
 
-  // 🔄 Background sync
   function scheduleSync(delay = 1000) {
     clearTimeout(syncTimeout);
     syncTimeout = setTimeout(syncWithServer, delay);
@@ -294,12 +337,13 @@
       const t = await r.text();
       const j = JSON.parse(t.replace(/^[^{[]*/, '').replace(/[^}\]]*$/, ''));
       if (j && j.success !== false) {
-        if (j.totalIncome !== undefined) S.salary = Number(j.totalIncome) || 0;
-        if (j.weeklyTarget !== undefined) S.weeklyTarget = Number(j.weeklyTarget) || 0;
+        if (j.totalIncome !== undefined) S.salary = Number(j.totalIncome)||0;
+        if (j.weeklyTarget !== undefined) S.weeklyTarget = Number(j.weeklyTarget)||0;
         const cfg = j.settings || {};
         if (cfg.payDay) S.settings.payDay = Number(cfg.payDay);
         if (cfg.salaryAmount) S.settings.salaryAmount = Number(cfg.salaryAmount);
         if (cfg.salaryFrequency) S.settings.salaryFrequency = cfg.salaryFrequency;
+        if (cfg.language) { S.settings.language = cfg.language; currentLang = cfg.language; }
         if (cfg.confirmedAt) S.confirmedAt = cfg.confirmedAt;
         if (cfg.confirmedMonth) S.confirmedMonth = cfg.confirmedMonth;
         S.confirmed = (S.confirmedMonth === curMonth());
@@ -309,7 +353,7 @@
         }));
         if (j.expenses) S.expenses = j.expenses.map(e => ({
           name: e.description || e.name || '', cat: e.category || e.cat || '',
-          amt: Number(e.amount)||0
+          amt: Number(e.amount)||0, method: e.method || 'Cash'
         }));
         S.entries = [];
         (j.income||[]).forEach(i => S.entries.push({
@@ -318,7 +362,7 @@
         }));
         (j.expenses||[]).forEach(e => S.entries.push({
           icon: (e.category||'🧾').split(' ')[0], msg: e.description||'',
-          sub:`TZS ${FMT(e.amount)}`, type:'expense', t: fts(e.timestamp)
+          sub:`TZS ${FMT(e.amount)} · ${e.category||''}`, type:'expense', t: fts(e.timestamp)
         }));
         S.entries.sort((a,b) => b.t.localeCompare(a.t));
         saveLocalData();
@@ -330,38 +374,73 @@
     return false;
   }
 
-  function fts(ts) {
-    try { return ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''; }
-    catch(e) { return ''; }
-  }
+  function fts(ts) { try { return ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''; } catch(e) { return ''; } }
 
-  // 🚀 Initialize
   function init() {
     loadLocalData();
+    applyLanguage();
     renderAll();
     setTimeout(async () => {
       const serverLoaded = await loadFromServer();
-      if (serverLoaded) renderAll();
+      if (serverLoaded) { applyLanguage(); renderAll(); }
     }, 300);
-    setInterval(async () => {
-      await loadFromServer();
-      renderAll();
-    }, 60000);
-    setInterval(() => {
-      renderAlerts();
-      renderObs();
-    }, 30000);
+    setInterval(async () => { await loadFromServer(); applyLanguage(); renderAll(); }, 60000);
+    setInterval(() => { renderAlerts(); renderObs(); }, 30000);
     setupDelegation();
   }
 
-  // Event delegation to avoid inline onclick with eval
+  function applyLanguage() {
+    // Update all text elements with translation
+    document.querySelectorAll('[id]').forEach(el => {
+      if (el.id && LANG.en[el.id]) { // only static ids
+        const text = t(el.id);
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+        el.textContent = text;
+      }
+    });
+    // Also update elements with specific ids that are not in LANG keys
+    document.getElementById('brandSub').textContent = t('brandSub');
+    document.getElementById('incLabel').textContent = t('incLabel');
+    document.getElementById('payLabel').textContent = t('payLabel');
+    document.getElementById('balLabel').textContent = t('balLabel');
+    document.getElementById('obsLabel').textContent = t('obsLabel');
+    document.getElementById('expLabel').textContent = t('expLabel');
+    document.getElementById('balShortLabel').textContent = t('balShortLabel');
+    document.getElementById('wkRemLabel').textContent = t('wkRemLabel');
+    document.getElementById('wkSpentLabel').textContent = t('wkSpentLabel');
+    document.getElementById('wkTgtLabel').textContent = t('wkTgtLabel');
+    document.getElementById('spentLabel').textContent = t('spentLabel');
+    document.getElementById('targetLabel').textContent = t('targetLabel');
+    document.getElementById('incomeBtn').textContent = t('incomeBtn');
+    document.getElementById('expenseBtn').textContent = t('expenseBtn');
+    document.getElementById('targetBtn').textContent = t('targetBtn');
+    document.getElementById('smsBtn').textContent = t('smsBtn');
+    document.getElementById('obTitle').textContent = t('obTitle');
+    document.getElementById('activityTitle').textContent = t('activityTitle');
+    // Render again to update dynamic texts
+    renderSalCard();
+    renderObs();
+    renderEntries();
+  }
+
   function setupDelegation() {
     document.body.addEventListener('click', function(e) {
       const target = e.target.closest('[data-action]');
       if (target) {
         const action = target.getAttribute('data-action');
         e.preventDefault();
+        if (action === 'print') { window.print(); return; }
+        if (action === 'sms') { openModal('sms'); return; }
         handleAction(action);
+      }
+    });
+
+    // Quick-add chips
+    document.body.addEventListener('click', function(e) {
+      const chip = e.target.closest('.quick-chip');
+      if (chip) {
+        const category = chip.getAttribute('data-quick');
+        openModal('expense', null, category);
       }
     });
 
@@ -423,35 +502,53 @@
     }
   }
 
-  function updatePayDay() {
-    const pd = Number(S.settings.payDay) || 10;
+  function computePayDay() {
+    const pd = S.settings.payDay; // number or special string
     const today = new Date();
-    let nx = new Date(today.getFullYear(), today.getMonth(), pd);
-    if (nx <= today) nx = new Date(today.getFullYear(), today.getMonth()+1, pd);
-    const el = document.getElementById('payDisp');
-    if (el) el.textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${Math.ceil((nx-today)/86400000)}d)`;
+    let nx;
+    if (typeof pd === 'string') {
+      if (pd === 'lastFriday') {
+        nx = new Date(today.getFullYear(), today.getMonth() + 1, 0); // last day of month
+        while (nx.getDay() !== 5) nx.setDate(nx.getDate() - 1);
+      } else if (pd === 'lastDay') {
+        nx = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      }
+    } else {
+      const day = Number(pd) || 10;
+      nx = new Date(today.getFullYear(), today.getMonth(), day);
+      if (nx <= today) nx = new Date(today.getFullYear(), today.getMonth() + 1, day);
+    }
+    return nx;
   }
 
-  // Confirm receipt of salary (adds configured salary amount)
+  function updatePayDay() {
+    const nx = computePayDay();
+    const diff = Math.ceil((nx - new Date()) / 86400000);
+    const el = document.getElementById('payDisp');
+    if (el) el.textContent = `${nx.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} (${diff}d)`;
+  }
+
   function confirmSalary() {
     const amt = Number(S.settings.salaryAmount);
-    if (!amt || amt <= 0) {
-      toast('Set your salary amount in Settings first');
-      return;
-    }
-    if (S.confirmed) {
-      toast('Salary already confirmed this month');
-      return;
-    }
-    S.salary += amt;                 // add the configured salary to monthly total
+    if (!amt || amt <= 0) { toast('Set your salary amount in Settings first'); return; }
+    if (S.confirmed) { toast('Salary already confirmed this month'); return; }
+    S.salary += amt;
     S.confirmed = true;
     S.confirmedAt = new Date().toISOString();
     S.confirmedMonth = curMonth();
     addEntry('✅', 'Salary confirmed', `TZS ${FMT(amt)}`, 'income');
+    
+    // Auto‑create recurring obligations for new month
+    const recurring = S.obligations.filter(o => o.type === 'recurring');
+    recurring.forEach(o => {
+      const newOb = { ...o, id: 'ob_' + Date.now() + Math.random(), status: 'pending' };
+      S.obligations.push(newOb);
+    });
+    
     saveLocalData();
     scheduleSync();
     renderAll();
-    toast('✓ Salary confirmed! Start tracking obligations.');
+    toast('✓ Salary confirmed! Recurring obligations added.');
   }
 
   function renderSalCard() {
@@ -459,81 +556,54 @@
     const totalExp = S.expenses.reduce((s,e) => s + e.amt, 0);
     const bal = S.salary - totalObs - totalExp;
     
-    const scAmt = document.getElementById('scAmt');
-    if (scAmt) scAmt.textContent = S.salary > 0 ? FMT(S.salary) : '—';
-    
-    const scObs = document.getElementById('scObs');
-    if (scObs) { scObs.textContent = 'TZS ' + FMT(totalObs); scObs.className = 'sc-sv ' + (totalObs > S.salary ? 'r' : 'g'); }
-    
-    const scExp = document.getElementById('scExp');
-    if (scExp) scExp.textContent = 'TZS ' + FMT(totalExp);
-    
-    const scBal = document.getElementById('scBal');
-    if (scBal) { scBal.textContent = 'TZS ' + FMT(bal); scBal.className = 'sc-sv ' + (bal < 0 ? 'r' : 'g'); }
+    document.getElementById('scAmt').textContent = S.salary > 0 ? FMT(S.salary) : '—';
+    document.getElementById('scObs').textContent = 'TZS ' + FMT(totalObs);
+    document.getElementById('scExp').textContent = 'TZS ' + FMT(totalExp);
+    document.getElementById('scBal').textContent = 'TZS ' + FMT(bal);
+    document.getElementById('scBal').className = 'sc-sv ' + (bal < 0 ? 'r' : 'g');
     
     const bd = document.getElementById('balDisp');
-    if (bd) {
-      bd.textContent = 'TZS ' + FMT(bal);
-      bd.className = 'sv ' + (bal < 0 ? 'r' : bal < S.salary*0.1 ? 'a' : 'g');
-    }
+    bd.textContent = 'TZS ' + FMT(bal);
+    bd.className = 'sv ' + (bal < 0 ? 'r' : bal < S.salary*0.1 ? 'a' : 'g');
+    document.getElementById('balStrip').className = 'strip ' + (bal < 0 ? 'danger' : 'g');
     
-    const balStrip = document.getElementById('balStrip');
-    if (balStrip) balStrip.className = 'strip ' + (bal < 0 ? 'danger' : 'g');
-    
-    // Salary card label & badge
-    const scLbl = document.getElementById('scLbl');
-    const freq = S.settings.salaryFrequency || 'monthly';
-    if (scLbl) scLbl.textContent = `Expected Salary (${freq})`;
-    
+    document.getElementById('scLbl').textContent = t('scLbl');
     const badge = document.getElementById('scBadge');
     const wrap = document.getElementById('cfmWrap');
     if (S.confirmed) {
-      if (badge) { badge.textContent = '✓ Confirmed'; badge.className = 'sc-badge ok'; }
-      if (wrap) wrap.innerHTML = '<div class="cfm-done">✅ Receipt confirmed this month</div>';
+      badge.textContent = t('scBadgeOk'); badge.className = 'sc-badge ok';
+      wrap.innerHTML = `<div class="cfm-done">${t('cfmDone')}</div>`;
     } else {
-      if (badge) { badge.textContent = 'Not confirmed'; badge.className = 'sc-badge'; }
-      if (wrap) {
-        wrap.innerHTML = '<button class="cfm-btn" id="confirmSalaryBtn">✓ Confirm Receipt of Salary</button>';
-        setTimeout(() => {
-          const btn = document.getElementById('confirmSalaryBtn');
-          if (btn) btn.addEventListener('click', confirmSalary);
-        }, 0);
-      }
+      badge.textContent = t('scBadge'); badge.className = 'sc-badge';
+      wrap.innerHTML = `<button class="cfm-btn" id="confirmSalaryBtn">${t('confirmBtn')}</button>`;
+      setTimeout(() => {
+        const btn = document.getElementById('confirmSalaryBtn');
+        if (btn) btn.addEventListener('click', confirmSalary);
+      }, 0);
     }
-    
     document.getElementById('salDisp').textContent = S.salary > 0 ? FMT(S.salary) : '—';
   }
 
   function renderAlerts() {
-    const db = document.getElementById('dangerBanner');
-    const wb = document.getElementById('warnBanner');
-    if (db) db.classList.remove('show');
-    if (wb) wb.classList.remove('show');
-    
+    const db = document.getElementById('dangerBanner'), wb = document.getElementById('warnBanner');
+    db.classList.remove('show'); wb.classList.remove('show');
     if (!S.confirmed) return;
     const pend = S.obligations.filter(o => o.status === 'pending');
     if (!pend.length) return;
-    
     const hrs = S.confirmedAt ? (Date.now() - new Date(S.confirmedAt).getTime()) / 3600000 : 0;
-    
     if (hrs >= 24 && db) {
       db.classList.add('show');
-      const ds = document.getElementById('dangerSub');
-      if (ds) ds.textContent = `${pend.length} unsettled — ${Math.floor(hrs)}h since confirmation`;
-      const obCard = document.getElementById('obCard');
-      if (obCard) obCard.classList.add('danger');
-      const obBadge = document.getElementById('obBadge');
-      if (obBadge) obBadge.classList.add('red');
+      document.getElementById('dangerSub').textContent = `${pend.length} unsettled — ${Math.floor(hrs)}h since confirmation`;
+      document.getElementById('obCard').classList.add('danger');
+      document.getElementById('obBadge').classList.add('red');
     } else if (wb) {
       wb.classList.add('show');
-      const wt = document.getElementById('warnTitle');
-      if (wt) wt.textContent = `${pend.length} obligation${pend.length>1?'s':''} pending`;
-      const ws = document.getElementById('warnSub');
-      if (ws) ws.textContent = `Confirmed ${Math.floor(hrs)}h ago`;
+      document.getElementById('warnTitle').textContent = `${pend.length} obligation${pend.length>1?'s':''} pending`;
+      document.getElementById('warnSub').textContent = `Confirmed ${Math.floor(hrs)}h ago`;
     }
   }
 
-  function openModal(type, editId) {
+  function openModal(type, editId, prefillCategory) {
     S.obType = 'recurring';
     S.editingObId = editId || null;
     document.getElementById('ov').classList.add('open');
@@ -541,9 +611,10 @@
     
     if (type === 'income') {
       h = `<div class="stit">Record Income</div>
-      <div class="fld"><label>Source</label><select id="incSrc"><option value="Salary">💼 Salary</option><option value="Business">🏪 Business</option><option value="Freelance">💻 Freelance</option><option value="Other">💬 Other</option></select></div>
+      <div class="fld"><label>Source</label><select id="incSrc"><option value="Salary">💼 Salary</option><option value="Business">🏪 Business</option><option value="Freelance">💻 Freelance</option><option value="Side Hustle">⚡ Side Hustle</option><option value="Rental">🏠 Rental</option><option value="Family Contribution">👨‍👩‍👧 Family Support</option><option value="Other">💬 Other</option></select></div>
       <div class="fld"><label>Description</label><input id="incDesc" placeholder="e.g. Bonus, side gig"></div>
       <div class="fld"><label>Amount</label><input id="incAmt" type="number" placeholder="0"></div>
+      <div class="fld"><label><input type="checkbox" id="isSalary" checked> This is my monthly salary</label></div>
       <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="income">Record</button></div>`;
     } else if (type === 'target') {
       h = `<div class="stit">Weekly Target</div>
@@ -558,19 +629,36 @@
       <div class="fld"><label>Type</label><div class="togrow"><button class="tog${S.obType==='once'?' on':''}" id="tog-once">One-time</button><button class="tog${S.obType==='recurring'?' on':''}" id="tog-rec">Monthly</button></div></div>
       <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="${ed?'editob':'ob'}">${ed?'Update':'Add'}</button></div>`;
     } else if (type === 'expense') {
+      const cat = prefillCategory || '';
       h = `<div class="stit">Log Expense</div>
       <div class="fld"><label>Description</label><input id="expName" placeholder="What did you spend on?"></div>
       <div class="fld"><label>Amount</label><input id="expAmt" type="number" placeholder="0"></div>
-      <div class="fld"><label>Category</label><select id="expCat"><option>🍛 Food</option><option>🚌 Transport</option><option>📱 Airtime</option><option>🛒 Shopping</option><option>💡 Utilities</option></select></div>
+      <div class="fld"><label>Category</label><select id="expCat"><option>🍛 Food</option><option>🚌 Transport</option><option>📱 Airtime</option><option>🛒 Shopping</option><option>🤝 Mchango</option><option>💡 Utilities</option></select></div>
+      <div class="fld"><label>Payment Method</label><select id="expMethod"><option>Cash</option><option>M-Pesa</option><option>Tigo Pesa</option><option>Airtel Money</option></select></div>
       <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="expense">Save</button></div>`;
+      // Pre-fill category if provided
+      setTimeout(() => {
+        if (cat) {
+          const sel = document.getElementById('expCat');
+          if (sel) sel.value = cat;
+        }
+      }, 0);
+    } else if (type === 'sms') {
+      h = `<div class="stit">Paste M‑Pesa SMS</div>
+      <div class="fld"><label>SMS Text</label><textarea id="smsText" rows="3" placeholder="Paste the message here..."></textarea></div>
+      <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="parseSMS">Parse</button></div>`;
     } else if (type === 'settings') {
-      h = `<div class="stit">⚙️ Salary & Settings</div>
+      h = `<div class="stit">⚙️ Settings</div>
       <div class="fld"><label>Expected Monthly Salary (TZS)</label><input id="setSalaryAmt" type="number" placeholder="e.g. 500000" value="${S.settings.salaryAmount||''}"></div>
       <div class="fld"><label>Frequency</label><select id="setFreq"><option value="monthly" ${S.settings.salaryFrequency==='monthly'?'selected':''}>Monthly</option><option value="bi-weekly" ${S.settings.salaryFrequency==='bi-weekly'?'selected':''}>Bi-weekly</option><option value="weekly" ${S.settings.salaryFrequency==='weekly'?'selected':''}>Weekly</option></select></div>
-      <div class="fld"><label>Pay Day (1-28)</label><select id="setPayDay">${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${(S.settings.payDay||10)==i+1?'selected':''}>${i+1}</option>`).join('')}</select></div>
+      <div class="fld"><label>Pay Day</label><select id="setPayDay">
+        <option value="lastFriday" ${S.settings.payDay==='lastFriday'?'selected':''}>Last Friday</option>
+        <option value="lastDay" ${S.settings.payDay==='lastDay'?'selected':''}>Last Day of Month</option>
+        ${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${S.settings.payDay==i+1?'selected':''}>${i+1}</option>`).join('')}
+      </select></div>
+      <div class="fld"><label>Language</label><select id="setLang"><option value="en" ${currentLang==='en'?'selected':''}>English</option><option value="sw" ${currentLang==='sw'?'selected':''}>Kiswahili</option></select></div>
       <div class="sa"><button class="bcanc">Cancel</button><button class="bok" data-form-action="settings">Save</button></div>`;
     }
-    
     document.getElementById('shBody').innerHTML = h;
   }
 
@@ -581,8 +669,7 @@
 
   function setObt(t) {
     S.obType = t;
-    const once = document.getElementById('tog-once');
-    const rec = document.getElementById('tog-rec');
+    const once = document.getElementById('tog-once'), rec = document.getElementById('tog-rec');
     if (once) once.className = 'tog' + (t==='once'?' on':'');
     if (rec) rec.className = 'tog' + (t==='recurring'?' on':'');
   }
@@ -594,21 +681,21 @@
   }
 
   function doIncome() {
-    const amtEl = document.getElementById('incAmt');
-    const srcEl = document.getElementById('incSrc');
-    const descEl = document.getElementById('incDesc');
-    if (!amtEl || !srcEl) return;
-    const v = Number(amtEl.value);
-    if (!v || v <= 0) { toast('Enter amount'); return; }
-    const src = srcEl.value;
-    const desc = descEl ? descEl.value.trim() || src : src;
+    const amt = Number(document.getElementById('incAmt')?.value);
+    if (!amt || amt <= 0) { toast('Enter amount'); return; }
+    const src = document.getElementById('incSrc')?.value || 'Income';
+    const desc = document.getElementById('incDesc')?.value?.trim() || src;
+    const isSalary = document.getElementById('isSalary')?.checked;
     
-    S.salary += v;
-    S.confirmed = false;
-    S.confirmedAt = null;
-    S.confirmedMonth = '';
+    if (isSalary) {
+      S.salary += amt;
+      S.confirmed = false; // they still need to confirm
+    } else {
+      // side income – add to total income but not as salary
+      S.salary += amt; // currently all income counts; could separate later
+    }
     
-    addEntry('💰', `${src}: ${desc}`, `TZS ${FMT(v)}`, 'income');
+    addEntry('💰', `${src}: ${desc}`, `TZS ${FMT(amt)}`, 'income');
     closeModal();
     saveLocalData();
     scheduleSync(500);
@@ -617,9 +704,7 @@
   }
 
   function doTarget() {
-    const el = document.getElementById('tgtAmt');
-    if (!el) return;
-    const v = Number(el.value);
+    const v = Number(document.getElementById('tgtAmt')?.value);
     if (!v || v <= 0) { toast('Enter amount'); return; }
     S.weeklyTarget = v;
     addEntry('🎯', 'Weekly target updated', `TZS ${FMT(v)}`, 'system');
@@ -631,13 +716,9 @@
   }
 
   function doOb() {
-    const nameEl = document.getElementById('obName');
-    const amtEl = document.getElementById('obAmt');
-    if (!nameEl || !amtEl) return;
-    const name = nameEl.value.trim();
-    const amt = Number(amtEl.value);
+    const name = document.getElementById('obName')?.value?.trim();
+    const amt = Number(document.getElementById('obAmt')?.value);
     if (!name || !amt) { toast('Fill all fields'); return; }
-    
     const id = 'ob_' + Date.now();
     S.obligations.push({ id, name, amt, type: S.obType, status: 'pending' });
     addEntry('📋', `Added: ${name}`, `TZS ${FMT(amt)}`, 'system');
@@ -650,19 +731,12 @@
 
   function doEditOb() {
     if (!S.editingObId) return;
-    const nameEl = document.getElementById('obName');
-    const amtEl = document.getElementById('obAmt');
-    if (!nameEl || !amtEl) return;
-    const name = nameEl.value.trim();
-    const amt = Number(amtEl.value);
+    const name = document.getElementById('obName')?.value?.trim();
+    const amt = Number(document.getElementById('obAmt')?.value);
     if (!name || !amt) { toast('Fill all fields'); return; }
-    
     const ob = S.obligations.find(o => o.id === S.editingObId);
     if (!ob) return;
-    ob.name = name;
-    ob.amt = amt;
-    ob.type = S.obType;
-    
+    ob.name = name; ob.amt = amt; ob.type = S.obType;
     addEntry('✏️', `Updated: ${name}`, `TZS ${FMT(amt)}`, 'system');
     closeModal();
     saveLocalData();
@@ -694,17 +768,13 @@
   }
 
   function doExpense() {
-    const nameEl = document.getElementById('expName');
-    const amtEl = document.getElementById('expAmt');
-    const catEl = document.getElementById('expCat');
-    if (!nameEl || !amtEl) return;
-    const name = nameEl.value.trim();
-    const amt = Number(amtEl.value);
-    const cat = catEl ? catEl.value : 'Expense';
+    const name = document.getElementById('expName')?.value?.trim();
+    const amt = Number(document.getElementById('expAmt')?.value);
+    const cat = document.getElementById('expCat')?.value || 'Expense';
+    const method = document.getElementById('expMethod')?.value || 'Cash';
     if (!name || !amt) { toast('Fill all fields'); return; }
-    
-    S.expenses.push({ name, cat, amt });
-    addEntry(cat.split(' ')[0], name, `TZS ${FMT(amt)} · ${cat}`, 'expense');
+    S.expenses.push({ name, cat, amt, method });
+    addEntry(cat.split(' ')[0], name, `TZS ${FMT(amt)} · ${cat} (${method})`, 'expense');
     closeModal();
     saveLocalData();
     scheduleSync(500);
@@ -712,16 +782,57 @@
     toast('✓ Expense logged');
   }
 
+  function parseSMS() {
+    const text = document.getElementById('smsText')?.value;
+    if (!text) { toast('Paste SMS first'); return; }
+    // Basic M-Pesa pattern (example)
+    const patterns = [
+      /confirmed\s*[:\s]*TZS\s*([\d,]+)\s*.*from\s*([\w\s]+)/i,  // received
+      /sent\s*TZS\s*([\d,]+)\s*to\s*([\w\s]+)/i                 // sent
+    ];
+    let match = null, type = 'income';
+    for (const p of patterns) {
+      match = text.match(p);
+      if (match) {
+        type = p === patterns[0] ? 'income' : 'expense';
+        break;
+      }
+    }
+    if (match) {
+      const amount = Number(match[1].replace(/,/g, ''));
+      const party = match[2].trim();
+      if (type === 'income') {
+        S.salary += amount;
+        addEntry('📩', `M-Pesa from ${party}`, `TZS ${FMT(amount)}`, 'income');
+      } else {
+        S.expenses.push({ name: `Sent to ${party}`, cat: 'M-Pesa', amt: amount, method: 'M-Pesa' });
+        addEntry('📩', `Sent to ${party}`, `TZS ${FMT(amount)}`, 'expense');
+      }
+      closeModal();
+      saveLocalData();
+      scheduleSync(500);
+      renderAll();
+      toast('✓ Transaction parsed');
+    } else {
+      toast('Could not parse SMS. Try manual entry.');
+    }
+  }
+
   function doSettings() {
     const salaryAmt = Number(document.getElementById('setSalaryAmt')?.value) || 0;
     const freq = document.getElementById('setFreq')?.value || 'monthly';
-    const payDay = Number(document.getElementById('setPayDay')?.value) || 10;
+    const payDayRaw = document.getElementById('setPayDay')?.value;
+    const payDay = isNaN(payDayRaw) ? payDayRaw : Number(payDayRaw);
+    const lang = document.getElementById('setLang')?.value || 'en';
     S.settings.salaryAmount = salaryAmt;
     S.settings.salaryFrequency = freq;
     S.settings.payDay = payDay;
+    S.settings.language = lang;
+    currentLang = lang;
     closeModal();
     saveLocalData();
     scheduleSync(500);
+    applyLanguage();
     updatePayDay();
     renderSalCard();
     toast('✓ Settings saved');
@@ -730,55 +841,31 @@
   function renderObs() {
     const wrap = document.getElementById('obList');
     const pend = S.obligations.filter(o => o.status === 'pending').length;
-    const badge = document.getElementById('obBadge');
-    if (badge) badge.textContent = pend + ' pending';
-    
+    document.getElementById('obBadge').textContent = pend + ' pending';
     if (!S.obligations.length) {
-      if (wrap) wrap.innerHTML = '<div class="ob-empty">No obligations yet</div>';
+      wrap.innerHTML = `<div class="ob-empty">${t('obEmpty')}</div>`;
       return;
     }
-    
     const overdue = S.confirmed && S.confirmedAt && (Date.now() - new Date(S.confirmedAt).getTime()) >= 86400000;
-    
-    if (wrap) {
-      wrap.innerHTML = S.obligations.map(o => {
-        const dc = o.status === 'settled' ? 'settled' : (overdue && o.status === 'pending' ? 'overdue' : 'pending');
-        return `<div class="ob-row">
-          <div class="od ${dc}"></div>
-          <div class="oi">
-            <div class="on">${o.name}</div>
-            <div class="om">
-              <span class="otag ${o.type==='recurring'?'r':'o'}">${o.type==='recurring'?'↻ Monthly':'✕ Once'}</span>
-              ${o.status==='settled'?'✓ Paid':'Pending'}
-            </div>
-          </div>
-          <div class="oamt">TZS ${FMT(o.amt)}</div>
-          <div class="ob-actions">
-            ${o.status!=='settled' ? `<button class="osb pend" data-id="${o.id}">Pay</button>` : `<button class="osb done">✓</button>`}
-            <button class="oedit" data-id="${o.id}">✏️</button>
-            <button class="odel" data-id="${o.id}">✕</button>
-          </div>
-        </div>`;
-      }).join('');
-    }
+    wrap.innerHTML = S.obligations.map(o => {
+      const dc = o.status === 'settled' ? 'settled' : (overdue && o.status === 'pending' ? 'overdue' : 'pending');
+      return `<div class="ob-row"><div class="od ${dc}"></div><div class="oi"><div class="on">${o.name}</div><div class="om"><span class="otag ${o.type==='recurring'?'r':'o'}">${o.type==='recurring'?'↻ Monthly':'✕ Once'}</span>${o.status==='settled'?'✓ Paid':'Pending'}</div></div><div class="oamt">TZS ${FMT(o.amt)}</div><div class="ob-actions">${o.status!=='settled'?`<button class="osb pend" data-id="${o.id}">Pay</button>`:`<button class="osb done">✓</button>`}<button class="oedit" data-id="${o.id}">✏️</button><button class="odel" data-id="${o.id}">✕</button></div></div>`;
+    }).join('');
   }
 
   function renderEntries() {
     const el = document.getElementById('enList');
-    const count = document.getElementById('enCount');
-    if (count) count.textContent = S.entries.length + ' entries';
-    if (el) {
-      if (!S.entries.length) {
-        el.innerHTML = '<div class="en-empty">📊 No transactions</div>';
-      } else {
-        el.innerHTML = S.entries.map(e => `
-          <div class="en">
-            <div class="eico ei-${e.type}">${e.icon}</div>
-            <div class="ei"><div class="em">${e.msg}</div><div class="es">${e.sub}</div></div>
-            <div class="et">${e.t}</div>
-          </div>`).join('');
-      }
+    document.getElementById('enCount').textContent = S.entries.length + ' entries';
+    if (!S.entries.length) {
+      el.innerHTML = `<div class="en-empty">${t('enEmpty')}</div>`;
+      return;
     }
+    el.innerHTML = S.entries.map(e => `
+      <div class="en">
+        <div class="eico ei-${e.type}">${e.icon}</div>
+        <div class="ei"><div class="em">${e.msg}</div><div class="es">${e.sub}</div></div>
+        <div class="et">${e.t}</div>
+      </div>`).join('');
   }
 
   function renderHero() {
@@ -786,23 +873,14 @@
     const rem = S.weeklyTarget - spent;
     const ratio = S.weeklyTarget > 0 ? spent / S.weeklyTarget : 0;
     const pct = Math.min(ratio * 100, 100);
-    
-    const wkRem = document.getElementById('wkRem');
-    if (wkRem) wkRem.textContent = FMT(Math.max(rem, 0));
-    const wkSpent = document.getElementById('wkSpent');
-    if (wkSpent) wkSpent.textContent = FMT(spent);
-    const wkTgt = document.getElementById('wkTgt');
-    if (wkTgt) wkTgt.textContent = FMT(S.weeklyTarget);
-    
-    const progFill = document.getElementById('progFill');
-    if (progFill) progFill.style.width = pct + '%';
-    const progPct = document.getElementById('progPct');
-    if (progPct) progPct.textContent = pct.toFixed(0) + '%';
+    document.getElementById('wkRem').textContent = FMT(Math.max(rem, 0));
+    document.getElementById('wkSpent').textContent = FMT(spent);
+    document.getElementById('wkTgt').textContent = FMT(S.weeklyTarget);
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progPct').textContent = pct.toFixed(0) + '%';
     
     const score = S.weeklyTarget === 0 ? null : (rem < 0 ? 20 : ratio > 0.8 ? 50 : ratio > 0.6 ? 70 : 90);
-    const sv = document.getElementById('scoreVal');
-    if (sv) sv.textContent = score !== null ? score : '—';
-    
+    document.getElementById('scoreVal').textContent = score !== null ? score : '—';
     const rc = document.getElementById('riskChip');
     if (rc) {
       if (!score || score >= 80) { rc.textContent = '● Stable'; rc.className = 'chip chip-r'; }
@@ -830,6 +908,20 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
   }
+
+  // Register parseSMS handler
+  handleFormAction = function(formAction) {
+    if (formAction === 'parseSMS') { parseSMS(); return; }
+    // existing actions...
+    switch(formAction) {
+      case 'income': doIncome(); break;
+      case 'expense': doExpense(); break;
+      case 'target': doTarget(); break;
+      case 'ob': doOb(); break;
+      case 'editob': doEditOb(); break;
+      case 'settings': doSettings(); break;
+    }
+  };
 
   init();
 })();
