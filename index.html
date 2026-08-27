@@ -3,265 +3,472 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wakala Pro - Business Management</title>
-    <!-- Tailwind CSS for Styling -->
+    <title>Wakala Pro - Complete Enterprise Solution</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
 
-    <!-- Top Navigation -->
-    <header class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl font-black tracking-tight text-emerald-400">WAKALA<span class="text-white">PRO</span></span>
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white px-6 py-4 flex flex-col md:flex-row justify-between items-center shadow-md gap-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-500 text-slate-900 font-black p-2 rounded-lg text-lg">W</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">WAKALA<span class="text-emerald-400">PRO</span></h1>
+                <p class="text-xs text-slate-400">Reconciliation & Capital Management</p>
+            </div>
         </div>
-        <div class="bg-slate-800 p-1 rounded-lg flex border border-slate-700">
-            <button id="btn-agent-mode" onclick="setMode('AGENT')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-500 text-white shadow">Agent View</button>
-            <button id="btn-owner-mode" onclick="setMode('OWNER')" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white">Owner Dashboard</button>
+        <div class="bg-slate-800 p-1.5 rounded-lg flex border border-slate-700">
+            <button id="btn-agent-mode" onclick="setMode('AGENT')" class="px-4 py-2 rounded-md text-xs font-bold bg-emerald-500 text-white shadow">Agent View</button>
+            <button id="btn-owner-mode" onclick="setMode('OWNER')" class="px-4 py-2 rounded-md text-xs font-bold text-slate-400 hover:text-white">Owner Dashboard</button>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto p-4 md:p-6">
+    <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
 
-        <!-- ================= AGENT VIEW ================= -->
+        <!-- ================= AGENT WORKFLOW ================= -->
         <div id="view-agent" class="space-y-6">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+            
+            <!-- Header Bar -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-900">Daily Closing & Reconciliation</h2>
-                    <p class="text-xs text-slate-500">Business Date: Today</p>
+                    <h2 class="text-lg font-bold text-slate-900">Daily Session & Closing</h2>
+                    <p class="text-xs text-slate-500" id="session-date-display">Date: Loading...</p>
                 </div>
-                <span id="session-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">IN PROGRESS</span>
+                <div class="flex items-center gap-3">
+                    <span id="session-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">SESSION OPEN</span>
+                </div>
             </div>
 
-            <!-- Agent Active Form -->
-            <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Navigation Steps -->
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 h-fit">
-                    <button onclick="setStep(1)" id="step-btn-1" class="w-full text-left p-3 rounded-lg font-medium text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">1. Physical Cash Count</button>
-                    <button onclick="setStep(2)" id="step-btn-2" class="w-full text-left p-3 rounded-lg font-medium text-sm hover:bg-slate-50">2. Network Floats</button>
-                    <button onclick="setStep(3)" id="step-btn-3" class="w-full text-left p-3 rounded-lg font-medium text-sm hover:bg-slate-50">3. Daily Expenses</button>
-                    <button onclick="setStep(4)" id="step-btn-4" class="w-full text-left p-3 rounded-lg font-medium text-sm hover:bg-slate-50">4. Review & Submit</button>
+            <!-- Agent Active Step Form -->
+            <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                
+                <!-- Left Stepper Navigation -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 h-fit md:col-span-1">
+                    <button onclick="setStep(1)" id="step-btn-1" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">1. Physical Cash</button>
+                    <button onclick="setStep(2)" id="step-btn-2" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">2. Network Floats</button>
+                    <button onclick="setStep(3)" id="step-btn-3" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">3. Daily Expenses</button>
+                    <button onclick="setStep(4)" id="step-btn-4" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">4. Review & Lock</button>
                 </div>
 
-                <!-- Form Step Contents -->
-                <div class="md:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <!-- Right Form Area -->
+                <div class="md:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     
-                    <!-- STEP 1: CASH -->
-                    <div id="step-1" class="space-y-4">
-                        <h3 class="font-bold text-slate-800 border-b pb-2">Physical Cash Verification</h3>
-                        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
+                    <!-- STEP 1: PHYSICAL CASH COUNT -->
+                    <div id="step-1" class="space-y-5">
+                        <h3 class="font-bold text-slate-900 border-b pb-2 text-md">1. Physical Cash Reconciliation</h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border">
                             <div>
-                                <label class="text-xs text-slate-500 font-semibold uppercase">Opening Cash</label>
-                                <p class="text-lg font-bold text-slate-800">TZS <span id="lbl-opening-cash">500,000</span></p>
+                                <label class="text-xs text-slate-500 font-bold uppercase">Opening Cash</label>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="text-xs text-slate-400">TZS</span>
+                                    <input type="number" id="input-opening-cash" value="500000" oninput="calculateAll()" class="font-bold text-slate-800 text-lg w-full bg-transparent border-b border-slate-300 focus:outline-none focus:border-emerald-500">
+                                </div>
                             </div>
                             <div>
-                                <label class="text-xs text-slate-500 font-semibold uppercase">Expected Cash</label>
-                                <p class="text-lg font-bold text-slate-800">TZS <span id="lbl-expected-cash">0</span></p>
+                                <label class="text-xs text-slate-500 font-bold uppercase">Capital Injected Today</label>
+                                <p class="text-lg font-bold text-emerald-600 mt-1">TZS <span id="lbl-today-capital">0</span></p>
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 font-bold uppercase">Expected Cash</label>
+                                <p class="text-lg font-bold text-slate-900 mt-1">TZS <span id="lbl-expected-cash">0</span></p>
                             </div>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Enter Counted Drawer Cash (TZS)</label>
-                            <input type="number" id="input-actual-cash" value="572500" oninput="calculateAll()" class="w-full text-xl font-bold p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Actual Physical Drawer Cash Counted (TZS)</label>
+                            <input type="number" id="input-actual-cash" value="572500" oninput="calculateAll()" class="w-full text-2xl font-black p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
                         </div>
-                        <div id="box-variance" class="p-4 rounded-lg flex items-center justify-between bg-emerald-50 text-emerald-800 border border-emerald-200">
-                            <span class="font-semibold text-sm">Cash Variance:</span>
-                            <span class="font-bold text-lg">TZS <span id="lbl-cash-variance">0</span></span>
+
+                        <div id="box-variance" class="p-4 rounded-lg flex justify-between items-center bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <span class="font-bold text-sm">Cash Variance / Difference:</span>
+                            <span class="font-black text-xl">TZS <span id="lbl-cash-variance">0</span></span>
                         </div>
-                        <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700">Next: Network Floats →</button>
+
+                        <button onclick="setStep(2)" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
                     </div>
 
-                    <!-- STEP 2: NETWORKS -->
-                    <div id="step-2" class="space-y-4 hidden">
-                        <h3 class="font-bold text-slate-800 border-b pb-2">Network Floats & Commissions</h3>
-                        <div class="space-y-4">
-                            <!-- MPESA -->
-                            <div class="p-3 bg-slate-50 border rounded-lg space-y-2">
-                                <span class="font-bold text-slate-900">M-Pesa</span>
-                                <div class="grid grid-cols-2 gap-2 text-xs">
-                                    <div><label class="text-slate-500">Deposits</label><input type="number" id="mpesa-dep" value="850000" oninput="calculateAll()" class="w-full p-2 border rounded"></div>
-                                    <div><label class="text-slate-500">Withdrawals</label><input type="number" id="mpesa-wd" value="920000" oninput="calculateAll()" class="w-full p-2 border rounded"></div>
-                                    <div><label class="text-slate-500">Closing Float</label><input type="number" id="mpesa-float" value="470000" oninput="calculateAll()" class="w-full p-2 border rounded"></div>
-                                    <div><label class="text-slate-500">Commission</label><input type="number" id="mpesa-comm" value="17500" oninput="calculateAll()" class="w-full p-2 border rounded font-bold text-emerald-700"></div>
-                                </div>
-                            </div>
-                            <!-- AIRTEL -->
-                            <div class="p-3 bg-slate-50 border rounded-lg space-y-2">
-                                <span class="font-bold text-slate-900">Airtel Money</span>
-                                <div class="grid grid-cols-2 gap-2 text-xs">
-                                    <div><label class="text-slate-500">Deposits</label><input type="number" id="airtel-dep" value="420000" oninput="calculateAll()" class="w-full p-2 border rounded"></div>
-                                    <div><label class="text-slate-500">Withdrawals</label><input type="number" id="airtel-wd" value="380000" oninput="calculateAll()" class="w-full p-2 border rounded"></div>
-                                    <div><label class="text-slate-500">Closing Float</label><input type="number" id="airtel-float" value="210000" oninput="calculateAll()" class="w-full p-2 border rounded"></div>
-                                    <div><label class="text-slate-500">Commission</label><input type="number" id="airtel-comm" value="8200" oninput="calculateAll()" class="w-full p-2 border rounded font-bold text-emerald-700"></div>
-                                </div>
-                            </div>
+                    <!-- STEP 2: NETWORK SUMMARIES -->
+                    <div id="step-2" class="space-y-5 hidden">
+                        <h3 class="font-bold text-slate-900 border-b pb-2 text-md">2. Network Statements & Balances</h3>
+                        
+                        <div id="network-inputs-container" class="space-y-4">
+                            <!-- Dynamic Networks Injected via Javascript -->
                         </div>
-                        <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700">Next: Expenses →</button>
+
+                        <button onclick="setStep(3)" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
                     </div>
 
                     <!-- STEP 3: EXPENSES -->
-                    <div id="step-3" class="space-y-4 hidden">
-                        <h3 class="font-bold text-slate-800 border-b pb-2">Record Today's Expenses</h3>
-                        <div class="flex gap-2">
-                            <input type="number" id="exp-amount" placeholder="Amount" class="p-2 border rounded text-sm w-28">
-                            <input type="text" id="exp-note" placeholder="Note (e.g. Transport)" class="p-2 border rounded text-sm flex-1">
-                            <button onclick="addExpense()" class="px-4 py-2 bg-slate-900 text-white rounded font-medium text-sm">Add</button>
+                    <div id="step-3" class="space-y-5 hidden">
+                        <h3 class="font-bold text-slate-900 border-b pb-2 text-md">3. Log Daily Expenses</h3>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="number" id="exp-amount" placeholder="Amount (TZS)" class="p-3 border rounded-lg text-sm sm:w-36 font-semibold">
+                            <input type="text" id="exp-note" placeholder="Reason (e.g. Transport, Airtime)" class="p-3 border rounded-lg text-sm flex-1">
+                            <button onclick="addExpense()" class="px-5 py-3 bg-slate-900 text-white font-bold rounded-lg text-sm hover:bg-slate-800">Add Expense</button>
                         </div>
-                        <ul id="expense-list" class="divide-y border rounded-lg p-2 text-sm bg-slate-50">
-                            <li class="flex justify-between py-1"><span>Transport to bank</span><span class="font-bold">TZS 5,000</span></li>
-                        </ul>
-                        <button onclick="setStep(4)" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700">Next: Final Review →</button>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-100 text-slate-600 border-b">
+                                    <tr>
+                                        <th class="p-3">Reason / Category</th>
+                                        <th class="p-3 text-right">Amount</th>
+                                        <th class="p-3 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expense-table-body">
+                                    <!-- Injected JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button onclick="setStep(4)" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
                     </div>
 
-                    <!-- STEP 4: REVIEW -->
-                    <div id="step-4" class="space-y-4 hidden">
-                        <h3 class="font-bold text-slate-800 border-b pb-2">Final Closing Review</h3>
-                        <div class="space-y-2 bg-slate-50 p-4 rounded-lg text-sm">
-                            <div class="flex justify-between"><span>Commissions Earned:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
-                            <div class="flex justify-between"><span>Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">5,000</span></span></div>
-                            <div class="flex justify-between border-t pt-2 font-bold text-base"><span>Net Profit:</span><span class="text-emerald-600">TZS <span id="rev-profit">0</span></span></div>
+                    <!-- STEP 4: FINAL REVIEW -->
+                    <div id="step-4" class="space-y-5 hidden">
+                        <h3 class="font-bold text-slate-900 border-b pb-2 text-md">4. Final Reconciliation & Submission</h3>
+                        
+                        <div class="space-y-3 bg-slate-50 p-4 rounded-lg border text-sm">
+                            <div class="flex justify-between"><span>Total Transaction Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
+                            <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Total Commission Earned:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
+                            <div class="flex justify-between"><span class="text-rose-700 font-semibold">Total Operating Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
+                            <div class="flex justify-between border-t pt-2 font-black text-base"><span>Calculated Net Operating Profit:</span><span class="text-emerald-600">TZS <span id="rev-profit">0</span></span></div>
                         </div>
-                        <button onclick="submitClosing()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800">Submit & Lock Daily Closing</button>
+
+                        <div class="p-4 border rounded-lg bg-slate-900 text-white space-y-1">
+                            <p class="text-xs text-slate-400 font-bold uppercase">Drawer Cash Verification</p>
+                            <div class="flex justify-between items-center">
+                                <span>Expected: <strong>TZS <span id="rev-exp-cash">0</span></strong></span>
+                                <span>Actual: <strong>TZS <span id="rev-act-cash">0</span></strong></span>
+                            </div>
+                            <p class="text-xs font-bold pt-1 border-t border-slate-800 text-emerald-400">Variance: TZS <span id="rev-variance">0</span></p>
+                        </div>
+
+                        <button onclick="submitClosing()" class="w-full py-4 bg-emerald-600 text-white font-black text-lg rounded-lg hover:bg-emerald-700 shadow-md">
+                            Submit & Lock Daily Closing
+                        </button>
                     </div>
 
                 </div>
             </div>
 
             <!-- Success Screen -->
-            <div id="agent-success" class="bg-white p-8 rounded-xl border border-slate-200 text-center space-y-4 hidden">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
-                <h3 class="text-xl font-bold">Daily Closing Submitted Successfully!</h3>
-                <p class="text-slate-500 text-sm">The financial metrics have been locked and sent to the Owner Dashboard.</p>
-                <button onclick="resetDemo()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-200">Start New Entry</button>
+            <div id="agent-success" class="bg-white p-10 rounded-xl border border-slate-200 text-center space-y-4 hidden shadow-sm">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl font-black">✓</div>
+                <h3 class="text-2xl font-black text-slate-900">Session Closed & Locked</h3>
+                <p class="text-slate-500 text-sm max-w-md mx-auto">Financial position has been updated and reported to the business owner dashboard.</p>
+                <button onclick="resetDemo()" class="px-6 py-2.5 bg-slate-900 text-white font-bold rounded-lg text-sm hover:bg-slate-800">Start New Operating Day</button>
             </div>
         </div>
 
-        <!-- ================= OWNER VIEW ================= -->
+        <!-- ================= OWNER DASHBOARD ================= -->
         <div id="view-owner" class="space-y-6 hidden">
-            <!-- Stat Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-semibold text-slate-500 uppercase">Today's Net Profit</p>
-                    <p class="text-2xl font-black text-emerald-600 mt-1">TZS <span id="owner-profit">0</span></p>
-                    <span class="text-xs text-slate-400">Total Commissions − Expenses</span>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-semibold text-slate-500 uppercase">Total Money Position</p>
-                    <p class="text-2xl font-black text-slate-900 mt-1">TZS <span id="owner-position">0</span></p>
-                    <span class="text-xs text-slate-400">Physical Cash + Network Floats</span>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-semibold text-slate-500 uppercase">Cash Difference Alert</p>
-                    <p id="owner-variance-card" class="text-2xl font-black mt-1">TZS <span id="owner-variance">0</span></p>
-                    <span class="text-xs text-slate-400">Discrepancy in drawer cash</span>
+            
+            <!-- Owner Controls Bar -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <h2 class="text-lg font-bold text-slate-900">Owner Financial Intelligence</h2>
+                <div class="flex gap-2">
+                    <button onclick="openCapitalModal()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">
+                        + Add / Inject Investment Capital
+                    </button>
+                    <button onclick="openNetworkModal()" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">
+                        + Add Custom Network
+                    </button>
                 </div>
             </div>
 
-            <!-- Network Float Status -->
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-bold text-slate-800">Network Float Allocation</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-4 border rounded-lg bg-slate-50 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold">M-Pesa</p>
-                            <p class="text-xs text-slate-500">Min Threshold: TZS 300,000</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-lg text-emerald-700">TZS <span id="owner-mpesa-float">470,000</span></p>
-                            <span class="text-xs text-emerald-600 font-semibold">Healthy Level</span>
-                        </div>
-                    </div>
-                    <div class="p-4 border rounded-lg bg-slate-50 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold">Airtel Money</p>
-                            <p class="text-xs text-slate-500">Min Threshold: TZS 250,000</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-lg text-rose-600">TZS <span id="owner-airtel-float">210,000</span></p>
-                            <span class="text-xs text-rose-600 font-semibold">⚠️ Low Float - Rebalance</span>
-                        </div>
-                    </div>
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
+                    <p class="text-2xl font-black text-emerald-600 mt-1">TZS <span id="owner-profit">0</span></p>
+                    <span class="text-xs text-slate-400">Commissions − Expenses</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
+                    <p class="text-2xl font-black text-slate-900 mt-1">TZS <span id="owner-position">0</span></p>
+                    <span class="text-xs text-slate-400">Actual Cash + All Network Floats</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Capital Injected Today</p>
+                    <p class="text-2xl font-black text-blue-600 mt-1">TZS <span id="owner-capital">0</span></p>
+                    <span class="text-xs text-slate-400">Owner Additions</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cash Variance Alert</p>
+                    <p id="owner-variance-card" class="text-2xl font-black mt-1">TZS <span id="owner-variance">0</span></p>
+                    <span class="text-xs text-slate-400">Drawer Discrepancy</span>
                 </div>
             </div>
+
+            <!-- Network Float Level Health -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-bold text-slate-900 text-md">Real-Time Network Float Balances & Warnings</h3>
+                <div id="owner-float-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic Network Cards -->
+                </div>
+            </div>
+
+            <!-- Capital Movements Ledger -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-bold text-slate-900 text-md">Capital Injections & Owner Adjustments</h3>
+                <div class="border rounded-lg overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 text-slate-600 border-b">
+                            <tr>
+                                <th class="p-3">Type</th>
+                                <th class="p-3">Destination</th>
+                                <th class="p-3">Description / Reason</th>
+                                <th class="p-3 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="capital-ledger-body">
+                            <!-- Injected JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
     </main>
 
-    <!-- App Logic Engine -->
+    <!-- Capital Injection Modal -->
+    <div id="modal-capital" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-lg">Inject Capital / Investment</h3>
+            <p class="text-xs text-slate-500">Adding capital increases your cash/float position without altering your daily operating profit calculation.</p>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-600">Destination Account</label>
+                    <select id="cap-destination" class="w-full p-3 border rounded-lg text-sm bg-slate-50 font-semibold mt-1">
+                        <option value="CASH">Physical Cash Drawer</option>
+                        <!-- Dynamic Networks Injected -->
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600">Amount (TZS)</label>
+                    <input type="number" id="cap-amount" placeholder="e.g. 500000" class="w-full p-3 border rounded-lg font-bold text-lg mt-1">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600">Note / Source of Capital</label>
+                    <input type="text" id="cap-note" placeholder="e.g. Bank Withdrawal for M-Pesa Float" class="w-full p-3 border rounded-lg text-sm mt-1">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button onclick="closeCapitalModal()" class="px-4 py-2 border rounded-lg text-sm font-semibold">Cancel</button>
+                <button onclick="saveCapitalInjection()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-sm hover:bg-emerald-700">Save Capital</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Network Modal -->
+    <div id="modal-network" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-lg">Add Custom Network</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-600">Network Code (e.g., HALOTEL, NMB)</label>
+                    <input type="text" id="net-code" placeholder="HALOTEL" class="w-full p-3 border rounded-lg font-bold uppercase mt-1">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600">Display Name</label>
+                    <input type="text" id="net-name" placeholder="Halotel / HaloPesa" class="w-full p-3 border rounded-lg text-sm mt-1">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600">Minimum Safety Float (TZS)</label>
+                    <input type="number" id="net-min" placeholder="100000" class="w-full p-3 border rounded-lg font-semibold text-sm mt-1">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button onclick="closeNetworkModal()" class="px-4 py-2 border rounded-lg text-sm font-semibold">Cancel</button>
+                <button onclick="saveCustomNetwork()" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg text-sm hover:bg-slate-800">Save Network</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
     <script>
+        // Default System Networks
+        let networks = JSON.parse(localStorage.getItem('wakala_networks')) || [
+            { code: 'MPESA', name: 'M-Pesa', minFloat: 300000, openingFloat: 400000, deposits: 850000, withdrawals: 920000, closingFloat: 470000, commission: 17500 },
+            { code: 'AIRTEL', name: 'Airtel Money', minFloat: 250000, openingFloat: 250000, deposits: 420000, withdrawals: 380000, closingFloat: 210000, commission: 8200 },
+            { code: 'YAS', name: 'Yas (Tigo)', minFloat: 200000, openingFloat: 200000, deposits: 210000, withdrawals: 250000, closingFloat: 240000, commission: 5100 }
+        ];
+
+        let expenses = JSON.parse(localStorage.getItem('wakala_expenses')) || [
+            { id: 1, note: 'Transport to bank', amount: 5000 }
+        ];
+
+        let capitalLedger = JSON.parse(localStorage.getItem('wakala_capital')) || [
+            { id: 1, destination: 'Physical Cash Drawer', amount: 100000, note: 'Initial Owner Investment' }
+        ];
+
         let currentStep = 1;
-        let expensesList = [{ amount: 5000, note: "Transport to bank" }];
-        const openingCash = 500000;
+
+        // Initialize App
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('session-date-display').innerText = `Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+            renderNetworkInputs();
+            renderExpenses();
+            renderCapitalLedger();
+            calculateAll();
+        });
 
         function setMode(mode) {
             if (mode === 'AGENT') {
                 document.getElementById('view-agent').classList.remove('hidden');
                 document.getElementById('view-owner').classList.add('hidden');
-                document.getElementById('btn-agent-mode').className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-500 text-white shadow";
-                document.getElementById('btn-owner-mode').className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white";
+                document.getElementById('btn-agent-mode').className = "px-4 py-2 rounded-md text-xs font-bold bg-emerald-500 text-white shadow";
+                document.getElementById('btn-owner-mode').className = "px-4 py-2 rounded-md text-xs font-bold text-slate-400 hover:text-white";
             } else {
                 document.getElementById('view-agent').classList.add('hidden');
                 document.getElementById('view-owner').classList.remove('hidden');
-                document.getElementById('btn-owner-mode').className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-500 text-white shadow";
-                document.getElementById('btn-agent-mode').className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white";
+                document.getElementById('btn-owner-mode').className = "px-4 py-2 rounded-md text-xs font-bold bg-emerald-500 text-white shadow";
+                document.getElementById('btn-agent-mode').className = "px-4 py-2 rounded-md text-xs font-bold text-slate-400 hover:text-white";
             }
         }
 
         function setStep(step) {
             for(let i=1; i<=4; i++) {
                 document.getElementById(`step-${i}`).classList.add('hidden');
-                document.getElementById(`step-btn-${i}`).className = "w-full text-left p-3 rounded-lg font-medium text-sm hover:bg-slate-50";
+                document.getElementById(`step-btn-${i}`).className = "w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50";
             }
             document.getElementById(`step-${step}`).classList.remove('hidden');
-            document.getElementById(`step-btn-${step}`).className = "w-full text-left p-3 rounded-lg font-medium text-sm bg-emerald-50 text-emerald-700 border border-emerald-200";
+            document.getElementById(`step-btn-${step}`).className = "w-full text-left p-3 rounded-lg font-bold text-xs uppercase bg-emerald-50 text-emerald-700 border border-emerald-200";
             currentStep = step;
         }
 
-        function calculateAll() {
-            // Get values
-            const mpesaDep = Number(document.getElementById('mpesa-dep').value) || 0;
-            const mpesaWd = Number(document.getElementById('mpesa-wd').value) || 0;
-            const airtelDep = Number(document.getElementById('airtel-dep').value) || 0;
-            const airtelWd = Number(document.getElementById('airtel-wd').value) || 0;
+        function renderNetworkInputs() {
+            const container = document.getElementById('network-inputs-container');
+            const capitalSelect = document.getElementById('cap-destination');
             
-            const totalDeposits = mpesaDep + airtelDep;
-            const totalWithdrawals = mpesaWd + airtelWd;
-            const totalExpenses = expensesList.reduce((sum, e) => sum + e.amount, 0);
+            container.innerHTML = '';
+            // Reset modal select options
+            capitalSelect.innerHTML = '<option value="Physical Cash Drawer">Physical Cash Drawer</option>';
 
-            // Calculate Expected Cash
-            const expectedCash = openingCash + totalDeposits - totalWithdrawals - totalExpenses;
+            networks.forEach((net, index) => {
+                // Add to capital destination select dropdown
+                capitalSelect.innerHTML += `<option value="${net.name} Float">${net.name} Float</option>`;
+
+                // Render Input UI Card
+                container.innerHTML += `
+                    <div class="p-4 border border-slate-200 rounded-lg space-y-3 bg-slate-50">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-900">${net.name}</span>
+                            <span class="text-xs text-slate-500">Min Threshold: TZS ${Number(net.minFloat).toLocaleString()}</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                            <div>
+                                <label class="text-slate-500 font-medium">Deposits (TZS)</label>
+                                <input type="number" id="dep-${net.code}" value="${net.deposits}" oninput="updateNetworkData('${net.code}')" class="w-full p-2 border rounded font-semibold mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Withdrawals (TZS)</label>
+                                <input type="number" id="wd-${net.code}" value="${net.withdrawals}" oninput="updateNetworkData('${net.code}')" class="w-full p-2 border rounded font-semibold mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Closing Float (TZS)</label>
+                                <input type="number" id="float-${net.code}" value="${net.closingFloat}" oninput="updateNetworkData('${net.code}')" class="w-full p-2 border rounded font-semibold mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Commission Earned</label>
+                                <input type="number" id="comm-${net.code}" value="${net.commission}" oninput="updateNetworkData('${net.code}')" class="w-full p-2 border rounded font-bold text-emerald-700 mt-1">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateNetworkData(code) {
+            const net = networks.find(n => n.code === code);
+            if(net) {
+                net.deposits = Number(document.getElementById(`dep-${code}`).value) || 0;
+                net.withdrawals = Number(document.getElementById(`wd-${code}`).value) || 0;
+                net.closingFloat = Number(document.getElementById(`float-${code}`).value) || 0;
+                net.commission = Number(document.getElementById(`comm-${code}`).value) || 0;
+            }
+            localStorage.setItem('wakala_networks', JSON.stringify(networks));
+            calculateAll();
+        }
+
+        function calculateAll() {
+            const openingCash = Number(document.getElementById('input-opening-cash').value) || 0;
             const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
-            const variance = actualCash - expectedCash;
 
-            // Commissions
-            const mpesaComm = Number(document.getElementById('mpesa-comm').value) || 0;
-            const airtelComm = Number(document.getElementById('airtel-comm').value) || 0;
-            const totalComm = mpesaComm + airtelComm;
-            const netProfit = totalComm - totalExpenses;
+            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const totalFloat = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
-            // Floats
-            const mpesaFloat = Number(document.getElementById('mpesa-float').value) || 0;
-            const airtelFloat = Number(document.getElementById('airtel-float').value) || 0;
-            const moneyPosition = actualCash + mpesaFloat + airtelFloat;
+            // Capital injected specifically into drawer cash
+            const cashCapitalInjected = capitalLedger
+                .filter(c => c.destination === 'Physical Cash Drawer')
+                .reduce((sum, c) => sum + c.amount, 0);
 
-            // Update Labels
+            const totalCapitalInjected = capitalLedger.reduce((sum, c) => sum + c.amount, 0);
+
+            // Accounting Logic Formula
+            const expectedCash = openingCash + totalDeposits - totalWithdrawals - totalExpenses + cashCapitalInjected;
+            const cashVariance = actualCash - expectedCash;
+            const netProfit = totalCommission - totalExpenses;
+            const moneyPosition = actualCash + totalFloat;
+
+            // Update DOM Elements
+            document.getElementById('lbl-today-capital').innerText = cashCapitalInjected.toLocaleString();
             document.getElementById('lbl-expected-cash').innerText = expectedCash.toLocaleString();
-            document.getElementById('lbl-cash-variance').innerText = variance.toLocaleString();
-            document.getElementById('rev-comm').innerText = totalComm.toLocaleString();
+            document.getElementById('lbl-cash-variance').innerText = cashVariance.toLocaleString();
+
+            const varBox = document.getElementById('box-variance');
+            if(cashVariance < 0) {
+                varBox.className = "p-4 rounded-lg flex justify-between items-center bg-rose-50 text-rose-800 border border-rose-200";
+            } else {
+                varBox.className = "p-4 rounded-lg flex justify-between items-center bg-emerald-50 text-emerald-800 border border-emerald-200";
+            }
+
+            // Update Review Step
+            document.getElementById('rev-volume').innerText = (totalDeposits + totalWithdrawals).toLocaleString();
+            document.getElementById('rev-comm').innerText = totalCommission.toLocaleString();
             document.getElementById('rev-exp').innerText = totalExpenses.toLocaleString();
             document.getElementById('rev-profit').innerText = netProfit.toLocaleString();
+            document.getElementById('rev-exp-cash').innerText = expectedCash.toLocaleString();
+            document.getElementById('rev-act-cash').innerText = actualCash.toLocaleString();
+            document.getElementById('rev-variance').innerText = cashVariance.toLocaleString();
 
             // Update Owner Screen
             document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
             document.getElementById('owner-position').innerText = moneyPosition.toLocaleString();
-            document.getElementById('owner-variance').innerText = variance.toLocaleString();
-            document.getElementById('owner-mpesa-float').innerText = mpesaFloat.toLocaleString();
-            document.getElementById('owner-airtel-float').innerText = airtelFloat.toLocaleString();
+            document.getElementById('owner-capital').innerText = totalCapitalInjected.toLocaleString();
+            document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
 
-            const varCard = document.getElementById('owner-variance-card');
-            if (variance < 0) {
-                varCard.className = "text-2xl font-black mt-1 text-rose-600";
-            } else {
-                varCard.className = "text-2xl font-black mt-1 text-emerald-600";
-            }
+            renderOwnerFloatGrid();
+        }
+
+        function renderOwnerFloatGrid() {
+            const container = document.getElementById('owner-float-grid');
+            container.innerHTML = '';
+            networks.forEach(net => {
+                const isLow = net.closingFloat < net.minFloat;
+                container.innerHTML += `
+                    <div class="p-4 rounded-lg border border-slate-200 bg-slate-50 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-slate-900">${net.name}</p>
+                            <p class="text-xs text-slate-500">Min Threshold: TZS ${Number(net.minFloat).toLocaleString()}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-lg ${isLow ? 'text-rose-600' : 'text-emerald-700'}">TZS ${Number(net.closingFloat).toLocaleString()}</p>
+                            ${isLow ? '<span class="text-xs font-bold text-rose-600">⚠️ Low Float Warning</span>' : '<span class="text-xs font-bold text-emerald-600">Healthy Level</span>'}
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         function addExpense() {
@@ -269,41 +476,104 @@
             const note = document.getElementById('exp-note').value;
             if(!amt) return;
 
-            expensesList.push({ amount: amt, note: note || 'Expense' });
+            expenses.push({ id: Date.now(), amount: amt, note: note || 'General Expense' });
             document.getElementById('exp-amount').value = '';
             document.getElementById('exp-note').value = '';
-            
+
+            localStorage.setItem('wakala_expenses', JSON.stringify(expenses));
+            renderExpenses();
+            calculateAll();
+        }
+
+        function removeExpense(id) {
+            expenses = expenses.filter(e => e.id !== id);
+            localStorage.setItem('wakala_expenses', JSON.stringify(expenses));
             renderExpenses();
             calculateAll();
         }
 
         function renderExpenses() {
-            const list = document.getElementById('expense-list');
-            list.innerHTML = expensesList.map(e => `
-                <li class="flex justify-between py-1">
-                    <span>${e.note}</span>
-                    <span class="font-bold">TZS ${e.amount.toLocaleString()}</span>
-                </li>
+            const tbody = document.getElementById('expense-table-body');
+            tbody.innerHTML = expenses.map(e => `
+                <tr class="border-b">
+                    <td class="p-3 font-semibold text-slate-800">${e.note}</td>
+                    <td class="p-3 text-right font-bold text-rose-700">TZS ${e.amount.toLocaleString()}</td>
+                    <td class="p-3 text-center"><button onclick="removeExpense(${e.id})" class="text-xs font-bold text-rose-600 hover:underline">Delete</button></td>
+                </tr>
             `).join('');
+        }
+
+        // Capital Investment Ledger Management
+        function openCapitalModal() { document.getElementById('modal-capital').classList.remove('hidden'); }
+        function closeCapitalModal() { document.getElementById('modal-capital').classList.add('hidden'); }
+
+        function saveCapitalInjection() {
+            const dest = document.getElementById('cap-destination').value;
+            const amt = Number(document.getElementById('cap-amount').value);
+            const note = document.getElementById('cap-note').value;
+
+            if(!amt) return;
+
+            capitalLedger.push({ id: Date.now(), destination: dest, amount: amt, note: note || 'Capital Injection' });
+            localStorage.setItem('wakala_capital', JSON.stringify(capitalLedger));
+
+            document.getElementById('cap-amount').value = '';
+            document.getElementById('cap-note').value = '';
+            closeCapitalModal();
+
+            renderCapitalLedger();
+            calculateAll();
+        }
+
+        function renderCapitalLedger() {
+            const tbody = document.getElementById('capital-ledger-body');
+            tbody.innerHTML = capitalLedger.map(c => `
+                <tr class="border-b">
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">INVESTMENT</span></td>
+                    <td class="p-3 font-bold text-slate-800">${c.destination}</td>
+                    <td class="p-3 text-slate-500">${c.note}</td>
+                    <td class="p-3 text-right font-bold text-emerald-700">TZS ${c.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Custom Network Management
+        function openNetworkModal() { document.getElementById('modal-network').classList.remove('hidden'); }
+        function closeNetworkModal() { document.getElementById('modal-network').classList.add('hidden'); }
+
+        function saveCustomNetwork() {
+            const code = document.getElementById('net-code').value.toUpperCase().trim();
+            const name = document.getElementById('net-name').value.trim();
+            const min = Number(document.getElementById('net-min').value) || 100000;
+
+            if(!code || !name) return;
+
+            networks.push({ code, name, minFloat: min, openingFloat: 0, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 });
+            localStorage.setItem('wakala_networks', JSON.stringify(networks));
+
+            document.getElementById('net-code').value = '';
+            document.getElementById('net-name').value = '';
+            document.getElementById('net-min').value = '';
+            closeNetworkModal();
+
+            renderNetworkInputs();
+            calculateAll();
         }
 
         function submitClosing() {
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
-            document.getElementById('session-badge').innerText = "CLOSED";
+            document.getElementById('session-badge').innerText = "CLOSED & LOCKED";
             document.getElementById('session-badge').className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700";
         }
 
         function resetDemo() {
             document.getElementById('agent-form-container').classList.remove('hidden');
             document.getElementById('agent-success').classList.add('hidden');
-            document.getElementById('session-badge').innerText = "IN PROGRESS";
+            document.getElementById('session-badge').innerText = "SESSION OPEN";
             document.getElementById('session-badge').className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700";
             setStep(1);
         }
-
-        // Run initial calculation on page load
-        calculateAll();
     </script>
 </body>
 </html>
