@@ -6,13 +6,11 @@
     <title>Wakala Pro - Firebase Cloud Realtime Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK (Version 9 Compat for Single-File HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen w-screen overflow-hidden flex flex-col">
 
-    <!-- ================= FIREBASE CONFIGURATION ================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
@@ -34,7 +32,6 @@
         const CALLMEBOT_APIKEY = "8390915";
     </script>
 
-    <!-- ================= LOGIN MODULE ================= -->
     <div id="view-login" class="flex items-center justify-center h-full w-full p-4 bg-slate-900">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -71,7 +68,6 @@
         </div>
     </div>
 
-    <!-- ================= APP DASHBOARD ================= -->
     <div id="view-app" class="hidden h-full flex flex-col overflow-hidden">
         <header class="bg-slate-900 text-white px-4 py-2.5 flex justify-between items-center shadow-md shrink-0">
             <div class="flex items-center gap-2">
@@ -84,29 +80,20 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-1.5">
-                <button onclick="openPasswordModal(false)" title="Change PIN" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded text-[11px] font-semibold transition">
-                    🔑 PIN
-                </button>
-
-                <button onclick="openProfileModal()" title="Edit Profile" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded text-[11px] font-semibold transition">
-                    👤 Profile
-                </button>
-
-                <div class="text-right border-l border-slate-700 pl-2 ml-1">
+            <div class="flex items-center gap-3">
+                <div class="text-right">
                     <p class="text-xs font-bold text-white leading-tight" id="user-display-name">User Name</p>
                     <p class="text-[9px] text-slate-400" id="user-display-branch">Branch: Main</p>
                 </div>
 
-                <button onclick="handleLogout()" class="ml-1 px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold shadow">
-                    Logout
+                <button onclick="openProfileModal()" title="Account Settings & Logout" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    👤 Profile
                 </button>
             </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
 
-            <!-- AGENT MODULE -->
             <div id="view-agent" class="space-y-4 hidden">
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
@@ -125,7 +112,6 @@
                     </div>
 
                     <div class="md:col-span-3 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <!-- Step 1 -->
                         <div id="step-1" class="space-y-4">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">1. Physical Cash Reconciliation</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
@@ -156,14 +142,12 @@
                             <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
                         </div>
 
-                        <!-- Step 2 -->
                         <div id="step-2" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">2. Network Balances</h3>
                             <div id="network-inputs-container" class="space-y-3"></div>
                             <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
                         </div>
 
-                        <!-- Step 3 -->
                         <div id="step-3" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">3. Expenses</h3>
                             <div class="flex flex-col sm:flex-row gap-2">
@@ -182,7 +166,6 @@
                             <button onclick="setStep(4)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
                         </div>
 
-                        <!-- Step 4 -->
                         <div id="step-4" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">4. Final Lock</h3>
                             <div class="space-y-2 bg-slate-50 p-3 rounded-lg border text-xs">
@@ -202,14 +185,12 @@
                     <h3 class="text-xl font-black text-slate-900">Session Synced & Locked</h3>
                     <p class="text-slate-500 text-xs max-w-md mx-auto">Owner dashboard has been updated in real time.</p>
                     
-                    <!-- WhatsApp API Status Container -->
                     <div id="whatsapp-status" class="p-3 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp report via CallMeBot API...
                     </div>
                 </div>
             </div>
 
-            <!-- OWNER MODULE -->
             <div id="view-owner" class="space-y-4 hidden">
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
                     <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
@@ -221,7 +202,6 @@
                     </div>
                 </div>
 
-                <!-- Stats Grid -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
@@ -241,7 +221,6 @@
                     </div>
                 </div>
 
-                <!-- Registered Agents Card -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-900 text-sm">Registered Cloud Agents (<span id="agent-count" class="font-black">0</span>/5 Max)</h3>
@@ -282,12 +261,13 @@
         </main>
     </div>
 
-    <!-- Modals -->
-    <!-- Profile Edit Modal -->
     <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
-            <h3 class="font-bold text-slate-900 text-base">Edit Account Profile</h3>
-            <p class="text-xs text-slate-500">Update your details for accurate reporting.</p>
+        <div class="bg-white p-5 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-900 text-base">Account Profile</h3>
+                <span id="profile-role-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-700">ROLE</span>
+            </div>
+
             <div class="space-y-2.5">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Full / Business Name</label>
@@ -302,9 +282,23 @@
                     <input type="text" id="profile-branch" placeholder="e.g. Kariakoo Main Branch" class="w-full p-2.5 border rounded-lg text-sm font-semibold">
                 </div>
             </div>
-            <div class="flex justify-end gap-2 border-t pt-3">
-                <button onclick="closeProfileModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
-                <button onclick="saveProfileChanges()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-xs">Save Profile</button>
+
+            <div class="p-3 bg-slate-50 border rounded-xl space-y-2">
+                <p class="text-[11px] font-bold text-slate-700 uppercase">🔑 Security PIN Settings</p>
+                <div class="flex gap-2">
+                    <input type="password" id="profile-new-pin" inputmode="numeric" pattern="[0-9]*" placeholder="Enter New PIN" class="flex-1 p-2 border rounded-lg text-xs font-semibold bg-white">
+                    <button onclick="updatePinFromProfile()" class="px-3 py-2 bg-slate-800 text-white font-bold rounded-lg text-xs hover:bg-slate-700">Update PIN</button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center border-t pt-3">
+                <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition">
+                    Logout
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="closeProfileModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
+                    <button onclick="saveProfileChanges()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow">Save Profile</button>
+                </div>
             </div>
         </div>
     </div>
@@ -328,11 +322,10 @@
 
     <div id="modal-password" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
-            <h3 id="modal-pass-title" class="font-bold text-slate-900 text-base">Change Your PIN</h3>
-            <p id="modal-pass-desc" class="text-xs text-slate-500">Please enter a new numeric password for your account.</p>
+            <h3 id="modal-pass-title" class="font-bold text-slate-900 text-base">First Login: Set New PIN</h3>
+            <p id="modal-pass-desc" class="text-xs text-slate-500">For security reasons, you must change your initial password before proceeding.</p>
             <input type="password" id="change-pass-new" inputmode="numeric" pattern="[0-9]*" placeholder="New Numeric PIN" class="w-full p-3 border rounded-lg text-sm font-semibold">
             <div class="flex justify-end gap-2 border-t pt-3">
-                <button id="btn-cancel-pass" onclick="closePasswordModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
                 <button onclick="savePasswordChange()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs">Update Cloud Password</button>
             </div>
         </div>
@@ -366,14 +359,12 @@
         </div>
     </div>
 
-    <!-- Application Engine -->
     <script>
         let currentUser = null;
         let accounts = [];
         let networks = [];
         let expenses = [];
         let capitalLedger = [];
-        let isForcedPassChange = false;
 
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
@@ -470,7 +461,6 @@
 
             document.getElementById('user-display-name').innerText = currentUser.name;
             document.getElementById('user-display-branch').innerText = `Branch: ${currentUser.branch || 'Main'}`;
-            document.getElementById('role-badge').innerText = currentUser.role;
 
             if(currentUser.role === 'AGENT') {
                 document.getElementById('view-agent').classList.remove('hidden');
@@ -483,12 +473,13 @@
             document.getElementById('session-date-display').innerText = `Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
             if (currentUser.mustChangePassword) {
-                openPasswordModal(true);
+                openForcedPasswordModal();
             }
         }
 
         function handleLogout() {
             currentUser = null;
+            closeProfileModal();
             document.getElementById('view-app').classList.add('hidden');
             document.getElementById('view-login').classList.remove('hidden');
         }
@@ -498,6 +489,8 @@
             document.getElementById('profile-display-name').value = currentUser.name || '';
             document.getElementById('profile-phone').value = currentUser.phone || '';
             document.getElementById('profile-branch').value = currentUser.branch || '';
+            document.getElementById('profile-role-badge').innerText = currentUser.role || 'USER';
+            document.getElementById('profile-new-pin').value = '';
             document.getElementById('modal-profile').classList.remove('hidden');
         }
 
@@ -528,6 +521,25 @@
             document.getElementById('user-display-name').innerText = newName;
             document.getElementById('user-display-branch').innerText = `Branch: ${newBranch || 'Main'}`;
             closeProfileModal();
+        }
+
+        async function updatePinFromProfile() {
+            const newPin = document.getElementById('profile-new-pin').value.trim();
+            if (!newPin || !currentUser) {
+                alert('Please enter a valid numeric PIN.');
+                return;
+            }
+
+            await db.collection("accounts").doc(currentUser.id).update({ 
+                password: newPin,
+                mustChangePassword: false 
+            });
+
+            currentUser.password = newPin;
+            currentUser.mustChangePassword = false;
+
+            alert('Your Security PIN has been updated successfully!');
+            document.getElementById('profile-new-pin').value = '';
         }
 
         function openAgentModal() { document.getElementById('modal-agent').classList.remove('hidden'); }
@@ -586,28 +598,8 @@
             `).join('');
         }
 
-        function openPasswordModal(forced = false) { 
-            isForcedPassChange = forced;
-            const titleEl = document.getElementById('modal-pass-title');
-            const descEl = document.getElementById('modal-pass-desc');
-            const cancelBtn = document.getElementById('btn-cancel-pass');
-
-            if (forced) {
-                titleEl.innerText = "First Login: Set New PIN";
-                descEl.innerText = "For security reasons, you must change your initial password before proceeding.";
-                cancelBtn.classList.add('hidden');
-            } else {
-                titleEl.innerText = "Change Your PIN";
-                descEl.innerText = "Please enter a new numeric password for your account.";
-                cancelBtn.classList.remove('hidden');
-            }
-
+        function openForcedPasswordModal() { 
             document.getElementById('modal-password').classList.remove('hidden'); 
-        }
-
-        function closePasswordModal() { 
-            if (isForcedPassChange) return;
-            document.getElementById('modal-password').classList.add('hidden'); 
         }
 
         async function savePasswordChange() {
@@ -627,7 +619,6 @@
 
             alert('Password updated across cloud database!');
             document.getElementById('change-pass-new').value = '';
-            isForcedPassChange = false;
             document.getElementById('modal-password').classList.add('hidden');
         }
 
@@ -825,7 +816,6 @@
             document.getElementById('session-badge').innerText = "CLOSED & LOCKED";
             document.getElementById('session-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700";
             
-            // Automatically trigger the WhatsApp Bot API call
             autoSendWhatsAppReport();
         }
 
@@ -862,7 +852,6 @@
             const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${CALLMEBOT_PHONE}&text=${encodeURIComponent(report)}&apikey=${CALLMEBOT_APIKEY}`;
 
             try {
-                // Background request to CallMeBot API
                 await fetch(apiUrl, { mode: 'no-cors' });
                 
                 statusBox.className = "p-3 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 max-w-md mx-auto flex items-center justify-center gap-2";
