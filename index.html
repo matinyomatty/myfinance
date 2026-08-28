@@ -6,13 +6,11 @@
     <title>Wakala Pro - Firebase Cloud Realtime Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK (Version 9 Compat for Single-File HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen w-screen overflow-hidden flex flex-col">
 
-    <!-- ================= FIREBASE CONFIGURATION ================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
@@ -34,7 +32,6 @@
         const CALLMEBOT_APIKEY = "8390915";
     </script>
 
-    <!-- ================= LOGIN MODULE ================= -->
     <div id="view-login" class="flex items-center justify-center h-full w-full p-4 bg-slate-900">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -71,10 +68,8 @@
         </div>
     </div>
 
-    <!-- ================= APP DASHBOARD ================= -->
     <div id="view-app" class="hidden h-full flex flex-col overflow-hidden">
-        <!-- FIXED HEADER WITH SAFE AREA MARGINS FOR MOBILE STATUS BAR -->
-        <header class="bg-slate-900 text-white px-4 pt-8 pb-3 sm:pt-3 sm:pb-3 flex justify-between items-center shadow-md shrink-0 sticky top-0 z-40">
+        <header class="bg-slate-900 text-white px-4 pt-12 pb-3.5 flex justify-between items-center shadow-md shrink-0 w-full">
             <div class="flex items-center gap-2">
                 <div class="bg-emerald-500 text-slate-900 font-black p-1.5 rounded-lg text-base">W</div>
                 <div>
@@ -99,7 +94,6 @@
 
         <main class="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
 
-            <!-- AGENT MODULE -->
             <div id="view-agent" class="space-y-4 hidden">
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
@@ -118,7 +112,6 @@
                     </div>
 
                     <div class="md:col-span-3 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <!-- Step 1 -->
                         <div id="step-1" class="space-y-4">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">1. Physical Cash Reconciliation</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
@@ -149,14 +142,12 @@
                             <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
                         </div>
 
-                        <!-- Step 2 -->
                         <div id="step-2" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">2. Network Balances</h3>
                             <div id="network-inputs-container" class="space-y-3"></div>
                             <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
                         </div>
 
-                        <!-- Step 3 -->
                         <div id="step-3" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">3. Expenses</h3>
                             <div class="flex flex-col sm:flex-row gap-2">
@@ -175,7 +166,6 @@
                             <button onclick="setStep(4)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
                         </div>
 
-                        <!-- Step 4 -->
                         <div id="step-4" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">4. Final Lock</h3>
                             <div class="space-y-2 bg-slate-50 p-3 rounded-lg border text-xs">
@@ -201,40 +191,39 @@
                 </div>
             </div>
 
-            <!-- OWNER MODULE -->
             <div id="view-owner" class="space-y-4 hidden">
-                <!-- STICKY OWNER DASHBOARD CONTROLS -->
-                <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 shadow-md flex flex-wrap justify-between items-center gap-3">
-                    <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="resetAllBalancesToZero()" class="px-3 py-1.5 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset to Zero</button>
-                        <button onclick="openAgentModal()" class="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700">+ Create Agent</button>
-                        <button onclick="openCapitalModal()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">+ Inject Capital</button>
-                        <button onclick="openNetworkModal()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">+ Add Network</button>
+                
+                <div class="sticky top-0 z-30 space-y-3 bg-slate-100/90 backdrop-blur-md pb-2 pt-1">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-md flex flex-wrap justify-between items-center gap-3">
+                        <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="resetAllBalancesToZero()" class="px-3 py-1.5 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset to Zero</button>
+                            <button onclick="openAgentModal()" class="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700">+ Create Agent</button>
+                            <button onclick="openCapitalModal()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">+ Inject Capital</button>
+                            <button onclick="openNetworkModal()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">+ Add Network</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
+                            <p class="text-base sm:text-lg font-black text-emerald-600 mt-0.5">TZS <span id="owner-profit">0</span></p>
+                        </div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
+                            <p class="text-base sm:text-lg font-black text-slate-900 mt-0.5">TZS <span id="owner-position">0</span></p>
+                        </div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Capital Injected Today</p>
+                            <p class="text-base sm:text-lg font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
+                        </div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cash Variance Alert</p>
+                            <p class="text-base sm:text-lg font-black mt-0.5 text-slate-900">TZS <span id="owner-variance">0</span></p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
-                        <p class="text-lg font-black text-emerald-600 mt-0.5">TZS <span id="owner-profit">0</span></p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
-                        <p class="text-lg font-black text-slate-900 mt-0.5">TZS <span id="owner-position">0</span></p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Capital Injected Today</p>
-                        <p class="text-lg font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cash Variance Alert</p>
-                        <p class="text-lg font-black mt-0.5 text-slate-900">TZS <span id="owner-variance">0</span></p>
-                    </div>
-                </div>
-
-                <!-- Registered Agents Card -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-900 text-sm">Registered Cloud Agents (<span id="agent-count" class="font-black">0</span>/5 Max)</h3>
@@ -275,7 +264,6 @@
         </main>
     </div>
 
-    <!-- Consolidated Profile Modal -->
     <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-2">
@@ -283,7 +271,6 @@
                 <span id="profile-role-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-700">ROLE</span>
             </div>
 
-            <!-- Profile Details Form -->
             <div class="space-y-2.5">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Full / Business Name</label>
@@ -299,7 +286,6 @@
                 </div>
             </div>
 
-            <!-- Quick PIN Change Section -->
             <div class="p-3 bg-slate-50 border rounded-xl space-y-2">
                 <p class="text-[11px] font-bold text-slate-700 uppercase">🔑 Security PIN Settings</p>
                 <div class="flex gap-2">
@@ -308,7 +294,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons Footer -->
             <div class="flex justify-between items-center border-t pt-3">
                 <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition">
                     Logout
@@ -377,7 +362,6 @@
         </div>
     </div>
 
-    <!-- Application Engine -->
     <script>
         let currentUser = null;
         let accounts = [];
