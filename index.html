@@ -200,14 +200,23 @@
                         <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp report via CallMeBot API...
                     </div>
 
-                    <!-- REQUEST UNLOCK BUTTON -->
-                    <div class="pt-4 border-t max-w-md mx-auto space-y-2">
+                    <!-- REQUEST UNLOCK BUTTON & REASON FORM -->
+                    <div class="pt-4 border-t max-w-md mx-auto space-y-3">
                         <p class="text-xs text-slate-500 font-medium">Made a mistake or need to make adjustments?</p>
-                        <button id="btn-request-unlock" onclick="requestSessionUnlock()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center justify-center gap-2">
-                            🔓 Request Modification Approval from Owner
-                        </button>
-                        <p id="unlock-requested-msg" class="text-xs font-bold text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200 hidden">
+                        
+                        <div id="unlock-form-area" class="space-y-2">
+                            <input type="text" id="unlock-reason-input" placeholder="Reason for unlock (e.g. Forgot transport expense)" class="w-full p-2.5 border rounded-lg text-xs font-semibold focus:ring-2 focus:ring-amber-500 outline-none">
+                            <button id="btn-request-unlock" onclick="requestSessionUnlock()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center justify-center gap-2">
+                                🔓 Request Modification Approval from Owner
+                            </button>
+                        </div>
+
+                        <p id="unlock-requested-msg" class="text-xs font-bold text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 hidden">
                             ⏳ Modification request sent to Owner! Waiting for approval...
+                        </p>
+                        
+                        <p id="unlock-rejected-msg" class="text-xs font-bold text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-200 hidden">
+                            ❌ Modification request was rejected by Owner.
                         </p>
                     </div>
                 </div>
@@ -219,18 +228,24 @@
                 <!-- COMBINED STICKY HEADER & BALANCES SUMMARY -->
                 <div class="sticky top-0 z-30 space-y-3 bg-slate-100/90 backdrop-blur-md pb-2 pt-1">
                     
-                    <!-- UNLOCK REQUEST NOTIFICATION BANNER (OWNER VIEW) -->
-                    <div id="owner-unlock-notification" class="hidden bg-amber-500 text-slate-900 p-3 rounded-xl shadow-md border border-amber-600 flex flex-wrap justify-between items-center gap-2">
+                    <!-- UNLOCK REQUEST NOTIFICATION BANNER (OWNER VIEW WITH APPROVE & REJECT) -->
+                    <div id="owner-unlock-notification" class="hidden bg-amber-500 text-slate-900 p-3.5 rounded-xl shadow-md border border-amber-600 flex flex-wrap justify-between items-center gap-2">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg">🔔</span>
+                            <span class="text-xl">🔔</span>
                             <div>
                                 <p class="text-xs font-black uppercase tracking-wide">Modification Requested</p>
                                 <p class="text-xs font-semibold" id="unlock-request-text">An agent requested to modify locked figures.</p>
+                                <p class="text-[11px] font-bold text-slate-800 mt-0.5" id="unlock-request-reason">Reason: Loading...</p>
                             </div>
                         </div>
-                        <button onclick="approveSessionUnlock()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-lg shadow transition">
-                            Approve & Unlock Session
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="rejectSessionUnlock()" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-lg shadow transition">
+                                Reject Request
+                            </button>
+                            <button onclick="approveSessionUnlock()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-lg shadow transition">
+                                Approve & Re-open Session
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Owner Controls -->
@@ -265,7 +280,6 @@
                     </div>
                 </div>
 
-                <!-- SCROLLABLE CONTENT BELOW STICKY SUMMARY -->
                 <!-- Registered Agents Card -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
@@ -315,7 +329,6 @@
                 <span id="profile-role-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-700">ROLE</span>
             </div>
 
-            <!-- Profile Details Form -->
             <div class="space-y-2.5">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Full / Business Name</label>
@@ -331,7 +344,6 @@
                 </div>
             </div>
 
-            <!-- Quick PIN Change Section -->
             <div class="p-3 bg-slate-50 border rounded-xl space-y-2">
                 <p class="text-[11px] font-bold text-slate-700 uppercase">🔑 Security PIN Settings</p>
                 <div class="flex gap-2">
@@ -340,7 +352,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons Footer -->
             <div class="flex justify-between items-center border-t pt-3">
                 <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition">
                     Logout
@@ -416,7 +427,7 @@
         let networks = [];
         let expenses = [];
         let capitalLedger = [];
-        let currentSessionState = { locked: false, unlockRequested: false, requestedBy: "" };
+        let currentSessionState = { locked: false, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "" };
 
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
@@ -471,7 +482,7 @@
                     currentSessionState = doc.data();
                     handleSessionStateUI();
                 } else {
-                    db.collection("system").doc("sessionState").set({ locked: false, unlockRequested: false, requestedBy: "" });
+                    db.collection("system").doc("sessionState").set({ locked: false, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "" });
                 }
             });
         }
@@ -481,20 +492,29 @@
         function handleSessionStateUI() {
             const unlockBanner = document.getElementById('owner-unlock-notification');
             const unlockReqMsg = document.getElementById('unlock-requested-msg');
-            const btnRequestUnlock = document.getElementById('btn-request-unlock');
+            const unlockRejMsg = document.getElementById('unlock-rejected-msg');
+            const unlockFormArea = document.getElementById('unlock-form-area');
 
             if (currentSessionState.unlockRequested) {
                 unlockBanner.classList.remove('hidden');
-                document.getElementById('unlock-request-text').innerText = `Agent "${currentSessionState.requestedBy}" requested to open session for updates.`;
+                document.getElementById('unlock-request-text').innerText = `Agent "${currentSessionState.requestedBy}" requested session unlock.`;
+                document.getElementById('unlock-request-reason').innerText = `Reason: "${currentSessionState.requestReason || 'No reason provided'}"`;
                 
                 if (currentUser && currentUser.role === 'AGENT') {
                     unlockReqMsg.classList.remove('hidden');
-                    btnRequestUnlock.classList.add('hidden');
+                    unlockRejMsg.classList.add('hidden');
+                    unlockFormArea.classList.add('hidden');
                 }
             } else {
                 unlockBanner.classList.add('hidden');
                 unlockReqMsg.classList.add('hidden');
-                btnRequestUnlock.classList.remove('hidden');
+                if (unlockFormArea) unlockFormArea.classList.remove('hidden');
+
+                if (currentSessionState.requestStatus === 'REJECTED' && currentUser && currentUser.role === 'AGENT') {
+                    unlockRejMsg.classList.remove('hidden');
+                } else {
+                    if (unlockRejMsg) unlockRejMsg.classList.add('hidden');
+                }
             }
 
             if (!currentSessionState.locked && currentUser && currentUser.role === 'AGENT') {
@@ -526,7 +546,7 @@
                 await db.collection("capitalLedger").doc(cap.id).delete();
             }
 
-            await db.collection("system").doc("sessionState").set({ locked: false, unlockRequested: false, requestedBy: "" });
+            await db.collection("system").doc("sessionState").set({ locked: false, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "" });
 
             document.getElementById('input-opening-cash').value = 0;
             document.getElementById('input-actual-cash').value = 0;
@@ -905,7 +925,7 @@
         }
 
         async function submitClosing() {
-            await db.collection("system").doc("sessionState").set({ locked: true, unlockRequested: false, requestedBy: "" });
+            await db.collection("system").doc("sessionState").set({ locked: true, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "SUBMITTED" });
 
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
@@ -916,15 +936,24 @@
         }
 
         async function requestSessionUnlock() {
+            const reasonInput = document.getElementById('unlock-reason-input').value.trim();
+            if (!reasonInput) {
+                alert('Please enter a brief reason for requesting the unlock.');
+                return;
+            }
+
             const agentName = currentUser ? currentUser.name : 'Agent';
             await db.collection("system").doc("sessionState").update({
                 unlockRequested: true,
-                requestedBy: agentName
+                requestedBy: agentName,
+                requestReason: reasonInput,
+                requestStatus: "PENDING"
             });
 
             let unlockMsg = `⚠️ *WAKALA PRO - UNLOCK REQUEST*\n`;
             unlockMsg += `👤 *Agent:* ${agentName}\n`;
             unlockMsg += `🏢 *Branch:* ${currentUser ? currentUser.branch : 'Main'}\n`;
+            unlockMsg += `📝 *Reason:* ${reasonInput}\n`;
             unlockMsg += `💬 Agent is requesting approval to unlock and update today's closed session.`;
 
             const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${CALLMEBOT_PHONE}&text=${encodeURIComponent(unlockMsg)}&apikey=${CALLMEBOT_APIKEY}`;
@@ -939,9 +968,19 @@
             await db.collection("system").doc("sessionState").set({
                 locked: false,
                 unlockRequested: false,
-                requestedBy: ""
+                requestedBy: "",
+                requestReason: "",
+                requestStatus: "APPROVED"
             });
             alert("Session unlocked! The agent can now update figures.");
+        }
+
+        async function rejectSessionUnlock() {
+            await db.collection("system").doc("sessionState").update({
+                unlockRequested: false,
+                requestStatus: "REJECTED"
+            });
+            alert("Unlock request rejected. The session remains locked.");
         }
 
         async function autoSendWhatsAppReport() {
