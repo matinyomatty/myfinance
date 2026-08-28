@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Wakala Pro - Firebase Cloud Realtime Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-100 text-slate-800 font-sans h-screen w-screen overflow-hidden flex flex-col">
 
     <!-- ================= FIREBASE CONFIGURATION ================= -->
     <script>
@@ -31,36 +31,35 @@
     </script>
 
     <!-- ================= LOGIN MODULE ================= -->
-    <div id="view-login" class="flex items-center justify-center min-h-screen p-4 bg-slate-900">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-8 space-y-6">
-            <div class="text-center space-y-2">
-                <div class="w-12 h-12 bg-emerald-500 text-slate-900 font-black rounded-xl text-2xl flex items-center justify-center mx-auto shadow-md">W</div>
-                <h1 class="text-2xl font-black text-slate-900 tracking-tight">WAKALA<span class="text-emerald-500">PRO</span></h1>
-                <p class="text-xs text-slate-500 font-medium">Cloud Database Connected Engine</p>
+    <div id="view-login" class="flex items-center justify-center h-full w-full p-4 bg-slate-900">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-4">
+            <div class="text-center space-y-1">
+                <div class="w-10 h-10 bg-emerald-500 text-slate-900 font-black rounded-xl text-xl flex items-center justify-center mx-auto shadow-md">W</div>
+                <h1 class="text-xl font-black text-slate-900 tracking-tight">WAKALA<span class="text-emerald-500">PRO</span></h1>
+                <p class="text-[11px] text-slate-500 font-medium">Cloud Database Connected Engine</p>
             </div>
 
-            <form onsubmit="handleLogin(event)" class="space-y-4">
+            <form onsubmit="handleLogin(event)" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
-                    <input type="text" id="login-username" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="owner or agent username">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Username</label>
+                    <input type="text" id="login-username" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="owner or agent username">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
-                    <!-- Added inputmode="numeric" & pattern for numeric keypad -->
-                    <input type="password" id="login-password" inputmode="numeric" pattern="[0-9]*" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="••••••••">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Password / PIN</label>
+                    <input type="password" id="login-password" inputmode="numeric" pattern="[0-9]*" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="••••••••">
                 </div>
 
-                <div id="login-error" class="hidden p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
+                <div id="login-error" class="hidden p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
                     Invalid username or password!
                 </div>
 
-                <button type="submit" id="btn-login" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition">
+                <button type="submit" id="btn-login" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition text-sm">
                     Sign In (Cloud Auth)
                 </button>
             </form>
 
-            <div class="bg-slate-50 p-3 rounded-lg border text-xs text-slate-500 space-y-1">
+            <div class="bg-slate-50 p-2.5 rounded-lg border text-[11px] text-slate-500 space-y-1">
                 <p class="font-bold text-slate-700">Initial Cloud Credentials:</p>
                 <div class="flex justify-between"><span>Owner:</span> <code>owner</code> / <code>123</code></div>
                 <div class="flex justify-between"><span>Agent:</span> <code>agent1</code> / <code>123</code></div>
@@ -69,192 +68,192 @@
     </div>
 
     <!-- ================= APP DASHBOARD ================= -->
-    <div id="view-app" class="hidden">
-        <header class="bg-slate-900 text-white px-6 py-4 flex flex-col md:flex-row justify-between items-center shadow-md gap-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 text-slate-900 font-black p-2 rounded-lg text-lg">W</div>
+    <div id="view-app" class="hidden h-full flex flex-col overflow-hidden">
+        <header class="bg-slate-900 text-white px-4 py-3 flex justify-between items-center shadow-md shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="bg-emerald-500 text-slate-900 font-black p-1.5 rounded-lg text-base">W</div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">WAKALA<span class="text-emerald-400">PRO</span></h1>
-                    <p class="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Google Cloud Firestore Connected
+                    <h1 class="text-base font-bold tracking-tight leading-none">WAKALA<span class="text-emerald-400">PRO</span></h1>
+                    <p class="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Cloud Active
                     </p>
                 </div>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3">
-                <button onclick="openPasswordModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-xs font-bold">
-                    🔑 Change Password
+            <div class="flex items-center gap-2">
+                <button onclick="openPasswordModal(false)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-xs font-bold">
+                    🔑 Change PIN
                 </button>
 
-                <div class="text-right border-l border-slate-700 pl-3">
-                    <p class="text-xs font-bold text-white" id="user-display-name">User Name</p>
-                    <span id="role-badge" class="px-2 py-0.5 text-[10px] font-black rounded uppercase bg-emerald-500 text-slate-900">ROLE</span>
+                <div class="text-right border-l border-slate-700 pl-2">
+                    <p class="text-xs font-bold text-white leading-tight" id="user-display-name">User Name</p>
+                    <span id="role-badge" class="px-1.5 py-0.5 text-[9px] font-black rounded uppercase bg-emerald-500 text-slate-900">ROLE</span>
                 </div>
 
-                <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow">
+                <button onclick="handleLogout()" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow">
                     Logout
                 </button>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        <main class="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
 
             <!-- AGENT MODULE -->
-            <div id="view-agent" class="space-y-6 hidden">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+            <div id="view-agent" class="space-y-4 hidden">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">Agent Daily Session & Closing</h2>
+                        <h2 class="text-base font-bold text-slate-900">Agent Daily Session & Closing</h2>
                         <p class="text-xs text-slate-500" id="session-date-display">Date: Loading...</p>
                     </div>
-                    <span id="session-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">SESSION OPEN</span>
+                    <span id="session-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">SESSION OPEN</span>
                 </div>
 
-                <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 h-fit md:col-span-1">
-                        <button onclick="setStep(1)" id="step-btn-1" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">1. Physical Cash</button>
-                        <button onclick="setStep(2)" id="step-btn-2" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">2. Network Floats</button>
-                        <button onclick="setStep(3)" id="step-btn-3" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">3. Daily Expenses</button>
-                        <button onclick="setStep(4)" id="step-btn-4" class="w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">4. Review & Lock</button>
+                <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-1.5 h-fit md:col-span-1">
+                        <button onclick="setStep(1)" id="step-btn-1" class="w-full text-left p-2.5 rounded-lg font-bold text-xs uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">1. Physical Cash</button>
+                        <button onclick="setStep(2)" id="step-btn-2" class="w-full text-left p-2.5 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">2. Network Floats</button>
+                        <button onclick="setStep(3)" id="step-btn-3" class="w-full text-left p-2.5 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">3. Daily Expenses</button>
+                        <button onclick="setStep(4)" id="step-btn-4" class="w-full text-left p-2.5 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50">4. Review & Lock</button>
                     </div>
 
-                    <div class="md:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="md:col-span-3 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                         <!-- Step 1 -->
-                        <div id="step-1" class="space-y-5">
-                            <h3 class="font-bold text-slate-900 border-b pb-2 text-md">1. Physical Cash Reconciliation</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border">
+                        <div id="step-1" class="space-y-4">
+                            <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">1. Physical Cash Reconciliation</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
                                 <div>
-                                    <label class="text-xs text-slate-500 font-bold uppercase">Opening Cash</label>
+                                    <label class="text-[11px] text-slate-500 font-bold uppercase">Opening Cash</label>
                                     <div class="flex items-center gap-1 mt-1">
                                         <span class="text-xs text-slate-400">TZS</span>
-                                        <input type="number" id="input-opening-cash" value="0" oninput="calculateAll()" class="font-bold text-slate-800 text-lg w-full bg-transparent border-b border-slate-300 focus:outline-none focus:border-emerald-500">
+                                        <input type="number" id="input-opening-cash" value="0" oninput="calculateAll()" class="font-bold text-slate-800 text-base w-full bg-transparent border-b border-slate-300 focus:outline-none focus:border-emerald-500">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-slate-500 font-bold uppercase">Capital Injected</label>
-                                    <p class="text-lg font-bold text-emerald-600 mt-1">TZS <span id="lbl-today-capital">0</span></p>
+                                    <label class="text-[11px] text-slate-500 font-bold uppercase">Capital Injected</label>
+                                    <p class="text-base font-bold text-emerald-600 mt-1">TZS <span id="lbl-today-capital">0</span></p>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-slate-500 font-bold uppercase">Expected Cash</label>
-                                    <p class="text-lg font-bold text-slate-900 mt-1">TZS <span id="lbl-expected-cash">0</span></p>
+                                    <label class="text-[11px] text-slate-500 font-bold uppercase">Expected Cash</label>
+                                    <p class="text-base font-bold text-slate-900 mt-1">TZS <span id="lbl-expected-cash">0</span></p>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">Actual Drawer Cash Counted (TZS)</label>
-                                <input type="number" id="input-actual-cash" value="0" oninput="calculateAll()" class="w-full text-2xl font-black p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Actual Drawer Cash Counted (TZS)</label>
+                                <input type="number" id="input-actual-cash" value="0" oninput="calculateAll()" class="w-full text-xl font-black p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
-                            <div id="box-variance" class="p-4 rounded-lg flex justify-between items-center bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                <span class="font-bold text-sm">Cash Variance / Difference:</span>
-                                <span class="font-black text-xl">TZS <span id="lbl-cash-variance">0</span></span>
+                            <div id="box-variance" class="p-3 rounded-lg flex justify-between items-center bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                <span class="font-bold text-xs">Cash Variance / Difference:</span>
+                                <span class="font-black text-lg">TZS <span id="lbl-cash-variance">0</span></span>
                             </div>
-                            <button onclick="setStep(2)" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
+                            <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
                         </div>
 
                         <!-- Step 2 -->
-                        <div id="step-2" class="space-y-5 hidden">
-                            <h3 class="font-bold text-slate-900 border-b pb-2 text-md">2. Network Balances</h3>
-                            <div id="network-inputs-container" class="space-y-4"></div>
-                            <button onclick="setStep(3)" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
+                        <div id="step-2" class="space-y-4 hidden">
+                            <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">2. Network Balances</h3>
+                            <div id="network-inputs-container" class="space-y-3"></div>
+                            <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
                         </div>
 
                         <!-- Step 3 -->
-                        <div id="step-3" class="space-y-5 hidden">
-                            <h3 class="font-bold text-slate-900 border-b pb-2 text-md">3. Expenses</h3>
+                        <div id="step-3" class="space-y-4 hidden">
+                            <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">3. Expenses</h3>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="number" id="exp-amount" placeholder="Amount (TZS)" class="p-3 border rounded-lg text-sm sm:w-36 font-semibold">
-                                <input type="text" id="exp-note" placeholder="Reason (e.g. Transport)" class="p-3 border rounded-lg text-sm flex-1">
-                                <button onclick="addExpense()" class="px-5 py-3 bg-slate-900 text-white font-bold rounded-lg text-sm hover:bg-slate-800">Add</button>
+                                <input type="number" id="exp-amount" placeholder="Amount (TZS)" class="p-2.5 border rounded-lg text-sm sm:w-36 font-semibold">
+                                <input type="text" id="exp-note" placeholder="Reason (e.g. Transport)" class="p-2.5 border rounded-lg text-sm flex-1">
+                                <button onclick="addExpense()" class="px-4 py-2.5 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">Add</button>
                             </div>
                             <div class="border rounded-lg overflow-hidden">
-                                <table class="w-full text-left text-sm">
+                                <table class="w-full text-left text-xs">
                                     <thead class="bg-slate-100 text-slate-600 border-b">
-                                        <tr><th class="p-3">Reason</th><th class="p-3 text-right">Amount</th><th class="p-3 text-center">Action</th></tr>
+                                        <tr><th class="p-2.5">Reason</th><th class="p-2.5 text-right">Amount</th><th class="p-2.5 text-center">Action</th></tr>
                                     </thead>
                                     <tbody id="expense-table-body"></tbody>
                                 </table>
                             </div>
-                            <button onclick="setStep(4)" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
+                            <button onclick="setStep(4)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
                         </div>
 
                         <!-- Step 4 -->
-                        <div id="step-4" class="space-y-5 hidden">
-                            <h3 class="font-bold text-slate-900 border-b pb-2 text-md">4. Final Lock</h3>
-                            <div class="space-y-3 bg-slate-50 p-4 rounded-lg border text-sm">
+                        <div id="step-4" class="space-y-4 hidden">
+                            <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">4. Final Lock</h3>
+                            <div class="space-y-2 bg-slate-50 p-3 rounded-lg border text-xs">
                                 <div class="flex justify-between"><span>Transaction Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Commission:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-rose-700 font-semibold">Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
                             </div>
-                            <button onclick="submitClosing()" class="w-full py-4 bg-emerald-600 text-white font-black text-lg rounded-lg hover:bg-emerald-700 shadow-md">
+                            <button onclick="submitClosing()" class="w-full py-3 bg-emerald-600 text-white font-black text-base rounded-lg hover:bg-emerald-700 shadow-md">
                                 Sync & Lock Daily Closing to Cloud
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div id="agent-success" class="bg-white p-10 rounded-xl border border-slate-200 text-center space-y-4 hidden shadow-sm">
-                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl font-black">✓</div>
-                    <h3 class="text-2xl font-black text-slate-900">Session Synced to Cloud</h3>
-                    <p class="text-slate-500 text-sm max-w-md mx-auto">Owner can now view real-time data across all devices.</p>
+                <div id="agent-success" class="bg-white p-8 rounded-xl border border-slate-200 text-center space-y-3 hidden shadow-sm">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">✓</div>
+                    <h3 class="text-xl font-black text-slate-900">Session Synced to Cloud</h3>
+                    <p class="text-slate-500 text-xs max-w-md mx-auto">Owner can now view real-time data across all devices.</p>
                 </div>
             </div>
 
             <!-- OWNER MODULE -->
-            <div id="view-owner" class="space-y-6 hidden">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                    <h2 class="text-lg font-bold text-slate-900">Owner Dashboard (Realtime Cloud Sync)</h2>
+            <div id="view-owner" class="space-y-4 hidden">
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
+                    <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="resetAllBalancesToZero()" class="px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset to Zero (Fresh Start)</button>
-                        <button onclick="openAgentModal()" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700">+ Create Agent Account</button>
-                        <button onclick="openCapitalModal()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">+ Inject Capital</button>
-                        <button onclick="openNetworkModal()" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">+ Add Network</button>
+                        <button onclick="resetAllBalancesToZero()" class="px-3 py-1.5 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset to Zero</button>
+                        <button onclick="openAgentModal()" class="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700">+ Create Agent</button>
+                        <button onclick="openCapitalModal()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">+ Inject Capital</button>
+                        <button onclick="openNetworkModal()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">+ Add Network</button>
                     </div>
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
-                        <p class="text-2xl font-black text-emerald-600 mt-1">TZS <span id="owner-profit">0</span></p>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
+                        <p class="text-lg font-black text-emerald-600 mt-0.5">TZS <span id="owner-profit">0</span></p>
                     </div>
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
-                        <p class="text-2xl font-black text-slate-900 mt-1">TZS <span id="owner-position">0</span></p>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
+                        <p class="text-lg font-black text-slate-900 mt-0.5">TZS <span id="owner-position">0</span></p>
                     </div>
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Capital Injected Today</p>
-                        <p class="text-2xl font-black text-blue-600 mt-1">TZS <span id="owner-capital">0</span></p>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Capital Injected Today</p>
+                        <p class="text-lg font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
                     </div>
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cash Variance Alert</p>
-                        <p class="text-2xl font-black mt-1 text-slate-900">TZS <span id="owner-variance">0</span></p>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cash Variance Alert</p>
+                        <p class="text-lg font-black mt-0.5 text-slate-900">TZS <span id="owner-variance">0</span></p>
                     </div>
                 </div>
 
                 <!-- Registered Agents Card -->
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-slate-900 text-md">Registered Cloud Agents (<span id="agent-count" class="font-black">0</span>/5 Max)</h3>
+                        <h3 class="font-bold text-slate-900 text-sm">Registered Cloud Agents (<span id="agent-count" class="font-black">0</span>/5 Max)</h3>
                     </div>
                     <div class="border rounded-lg overflow-hidden">
-                        <table class="w-full text-left text-sm">
+                        <table class="w-full text-left text-xs">
                             <thead class="bg-slate-100 text-slate-600 border-b">
-                                <tr><th class="p-3">Agent Name</th><th class="p-3">Username</th><th class="p-3 text-right">Action</th></tr>
+                                <tr><th class="p-2.5">Agent Name</th><th class="p-2.5">Username</th><th class="p-2.5 text-right">Action</th></tr>
                             </thead>
                             <tbody id="agents-table-body"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-900 text-md">Network Float Balances</h3>
-                    <div id="owner-float-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="font-bold text-slate-900 text-sm">Network Float Balances</h3>
+                    <div id="owner-float-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                 </div>
 
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-900 text-md">Capital Injections Ledger</h3>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="font-bold text-slate-900 text-sm">Capital Injections Ledger</h3>
                     <div class="border rounded-lg overflow-hidden">
-                        <table class="w-full text-left text-sm">
+                        <table class="w-full text-left text-xs">
                             <thead class="bg-slate-100 text-slate-600 border-b">
-                                <tr><th class="p-3">Destination</th><th class="p-3">Note</th><th class="p-3 text-right">Amount</th></tr>
+                                <tr><th class="p-2.5">Destination</th><th class="p-2.5">Note</th><th class="p-2.5 text-right">Amount</th></tr>
                             </thead>
                             <tbody id="capital-ledger-body"></tbody>
                         </table>
@@ -265,56 +264,57 @@
     </div>
 
     <!-- Modals -->
-    <div id="modal-agent" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
-            <h3 class="font-bold text-slate-900 text-lg">Create New Agent Account</h3>
-            <div class="space-y-3">
-                <input type="text" id="new-agent-name" placeholder="Full Name" class="w-full p-3 border rounded-lg text-sm">
-                <input type="text" id="new-agent-username" placeholder="Username" class="w-full p-3 border rounded-lg text-sm font-semibold">
-                <input type="password" id="new-agent-password" inputmode="numeric" pattern="[0-9]*" placeholder="Password (Numeric PIN)" class="w-full p-3 border rounded-lg text-sm">
+    <div id="modal-agent" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-base">Create New Agent Account</h3>
+            <div class="space-y-2.5">
+                <input type="text" id="new-agent-name" placeholder="Full Name" class="w-full p-2.5 border rounded-lg text-xs">
+                <input type="text" id="new-agent-username" placeholder="Username" class="w-full p-2.5 border rounded-lg text-xs font-semibold">
+                <input type="password" id="new-agent-password" inputmode="numeric" pattern="[0-9]*" placeholder="Initial Numeric PIN" class="w-full p-2.5 border rounded-lg text-xs">
             </div>
-            <div class="flex justify-end gap-2 border-t pt-4">
-                <button onclick="closeAgentModal()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-                <button onclick="saveNewAgentAccount()" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm">Save to Cloud</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-password" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
-            <h3 class="font-bold text-slate-900 text-lg">Change Your Password</h3>
-            <input type="password" id="change-pass-new" inputmode="numeric" pattern="[0-9]*" placeholder="New Numeric PIN" class="w-full p-3 border rounded-lg text-sm">
-            <div class="flex justify-end gap-2 border-t pt-4">
-                <button onclick="closePasswordModal()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-                <button onclick="savePasswordChange()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-sm">Update Cloud Password</button>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeAgentModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
+                <button onclick="saveNewAgentAccount()" class="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs">Save to Cloud</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-capital" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
-            <h3 class="font-bold text-slate-900 text-lg">Inject Capital</h3>
-            <select id="cap-destination" class="w-full p-3 border rounded-lg text-sm bg-slate-50 font-semibold">
+    <div id="modal-password" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
+            <h3 id="modal-pass-title" class="font-bold text-slate-900 text-base">Change Your PIN</h3>
+            <p id="modal-pass-desc" class="text-xs text-slate-500">Please enter a new numeric password for your account.</p>
+            <input type="password" id="change-pass-new" inputmode="numeric" pattern="[0-9]*" placeholder="New Numeric PIN" class="w-full p-3 border rounded-lg text-sm font-semibold">
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button id="btn-cancel-pass" onclick="closePasswordModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
+                <button onclick="savePasswordChange()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs">Update Cloud Password</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-capital" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-base">Inject Capital</h3>
+            <select id="cap-destination" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
                 <option value="Physical Cash Drawer">Physical Cash Drawer</option>
             </select>
-            <input type="number" id="cap-amount" placeholder="Amount (TZS)" class="w-full p-3 border rounded-lg font-bold text-lg">
-            <input type="text" id="cap-note" placeholder="Source / Note" class="w-full p-3 border rounded-lg text-sm">
-            <div class="flex justify-end gap-2 border-t pt-4">
-                <button onclick="closeCapitalModal()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-                <button onclick="saveCapitalInjection()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-sm">Save Capital</button>
+            <input type="number" id="cap-amount" placeholder="Amount (TZS)" class="w-full p-2.5 border rounded-lg font-bold text-base">
+            <input type="text" id="cap-note" placeholder="Source / Note" class="w-full p-2.5 border rounded-lg text-xs">
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeCapitalModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
+                <button onclick="saveCapitalInjection()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs">Save Capital</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-network" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
-            <h3 class="font-bold text-slate-900 text-lg">Add Custom Network</h3>
-            <input type="text" id="net-code" placeholder="NETWORK CODE (e.g. HALOTEL)" class="w-full p-3 border rounded-lg font-bold uppercase text-sm">
-            <input type="text" id="net-name" placeholder="Display Name (e.g. HaloPesa)" class="w-full p-3 border rounded-lg text-sm">
-            <input type="number" id="net-min" placeholder="Minimum Safety Float (TZS)" class="w-full p-3 border rounded-lg text-sm">
-            <div class="flex justify-end gap-2 border-t pt-4">
-                <button onclick="closeNetworkModal()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
-                <button onclick="saveCustomNetwork()" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg text-sm">Save Network</button>
+    <div id="modal-network" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
+            <h3 class="font-bold text-slate-900 text-base">Add Custom Network</h3>
+            <input type="text" id="net-code" placeholder="NETWORK CODE (e.g. HALOTEL)" class="w-full p-2.5 border rounded-lg font-bold uppercase text-xs">
+            <input type="text" id="net-name" placeholder="Display Name (e.g. HaloPesa)" class="w-full p-2.5 border rounded-lg text-xs">
+            <input type="number" id="net-min" placeholder="Minimum Safety Float (TZS)" class="w-full p-2.5 border rounded-lg text-xs">
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeNetworkModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
+                <button onclick="saveCustomNetwork()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-xs">Save Network</button>
             </div>
         </div>
     </div>
@@ -326,15 +326,22 @@
         let networks = [];
         let expenses = [];
         let capitalLedger = [];
+        let isForcedPassChange = false;
 
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
                 accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 if (accounts.length === 0) {
-                    db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER" });
-                    db.collection("accounts").doc("agent1").set({ name: "Default Agent", username: "agent1", password: "123", role: "AGENT" });
+                    db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER", mustChangePassword: true });
+                    db.collection("accounts").doc("agent1").set({ name: "Default Agent", username: "agent1", password: "123", role: "AGENT", mustChangePassword: true });
                 }
+
+                if (currentUser) {
+                    const updatedSelf = accounts.find(a => a.id === currentUser.id);
+                    if (updatedSelf) currentUser = updatedSelf;
+                }
+
                 renderAgentAccountsTable();
             });
 
@@ -367,11 +374,9 @@
 
         attachRealtimeListeners();
 
-        // Fresh Start Reset Function for Opening Day
         async function resetAllBalancesToZero() {
             if (!confirm("Are you sure you want to reset all network floats, cash inputs, expenses, and capital records to zero for a fresh start today?")) return;
 
-            // Reset networks to 0
             for (const net of networks) {
                 await db.collection("networks").doc(net.code).update({
                     deposits: 0,
@@ -381,17 +386,14 @@
                 });
             }
 
-            // Delete expenses
             for (const exp of expenses) {
                 await db.collection("expenses").doc(exp.id).delete();
             }
 
-            // Delete capital ledger entries
             for (const cap of capitalLedger) {
                 await db.collection("capitalLedger").doc(cap.id).delete();
             }
 
-            // Reset input fields
             document.getElementById('input-opening-cash').value = 0;
             document.getElementById('input-actual-cash').value = 0;
 
@@ -427,6 +429,11 @@
             }
 
             document.getElementById('session-date-display').innerText = `Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+            // Check for forced password change on first login
+            if (currentUser.mustChangePassword) {
+                openPasswordModal(true);
+            }
         }
 
         function handleLogout() {
@@ -449,7 +456,13 @@
             if(!name || !u || !p) { alert('Please fill in all fields.'); return; }
             if(accounts.some(a => a.username === u)) { alert('Username already taken!'); return; }
 
-            await db.collection("accounts").add({ name, username: u, password: p, role: 'AGENT' });
+            await db.collection("accounts").add({ 
+                name, 
+                username: u, 
+                password: p, 
+                role: 'AGENT',
+                mustChangePassword: true 
+            });
 
             document.getElementById('new-agent-name').value = '';
             document.getElementById('new-agent-username').value = '';
@@ -468,37 +481,67 @@
 
             tbody.innerHTML = agentList.map(a => `
                 <tr class="border-b">
-                    <td class="p-3 font-semibold text-slate-800">${a.name}</td>
-                    <td class="p-3 font-bold text-slate-600">${a.username}</td>
-                    <td class="p-3 text-right">
+                    <td class="p-2.5 font-semibold text-slate-800">${a.name}</td>
+                    <td class="p-2.5 font-bold text-slate-600">${a.username}</td>
+                    <td class="p-2.5 text-right">
                         <button onclick="deleteAgentAccount('${a.id}')" class="text-xs font-bold text-rose-600 hover:underline">Delete</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function openPasswordModal() { document.getElementById('modal-password').classList.remove('hidden'); }
-        function closePasswordModal() { document.getElementById('modal-password').classList.add('hidden'); }
+        function openPasswordModal(forced = false) { 
+            isForcedPassChange = forced;
+            const titleEl = document.getElementById('modal-pass-title');
+            const descEl = document.getElementById('modal-pass-desc');
+            const cancelBtn = document.getElementById('btn-cancel-pass');
+
+            if (forced) {
+                titleEl.innerText = "First Login: Set New PIN";
+                descEl.innerText = "For security reasons, you must change your initial password before proceeding.";
+                cancelBtn.classList.add('hidden');
+            } else {
+                titleEl.innerText = "Change Your PIN";
+                descEl.innerText = "Please enter a new numeric password for your account.";
+                cancelBtn.classList.remove('hidden');
+            }
+
+            document.getElementById('modal-password').classList.remove('hidden'); 
+        }
+
+        function closePasswordModal() { 
+            if (isForcedPassChange) return;
+            document.getElementById('modal-password').classList.add('hidden'); 
+        }
 
         async function savePasswordChange() {
             const newPass = document.getElementById('change-pass-new').value.trim();
-            if(!newPass || !currentUser) return;
+            if(!newPass || !currentUser) {
+                alert('Please enter a valid numeric PIN.');
+                return;
+            }
 
-            await db.collection("accounts").doc(currentUser.id).update({ password: newPass });
+            await db.collection("accounts").doc(currentUser.id).update({ 
+                password: newPass,
+                mustChangePassword: false 
+            });
+            
             currentUser.password = newPass;
+            currentUser.mustChangePassword = false;
 
             alert('Password updated across cloud database!');
             document.getElementById('change-pass-new').value = '';
-            closePasswordModal();
+            isForcedPassChange = false;
+            document.getElementById('modal-password').classList.add('hidden');
         }
 
         function setStep(step) {
             for(let i=1; i<=4; i++) {
                 document.getElementById(`step-${i}`).classList.add('hidden');
-                document.getElementById(`step-btn-${i}`).className = "w-full text-left p-3 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50";
+                document.getElementById(`step-btn-${i}`).className = "w-full text-left p-2.5 rounded-lg font-bold text-xs uppercase text-slate-600 hover:bg-slate-50";
             }
             document.getElementById(`step-${step}`).classList.remove('hidden');
-            document.getElementById(`step-btn-${step}`).className = "w-full text-left p-3 rounded-lg font-bold text-xs uppercase bg-emerald-50 text-emerald-700 border border-emerald-200";
+            document.getElementById(`step-btn-${step}`).className = "w-full text-left p-2.5 rounded-lg font-bold text-xs uppercase bg-emerald-50 text-emerald-700 border border-emerald-200";
         }
 
         function renderNetworkInputs() {
@@ -511,27 +554,27 @@
             networks.forEach((net) => {
                 capitalSelect.innerHTML += `<option value="${net.name} Float">${net.name} Float</option>`;
                 container.innerHTML += `
-                    <div class="p-4 border border-slate-200 rounded-lg space-y-3 bg-slate-50">
+                    <div class="p-3 border border-slate-200 rounded-lg space-y-2 bg-slate-50">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-slate-900">${net.name}</span>
-                            <span class="text-xs text-slate-500">Min Threshold: TZS ${Number(net.minFloat).toLocaleString()}</span>
+                            <span class="font-bold text-slate-900 text-xs">${net.name}</span>
+                            <span class="text-[10px] text-slate-500">Min: TZS ${Number(net.minFloat).toLocaleString()}</span>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
                             <div>
                                 <label class="text-slate-500 font-medium">Deposits (TZS)</label>
-                                <input type="number" id="dep-${net.code}" value="${net.deposits}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-2 border rounded font-semibold mt-1">
+                                <input type="number" id="dep-${net.code}" value="${net.deposits}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-1.5 border rounded font-semibold mt-0.5">
                             </div>
                             <div>
                                 <label class="text-slate-500 font-medium">Withdrawals (TZS)</label>
-                                <input type="number" id="wd-${net.code}" value="${net.withdrawals}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-2 border rounded font-semibold mt-1">
+                                <input type="number" id="wd-${net.code}" value="${net.withdrawals}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-1.5 border rounded font-semibold mt-0.5">
                             </div>
                             <div>
                                 <label class="text-slate-500 font-medium">Closing Float (TZS)</label>
-                                <input type="number" id="float-${net.code}" value="${net.closingFloat}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-2 border rounded font-semibold mt-1">
+                                <input type="number" id="float-${net.code}" value="${net.closingFloat}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-1.5 border rounded font-semibold mt-0.5">
                             </div>
                             <div>
                                 <label class="text-slate-500 font-medium">Commission</label>
-                                <input type="number" id="comm-${net.code}" value="${net.commission}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-2 border rounded font-bold text-emerald-700 mt-1">
+                                <input type="number" id="comm-${net.code}" value="${net.commission}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-1.5 border rounded font-bold text-emerald-700 mt-0.5">
                             </div>
                         </div>
                     </div>
@@ -596,14 +639,14 @@
             networks.forEach(net => {
                 const isLow = net.closingFloat < net.minFloat;
                 container.innerHTML += `
-                    <div class="p-4 rounded-lg border border-slate-200 bg-slate-50 flex justify-between items-center">
+                    <div class="p-3 rounded-lg border border-slate-200 bg-slate-50 flex justify-between items-center">
                         <div>
-                            <p class="font-bold text-slate-900">${net.name}</p>
-                            <p class="text-xs text-slate-500">Min Threshold: TZS ${Number(net.minFloat).toLocaleString()}</p>
+                            <p class="font-bold text-slate-900 text-xs">${net.name}</p>
+                            <p class="text-[10px] text-slate-500">Min: TZS ${Number(net.minFloat).toLocaleString()}</p>
                         </div>
                         <div class="text-right">
-                            <p class="font-bold text-lg ${isLow ? 'text-rose-600' : 'text-emerald-700'}">TZS ${Number(net.closingFloat).toLocaleString()}</p>
-                            ${isLow ? '<span class="text-xs font-bold text-rose-600">⚠️ Low Float Warning</span>' : '<span class="text-xs font-bold text-emerald-600">Healthy Level</span>'}
+                            <p class="font-bold text-base ${isLow ? 'text-rose-600' : 'text-emerald-700'}">TZS ${Number(net.closingFloat).toLocaleString()}</p>
+                            ${isLow ? '<span class="text-[10px] font-bold text-rose-600">⚠️ Low Float Warning</span>' : '<span class="text-[10px] font-bold text-emerald-600">Healthy Level</span>'}
                         </div>
                     </div>
                 `;
@@ -628,9 +671,9 @@
             const tbody = document.getElementById('expense-table-body');
             tbody.innerHTML = expenses.map(e => `
                 <tr class="border-b">
-                    <td class="p-3 font-semibold text-slate-800">${e.note}</td>
-                    <td class="p-3 text-right font-bold text-rose-700">TZS ${e.amount.toLocaleString()}</td>
-                    <td class="p-3 text-center"><button onclick="removeExpense('${e.id}')" class="text-xs font-bold text-rose-600 hover:underline">Delete</button></td>
+                    <td class="p-2.5 font-semibold text-slate-800">${e.note}</td>
+                    <td class="p-2.5 text-right font-bold text-rose-700">TZS ${e.amount.toLocaleString()}</td>
+                    <td class="p-2.5 text-center"><button onclick="removeExpense('${e.id}')" class="text-xs font-bold text-rose-600 hover:underline">Delete</button></td>
                 </tr>
             `).join('');
         }
@@ -654,9 +697,9 @@
             const tbody = document.getElementById('capital-ledger-body');
             tbody.innerHTML = capitalLedger.map(c => `
                 <tr class="border-b">
-                    <td class="p-3 font-bold text-slate-800">${c.destination}</td>
-                    <td class="p-3 text-slate-500">${c.note}</td>
-                    <td class="p-3 text-right font-bold text-emerald-700">TZS ${c.amount.toLocaleString()}</td>
+                    <td class="p-2.5 font-bold text-slate-800">${c.destination}</td>
+                    <td class="p-2.5 text-slate-500">${c.note}</td>
+                    <td class="p-2.5 text-right font-bold text-emerald-700">TZS ${c.amount.toLocaleString()}</td>
                 </tr>
             `).join('');
         }
@@ -684,7 +727,7 @@
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
             document.getElementById('session-badge').innerText = "CLOSED & LOCKED";
-            document.getElementById('session-badge').className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700";
+            document.getElementById('session-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700";
         }
     </script>
 </body>
