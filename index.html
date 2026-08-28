@@ -14,7 +14,6 @@
 
     <!-- ================= FIREBASE CONFIGURATION ================= -->
     <script>
-        // YOUR UPDATED FIREBASE KEYS ARE EMBEDDED BELOW
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
             authDomain: "wakalapro-4c16e.firebaseapp.com",
@@ -25,7 +24,6 @@
             measurementId: "G-3CDSLNMD5M"
         };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -49,7 +47,8 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
-                    <input type="password" id="login-password" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="••••••••">
+                    <!-- Added inputmode="numeric" & pattern for numeric keypad -->
+                    <input type="password" id="login-password" inputmode="numeric" pattern="[0-9]*" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="••••••••">
                 </div>
 
                 <div id="login-error" class="hidden p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
@@ -127,7 +126,7 @@
                                     <label class="text-xs text-slate-500 font-bold uppercase">Opening Cash</label>
                                     <div class="flex items-center gap-1 mt-1">
                                         <span class="text-xs text-slate-400">TZS</span>
-                                        <input type="number" id="input-opening-cash" value="500000" oninput="calculateAll()" class="font-bold text-slate-800 text-lg w-full bg-transparent border-b border-slate-300 focus:outline-none focus:border-emerald-500">
+                                        <input type="number" id="input-opening-cash" value="0" oninput="calculateAll()" class="font-bold text-slate-800 text-lg w-full bg-transparent border-b border-slate-300 focus:outline-none focus:border-emerald-500">
                                     </div>
                                 </div>
                                 <div>
@@ -141,7 +140,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-1">Actual Drawer Cash Counted (TZS)</label>
-                                <input type="number" id="input-actual-cash" value="572500" oninput="calculateAll()" class="w-full text-2xl font-black p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <input type="number" id="input-actual-cash" value="0" oninput="calculateAll()" class="w-full text-2xl font-black p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                             <div id="box-variance" class="p-4 rounded-lg flex justify-between items-center bg-emerald-50 text-emerald-800 border border-emerald-200">
                                 <span class="font-bold text-sm">Cash Variance / Difference:</span>
@@ -203,6 +202,7 @@
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                     <h2 class="text-lg font-bold text-slate-900">Owner Dashboard (Realtime Cloud Sync)</h2>
                     <div class="flex flex-wrap gap-2">
+                        <button onclick="resetAllBalancesToZero()" class="px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset to Zero (Fresh Start)</button>
                         <button onclick="openAgentModal()" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700">+ Create Agent Account</button>
                         <button onclick="openCapitalModal()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">+ Inject Capital</button>
                         <button onclick="openNetworkModal()" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">+ Add Network</button>
@@ -271,7 +271,7 @@
             <div class="space-y-3">
                 <input type="text" id="new-agent-name" placeholder="Full Name" class="w-full p-3 border rounded-lg text-sm">
                 <input type="text" id="new-agent-username" placeholder="Username" class="w-full p-3 border rounded-lg text-sm font-semibold">
-                <input type="password" id="new-agent-password" placeholder="Password" class="w-full p-3 border rounded-lg text-sm">
+                <input type="password" id="new-agent-password" inputmode="numeric" pattern="[0-9]*" placeholder="Password (Numeric PIN)" class="w-full p-3 border rounded-lg text-sm">
             </div>
             <div class="flex justify-end gap-2 border-t pt-4">
                 <button onclick="closeAgentModal()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
@@ -283,7 +283,7 @@
     <div id="modal-password" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="bg-white p-6 rounded-xl border max-w-md w-full space-y-4 shadow-xl">
             <h3 class="font-bold text-slate-900 text-lg">Change Your Password</h3>
-            <input type="password" id="change-pass-new" placeholder="New Password" class="w-full p-3 border rounded-lg text-sm">
+            <input type="password" id="change-pass-new" inputmode="numeric" pattern="[0-9]*" placeholder="New Numeric PIN" class="w-full p-3 border rounded-lg text-sm">
             <div class="flex justify-end gap-2 border-t pt-4">
                 <button onclick="closePasswordModal()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
                 <button onclick="savePasswordChange()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg text-sm">Update Cloud Password</button>
@@ -327,13 +327,10 @@
         let expenses = [];
         let capitalLedger = [];
 
-        // Realtime Firestore Sync Engine
         function attachRealtimeListeners() {
-            // Listen to Accounts
             db.collection("accounts").onSnapshot(snapshot => {
                 accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // If Database is empty, seed defaults
                 if (accounts.length === 0) {
                     db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER" });
                     db.collection("accounts").doc("agent1").set({ name: "Default Agent", username: "agent1", password: "123", role: "AGENT" });
@@ -341,14 +338,13 @@
                 renderAgentAccountsTable();
             });
 
-            // Listen to Networks
             db.collection("networks").onSnapshot(snapshot => {
                 networks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (networks.length === 0) {
                     const defaults = [
-                        { code: 'MPESA', name: 'M-Pesa', minFloat: 300000, deposits: 850000, withdrawals: 920000, closingFloat: 470000, commission: 17500 },
-                        { code: 'AIRTEL', name: 'Airtel Money', minFloat: 250000, deposits: 420000, withdrawals: 380000, closingFloat: 210000, commission: 8200 },
-                        { code: 'YAS', name: 'Yas (Tigo)', minFloat: 200000, deposits: 210000, withdrawals: 250000, closingFloat: 240000, commission: 5100 }
+                        { code: 'MPESA', name: 'M-Pesa', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'AIRTEL', name: 'Airtel Money', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'YAS', name: 'Yas (Tigo)', minFloat: 200000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
                 }
@@ -356,14 +352,12 @@
                 calculateAll();
             });
 
-            // Listen to Expenses
             db.collection("expenses").onSnapshot(snapshot => {
                 expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderExpenses();
                 calculateAll();
             });
 
-            // Listen to Capital Injections
             db.collection("capitalLedger").onSnapshot(snapshot => {
                 capitalLedger = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderCapitalLedger();
@@ -371,8 +365,38 @@
             });
         }
 
-        // Initialize Realtime Sync Immediately
         attachRealtimeListeners();
+
+        // Fresh Start Reset Function for Opening Day
+        async function resetAllBalancesToZero() {
+            if (!confirm("Are you sure you want to reset all network floats, cash inputs, expenses, and capital records to zero for a fresh start today?")) return;
+
+            // Reset networks to 0
+            for (const net of networks) {
+                await db.collection("networks").doc(net.code).update({
+                    deposits: 0,
+                    withdrawals: 0,
+                    closingFloat: 0,
+                    commission: 0
+                });
+            }
+
+            // Delete expenses
+            for (const exp of expenses) {
+                await db.collection("expenses").doc(exp.id).delete();
+            }
+
+            // Delete capital ledger entries
+            for (const cap of capitalLedger) {
+                await db.collection("capitalLedger").doc(cap.id).delete();
+            }
+
+            // Reset input fields
+            document.getElementById('input-opening-cash').value = 0;
+            document.getElementById('input-actual-cash').value = 0;
+
+            alert("All balances have been reset to 0! You have a fresh slate for today.");
+        }
 
         function handleLogin(e) {
             e.preventDefault();
@@ -411,7 +435,6 @@
             document.getElementById('view-login').classList.remove('hidden');
         }
 
-        // Agent Management (Max 5 Agents)
         function openAgentModal() { document.getElementById('modal-agent').classList.remove('hidden'); }
         function closeAgentModal() { document.getElementById('modal-agent').classList.add('hidden'); }
 
@@ -454,7 +477,6 @@
             `).join('');
         }
 
-        // Password Self-Service
         function openPasswordModal() { document.getElementById('modal-password').classList.remove('hidden'); }
         function closePasswordModal() { document.getElementById('modal-password').classList.add('hidden'); }
 
@@ -470,7 +492,6 @@
             closePasswordModal();
         }
 
-        // Form Stepper
         function setStep(step) {
             for(let i=1; i<=4; i++) {
                 document.getElementById(`step-${i}`).classList.add('hidden');
