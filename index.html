@@ -6,11 +6,13 @@
     <title>Wakala Pro - Firebase Cloud Realtime Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Firebase SDK (Version 9 Compat for Single-File HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen w-screen overflow-hidden flex flex-col">
 
+    <!-- ================= FIREBASE CONFIGURATION ================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
@@ -27,11 +29,11 @@
         }
         const db = firebase.firestore();
 
-        // CallMeBot API Configuration
         const CALLMEBOT_PHONE = "255712897863";
         const CALLMEBOT_APIKEY = "8390915";
     </script>
 
+    <!-- ================= LOGIN MODULE ================= -->
     <div id="view-login" class="flex items-center justify-center h-full w-full p-4 bg-slate-900">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -62,6 +64,7 @@
         </div>
     </div>
 
+    <!-- ================= APP DASHBOARD ================= -->
     <div id="view-app" class="hidden h-full flex flex-col overflow-hidden">
         <header class="bg-slate-900 text-white px-4 pt-12 pb-3.5 flex justify-between items-center shadow-md shrink-0 w-full">
             <div class="flex items-center gap-2">
@@ -88,6 +91,7 @@
 
         <main class="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
 
+            <!-- AGENT MODULE -->
             <div id="view-agent" class="space-y-4 hidden">
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
@@ -106,6 +110,7 @@
                     </div>
 
                     <div class="md:col-span-3 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <!-- Step 1 -->
                         <div id="step-1" class="space-y-4">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">1. Physical Cash Reconciliation</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
@@ -136,12 +141,14 @@
                             <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
                         </div>
 
+                        <!-- Step 2 -->
                         <div id="step-2" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">2. Network Balances</h3>
                             <div id="network-inputs-container" class="space-y-3"></div>
                             <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
                         </div>
 
+                        <!-- Step 3 -->
                         <div id="step-3" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">3. Expenses</h3>
                             <div class="flex flex-col sm:flex-row gap-2">
@@ -160,6 +167,7 @@
                             <button onclick="setStep(4)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
                         </div>
 
+                        <!-- Step 4 -->
                         <div id="step-4" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">4. Final Lock</h3>
                             <div class="space-y-2 bg-slate-50 p-3 rounded-lg border text-xs">
@@ -185,8 +193,10 @@
                 </div>
             </div>
 
+            <!-- OWNER MODULE -->
             <div id="view-owner" class="space-y-4 hidden">
                 
+                <!-- COMBINED STICKY HEADER & BALANCES SUMMARY -->
                 <div class="sticky top-0 z-30 space-y-3 bg-slate-100/90 backdrop-blur-md pb-2 pt-1">
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-md flex flex-wrap justify-between items-center gap-3">
                         <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
@@ -198,6 +208,7 @@
                         </div>
                     </div>
 
+                    <!-- Sticky Balance Summary Cards Grid -->
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
@@ -218,6 +229,72 @@
                     </div>
                 </div>
 
+                <!-- DAILY & LAST DAY SUMMARY COMPARISON PANEL -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-4 rounded-xl text-white shadow-md space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="p-1 bg-emerald-500/20 text-emerald-400 rounded text-xs font-bold">📊 BUSINESS PERFORMANCE</span>
+                            <h3 class="font-bold text-sm text-slate-100">Daily Summary Comparison</h3>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-medium" id="summary-last-updated">Realtime Sync</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- YESTERDAY SUMMARY CARD -->
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/80 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-amber-400 uppercase">Yesterday's Final Summary</span>
+                                <span class="text-[10px] text-slate-400" id="lbl-yesterday-date">Last Closed Session</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Total Volume</p>
+                                    <p class="font-bold text-slate-200">TZS <span id="yest-volume">0</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Commission Earned</p>
+                                    <p class="font-bold text-emerald-400">TZS <span id="yest-comm">0</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Expenses</p>
+                                    <p class="font-bold text-rose-400">TZS <span id="yest-exp">0</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Cash Variance</p>
+                                    <p class="font-bold text-slate-200">TZS <span id="yest-variance">0</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TODAY LIVE SUMMARY CARD -->
+                        <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/80 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-emerald-400 uppercase">Today's Live Summary</span>
+                                <span class="text-[10px] text-emerald-400 font-semibold animate-pulse">● Active Session</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Total Volume</p>
+                                    <p class="font-bold text-slate-100">TZS <span id="today-volume">0</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Commission Earned</p>
+                                    <p class="font-bold text-emerald-400">TZS <span id="today-comm">0</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Expenses</p>
+                                    <p class="font-bold text-rose-400">TZS <span id="today-exp">0</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400">Expected Profit</p>
+                                    <p class="font-bold text-emerald-300">TZS <span id="today-profit">0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registered Agents Card -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-900 text-sm">Registered Cloud Agents (<span id="agent-count" class="font-black">0</span>/5 Max)</h3>
@@ -258,6 +335,7 @@
         </main>
     </div>
 
+    <!-- Consolidated Profile Modal -->
     <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-2">
@@ -362,6 +440,7 @@
         let networks = [];
         let expenses = [];
         let capitalLedger = [];
+        let yesterdaySummary = null;
 
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
@@ -409,12 +488,43 @@
                 renderCapitalLedger();
                 calculateAll();
             });
+
+            db.collection("dailySummaries").doc("yesterday").onSnapshot(doc => {
+                if (doc.exists) {
+                    yesterdaySummary = doc.data();
+                    renderYesterdaySummary();
+                }
+            });
         }
 
         attachRealtimeListeners();
 
+        function renderYesterdaySummary() {
+            if (!yesterdaySummary) return;
+            document.getElementById('lbl-yesterday-date').innerText = yesterdaySummary.date || 'Previous Session';
+            document.getElementById('yest-volume').innerText = Number(yesterdaySummary.volume || 0).toLocaleString();
+            document.getElementById('yest-comm').innerText = Number(yesterdaySummary.commission || 0).toLocaleString();
+            document.getElementById('yest-exp').innerText = Number(yesterdaySummary.expenses || 0).toLocaleString();
+            document.getElementById('yest-variance').innerText = Number(yesterdaySummary.variance || 0).toLocaleString();
+        }
+
         async function resetAllBalancesToZero() {
             if (!confirm("Are you sure you want to reset all network floats, cash inputs, expenses, and capital records to zero for a fresh start today?")) return;
+
+            // Save active figures as Yesterday's Summary before wiping
+            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const variance = Number(document.getElementById('owner-variance').innerText.replace(/,/g, '')) || 0;
+
+            await db.collection("dailySummaries").doc("yesterday").set({
+                date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+                volume: totalDeposits + totalWithdrawals,
+                commission: totalCommission,
+                expenses: totalExpenses,
+                variance: variance
+            });
 
             for (const net of networks) {
                 await db.collection("networks").doc(net.code).update({
@@ -436,7 +546,7 @@
             document.getElementById('input-opening-cash').value = 0;
             document.getElementById('input-actual-cash').value = 0;
 
-            alert("All balances have been reset to 0! You have a fresh slate for today.");
+            alert("All balances reset to 0! Yesterday's summary saved.");
         }
 
         function handleLogin(e) {
@@ -713,6 +823,12 @@
             document.getElementById('owner-position').innerText = moneyPosition.toLocaleString();
             document.getElementById('owner-capital').innerText = totalCapitalInjected.toLocaleString();
             document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
+
+            // Populate Today's Live Summary Section
+            document.getElementById('today-volume').innerText = (totalDeposits + totalWithdrawals).toLocaleString();
+            document.getElementById('today-comm').innerText = totalCommission.toLocaleString();
+            document.getElementById('today-exp').innerText = totalExpenses.toLocaleString();
+            document.getElementById('today-profit').innerText = netProfit.toLocaleString();
 
             renderOwnerFloatGrid();
         }
