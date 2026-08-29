@@ -6,13 +6,11 @@
     <title>Wakala Pro - Firebase Cloud Realtime Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK (Version 9 Compat for Single-File HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen w-screen overflow-hidden flex flex-col">
 
-    <!-- ================= FIREBASE CONFIGURATION ================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
@@ -34,7 +32,6 @@
         const CALLMEBOT_APIKEY = "8390915";
     </script>
 
-    <!-- ================= LOGIN MODULE ================= -->
     <div id="view-login" class="flex items-center justify-center h-full w-full p-4 bg-slate-900">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-4">
             <div class="text-center space-y-1">
@@ -62,18 +59,10 @@
                     Sign In (Cloud Auth)
                 </button>
             </form>
-
-            <div class="bg-slate-50 p-2.5 rounded-lg border text-[11px] text-slate-500 space-y-1">
-                <p class="font-bold text-slate-700">Initial Cloud Credentials:</p>
-                <div class="flex justify-between"><span>Owner:</span> <code>owner</code> / <code>123</code></div>
-                <div class="flex justify-between"><span>Agent:</span> <code>agent1</code> / <code>123</code></div>
-            </div>
         </div>
     </div>
 
-    <!-- ================= APP DASHBOARD ================= -->
     <div id="view-app" class="hidden h-full flex flex-col overflow-hidden">
-        <!-- HEADER WITH FULL CLEARANCE FOR MOBILE STATUS BAR -->
         <header class="bg-slate-900 text-white px-4 pt-12 pb-3.5 flex justify-between items-center shadow-md shrink-0 w-full">
             <div class="flex items-center gap-2">
                 <div class="bg-emerald-500 text-slate-900 font-black p-1.5 rounded-lg text-base">W</div>
@@ -99,7 +88,6 @@
 
         <main class="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
 
-            <!-- AGENT MODULE -->
             <div id="view-agent" class="space-y-4 hidden">
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
                     <div>
@@ -118,7 +106,6 @@
                     </div>
 
                     <div class="md:col-span-3 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                        <!-- Step 1 -->
                         <div id="step-1" class="space-y-4">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">1. Physical Cash Reconciliation</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
@@ -149,14 +136,12 @@
                             <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Network Floats →</button>
                         </div>
 
-                        <!-- Step 2 -->
                         <div id="step-2" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">2. Network Balances</h3>
                             <div id="network-inputs-container" class="space-y-3"></div>
                             <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Expenses →</button>
                         </div>
 
-                        <!-- Step 3 -->
                         <div id="step-3" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">3. Expenses</h3>
                             <div class="flex flex-col sm:flex-row gap-2">
@@ -175,7 +160,6 @@
                             <button onclick="setStep(4)" class="w-full py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 shadow-sm">Proceed to Review →</button>
                         </div>
 
-                        <!-- Step 4 -->
                         <div id="step-4" class="space-y-4 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-2 text-sm">4. Final Lock</h3>
                             <div class="space-y-2 bg-slate-50 p-3 rounded-lg border text-xs">
@@ -190,7 +174,6 @@
                     </div>
                 </div>
 
-                <!-- AGENT LOCKED SCREEN WITH UNLOCK REQUEST -->
                 <div id="agent-success" class="bg-white p-8 rounded-xl border border-slate-200 text-center space-y-4 hidden shadow-sm">
                     <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">✓</div>
                     <h3 class="text-xl font-black text-slate-900">Session Synced & Locked</h3>
@@ -199,56 +182,12 @@
                     <div id="whatsapp-status" class="p-3 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp report via CallMeBot API...
                     </div>
-
-                    <!-- REQUEST UNLOCK BUTTON & REASON FORM -->
-                    <div class="pt-4 border-t max-w-md mx-auto space-y-3">
-                        <p class="text-xs text-slate-500 font-medium">Made a mistake or need to make adjustments?</p>
-                        
-                        <div id="unlock-form-area" class="space-y-2">
-                            <input type="text" id="unlock-reason-input" placeholder="Reason for unlock (e.g. Forgot transport expense)" class="w-full p-2.5 border rounded-lg text-xs font-semibold focus:ring-2 focus:ring-amber-500 outline-none">
-                            <button id="btn-request-unlock" onclick="requestSessionUnlock()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center justify-center gap-2">
-                                🔓 Request Modification Approval from Owner
-                            </button>
-                        </div>
-
-                        <p id="unlock-requested-msg" class="text-xs font-bold text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 hidden">
-                            ⏳ Modification request sent to Owner! Waiting for approval...
-                        </p>
-                        
-                        <p id="unlock-rejected-msg" class="text-xs font-bold text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-200 hidden">
-                            ❌ Modification request was rejected by Owner.
-                        </p>
-                    </div>
                 </div>
             </div>
 
-            <!-- OWNER MODULE -->
             <div id="view-owner" class="space-y-4 hidden">
                 
-                <!-- COMBINED STICKY HEADER & BALANCES SUMMARY -->
                 <div class="sticky top-0 z-30 space-y-3 bg-slate-100/90 backdrop-blur-md pb-2 pt-1">
-                    
-                    <!-- UNLOCK REQUEST NOTIFICATION BANNER (OWNER VIEW WITH APPROVE & REJECT) -->
-                    <div id="owner-unlock-notification" class="hidden bg-amber-500 text-slate-900 p-3.5 rounded-xl shadow-md border border-amber-600 flex flex-wrap justify-between items-center gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">🔔</span>
-                            <div>
-                                <p class="text-xs font-black uppercase tracking-wide">Modification Requested</p>
-                                <p class="text-xs font-semibold" id="unlock-request-text">An agent requested to modify locked figures.</p>
-                                <p class="text-[11px] font-bold text-slate-800 mt-0.5" id="unlock-request-reason">Reason: Loading...</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="rejectSessionUnlock()" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-lg shadow transition">
-                                Reject Request
-                            </button>
-                            <button onclick="approveSessionUnlock()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-lg shadow transition">
-                                Approve & Re-open Session
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Owner Controls -->
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-md flex flex-wrap justify-between items-center gap-3">
                         <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
                         <div class="flex flex-wrap gap-2">
@@ -259,7 +198,6 @@
                         </div>
                     </div>
 
-                    <!-- Sticky Balance Summary Cards Grid -->
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
@@ -280,7 +218,6 @@
                     </div>
                 </div>
 
-                <!-- Registered Agents Card -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="font-bold text-slate-900 text-sm">Registered Cloud Agents (<span id="agent-count" class="font-black">0</span>/5 Max)</h3>
@@ -306,21 +243,12 @@
                     <div id="owner-float-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                 </div>
 
-                <!-- CAPITAL LEDGER WITH EDIT AND DELETE CAPABILITIES -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-slate-900 text-sm">Capital Injections Ledger</h3>
-                        <span class="text-[11px] text-slate-500 font-medium">Click Edit to modify mistakes or Delete to clear</span>
-                    </div>
+                    <h3 class="font-bold text-slate-900 text-sm">Capital Injections Ledger</h3>
                     <div class="border rounded-lg overflow-hidden">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-100 text-slate-600 border-b">
-                                <tr>
-                                    <th class="p-2.5">Destination</th>
-                                    <th class="p-2.5">Note / Source</th>
-                                    <th class="p-2.5 text-right">Amount</th>
-                                    <th class="p-2.5 text-center">Actions</th>
-                                </tr>
+                                <tr><th class="p-2.5">Destination</th><th class="p-2.5">Note</th><th class="p-2.5 text-right">Amount</th></tr>
                             </thead>
                             <tbody id="capital-ledger-body"></tbody>
                         </table>
@@ -330,7 +258,6 @@
         </main>
     </div>
 
-    <!-- Consolidated Profile Modal -->
     <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-2">
@@ -401,11 +328,9 @@
         </div>
     </div>
 
-    <!-- CAPITAL INJECTION / EDIT MODAL -->
     <div id="modal-capital" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-xl border max-w-md w-full space-y-3 shadow-xl">
-            <h3 id="capital-modal-title" class="font-bold text-slate-900 text-base">Inject Capital</h3>
-            <input type="hidden" id="cap-edit-id" value="">
+            <h3 class="font-bold text-slate-900 text-base">Inject Capital</h3>
             <select id="cap-destination" class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 font-semibold">
                 <option value="Physical Cash Drawer">Physical Cash Drawer</option>
             </select>
@@ -431,14 +356,12 @@
         </div>
     </div>
 
-    <!-- Application Engine -->
     <script>
         let currentUser = null;
         let accounts = [];
         let networks = [];
         let expenses = [];
         let capitalLedger = [];
-        let currentSessionState = { locked: false, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "" };
 
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
@@ -486,55 +409,9 @@
                 renderCapitalLedger();
                 calculateAll();
             });
-
-            db.collection("system").doc("sessionState").onSnapshot(doc => {
-                if (doc.exists) {
-                    currentSessionState = doc.data();
-                    handleSessionStateUI();
-                } else {
-                    db.collection("system").doc("sessionState").set({ locked: false, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "" });
-                }
-            });
         }
 
         attachRealtimeListeners();
-
-        function handleSessionStateUI() {
-            const unlockBanner = document.getElementById('owner-unlock-notification');
-            const unlockReqMsg = document.getElementById('unlock-requested-msg');
-            const unlockRejMsg = document.getElementById('unlock-rejected-msg');
-            const unlockFormArea = document.getElementById('unlock-form-area');
-
-            if (currentSessionState.unlockRequested) {
-                unlockBanner.classList.remove('hidden');
-                document.getElementById('unlock-request-text').innerText = `Agent "${currentSessionState.requestedBy}" requested session unlock.`;
-                document.getElementById('unlock-request-reason').innerText = `Reason: "${currentSessionState.requestReason || 'No reason provided'}"`;
-                
-                if (currentUser && currentUser.role === 'AGENT') {
-                    unlockReqMsg.classList.remove('hidden');
-                    unlockRejMsg.classList.add('hidden');
-                    unlockFormArea.classList.add('hidden');
-                }
-            } else {
-                unlockBanner.classList.add('hidden');
-                unlockReqMsg.classList.add('hidden');
-                if (unlockFormArea) unlockFormArea.classList.remove('hidden');
-
-                if (currentSessionState.requestStatus === 'REJECTED' && currentUser && currentUser.role === 'AGENT') {
-                    unlockRejMsg.classList.remove('hidden');
-                } else {
-                    if (unlockRejMsg) unlockRejMsg.classList.add('hidden');
-                }
-            }
-
-            if (!currentSessionState.locked && currentUser && currentUser.role === 'AGENT') {
-                document.getElementById('agent-form-container').classList.remove('hidden');
-                document.getElementById('agent-success').classList.add('hidden');
-                document.getElementById('session-badge').innerText = "SESSION OPEN";
-                document.getElementById('session-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700";
-                setStep(1);
-            }
-        }
 
         async function resetAllBalancesToZero() {
             if (!confirm("Are you sure you want to reset all network floats, cash inputs, expenses, and capital records to zero for a fresh start today?")) return;
@@ -556,12 +433,10 @@
                 await db.collection("capitalLedger").doc(cap.id).delete();
             }
 
-            await db.collection("system").doc("sessionState").set({ locked: false, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "" });
-
             document.getElementById('input-opening-cash').value = 0;
             document.getElementById('input-actual-cash').value = 0;
 
-            alert("All balances have been reset to 0!");
+            alert("All balances have been reset to 0! You have a fresh slate for today.");
         }
 
         function handleLogin(e) {
@@ -597,8 +472,6 @@
             if (currentUser.mustChangePassword) {
                 openForcedPasswordModal();
             }
-
-            handleSessionStateUI();
         }
 
         function handleLogout() {
@@ -785,7 +658,7 @@
                             </div>
                             <div>
                                 <label class="text-slate-500 font-medium">Commission</label>
-                                <input type="number" id="comm-${net.code}" value="${net.commission}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-1.5 border rounded river-emerald-700 font-bold text-emerald-700 mt-0.5">
+                                <input type="number" id="comm-${net.code}" value="${net.commission}" onchange="updateNetworkCloud('${net.code}')" class="w-full p-1.5 border rounded font-bold text-emerald-700 mt-0.5">
                             </div>
                         </div>
                     </div>
@@ -889,63 +762,19 @@
             `).join('');
         }
 
-        // CAPITAL LEDGER EDIT & DELETE MANAGEMENT
-        function openCapitalModal(editId = null) { 
-            const title = document.getElementById('capital-modal-title');
-            const hiddenId = document.getElementById('cap-edit-id');
-
-            if (editId) {
-                const item = capitalLedger.find(c => c.id === editId);
-                if (item) {
-                    title.innerText = "Edit Capital Injection";
-                    hiddenId.value = editId;
-                    document.getElementById('cap-destination').value = item.destination;
-                    document.getElementById('cap-amount').value = item.amount;
-                    document.getElementById('cap-note').value = item.note || '';
-                }
-            } else {
-                title.innerText = "Inject Capital";
-                hiddenId.value = "";
-                document.getElementById('cap-amount').value = "";
-                document.getElementById('cap-note').value = "";
-            }
-
-            document.getElementById('modal-capital').classList.remove('hidden'); 
-        }
-
-        function closeCapitalModal() { 
-            document.getElementById('modal-capital').classList.add('hidden'); 
-            document.getElementById('cap-edit-id').value = "";
-        }
+        function openCapitalModal() { document.getElementById('modal-capital').classList.remove('hidden'); }
+        function closeCapitalModal() { document.getElementById('modal-capital').classList.add('hidden'); }
 
         async function saveCapitalInjection() {
-            const editId = document.getElementById('cap-edit-id').value;
             const dest = document.getElementById('cap-destination').value;
             const amt = Number(document.getElementById('cap-amount').value);
             const note = document.getElementById('cap-note').value;
             if(!amt) return;
 
-            if (editId) {
-                await db.collection("capitalLedger").doc(editId).update({
-                    destination: dest,
-                    amount: amt,
-                    note: note || 'Capital Injection'
-                });
-            } else {
-                await db.collection("capitalLedger").add({ 
-                    destination: dest, 
-                    amount: amt, 
-                    note: note || 'Capital Injection' 
-                });
-            }
-
+            await db.collection("capitalLedger").add({ destination: dest, amount: amt, note: note || 'Capital Injection' });
+            document.getElementById('cap-amount').value = '';
+            document.getElementById('cap-note').value = '';
             closeCapitalModal();
-        }
-
-        async function deleteCapitalEntry(docId) {
-            if (confirm("Are you sure you want to delete this capital injection entry? Total expected cash will be adjusted immediately.")) {
-                await db.collection("capitalLedger").doc(docId).delete();
-            }
         }
 
         function renderCapitalLedger() {
@@ -955,10 +784,6 @@
                     <td class="p-2.5 font-bold text-slate-800">${c.destination}</td>
                     <td class="p-2.5 text-slate-500">${c.note}</td>
                     <td class="p-2.5 text-right font-bold text-emerald-700">TZS ${c.amount.toLocaleString()}</td>
-                    <td class="p-2.5 text-center flex justify-center gap-2">
-                        <button onclick="openCapitalModal('${c.id}')" class="text-xs font-bold text-blue-600 hover:underline">Edit</button>
-                        <button onclick="deleteCapitalEntry('${c.id}')" class="text-xs font-bold text-rose-600 hover:underline">Delete</button>
-                    </td>
                 </tr>
             `).join('');
         }
@@ -982,63 +807,13 @@
             closeNetworkModal();
         }
 
-        async function submitClosing() {
-            await db.collection("system").doc("sessionState").set({ locked: true, unlockRequested: false, requestedBy: "", requestReason: "", requestStatus: "SUBMITTED" });
-
+        function submitClosing() {
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
             document.getElementById('session-badge').innerText = "CLOSED & LOCKED";
             document.getElementById('session-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700";
             
             autoSendWhatsAppReport();
-        }
-
-        async function requestSessionUnlock() {
-            const reasonInput = document.getElementById('unlock-reason-input').value.trim();
-            if (!reasonInput) {
-                alert('Please enter a brief reason for requesting the unlock.');
-                return;
-            }
-
-            const agentName = currentUser ? currentUser.name : 'Agent';
-            await db.collection("system").doc("sessionState").update({
-                unlockRequested: true,
-                requestedBy: agentName,
-                requestReason: reasonInput,
-                requestStatus: "PENDING"
-            });
-
-            let unlockMsg = `⚠️ *WAKALA PRO - UNLOCK REQUEST*\n`;
-            unlockMsg += `👤 *Agent:* ${agentName}\n`;
-            unlockMsg += `🏢 *Branch:* ${currentUser ? currentUser.branch : 'Main'}\n`;
-            unlockMsg += `📝 *Reason:* ${reasonInput}\n`;
-            unlockMsg += `💬 Agent is requesting approval to unlock and update today's closed session.`;
-
-            const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${CALLMEBOT_PHONE}&text=${encodeURIComponent(unlockMsg)}&apikey=${CALLMEBOT_APIKEY}`;
-            try {
-                await fetch(apiUrl, { mode: 'no-cors' });
-            } catch (err) {
-                console.error("Unlock WhatsApp request error:", err);
-            }
-        }
-
-        async function approveSessionUnlock() {
-            await db.collection("system").doc("sessionState").set({
-                locked: false,
-                unlockRequested: false,
-                requestedBy: "",
-                requestReason: "",
-                requestStatus: "APPROVED"
-            });
-            alert("Session unlocked! The agent can now update figures.");
-        }
-
-        async function rejectSessionUnlock() {
-            await db.collection("system").doc("sessionState").update({
-                unlockRequested: false,
-                requestStatus: "REJECTED"
-            });
-            alert("Unlock request rejected. The session remains locked.");
         }
 
         async function autoSendWhatsAppReport() {
