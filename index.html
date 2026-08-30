@@ -195,27 +195,49 @@
                         <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp report via CallMeBot API...
                     </div>
                 </div>
+
+                <!-- AGENT RECENT SESSIONS EDIT AUDIT TAB -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="font-bold text-slate-900 text-sm">🔒 Locked & Past Sessions Audit</h3>
+                    <p class="text-[10px] text-slate-500">Need to make changes to a backdated or closed session? Request an edit approval from the owner.</p>
+                    <div class="border rounded-lg overflow-x-auto max-h-48">
+                        <table class="w-full text-left text-xs min-w-[500px]">
+                            <thead class="bg-slate-100 text-slate-600 border-b sticky top-0">
+                                <tr>
+                                    <th class="p-2.5">Date</th>
+                                    <th class="p-2.5">Volume</th>
+                                    <th class="p-2.5">Commission</th>
+                                    <th class="p-2.5">Status</th>
+                                    <th class="p-2.5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agent-logs-table-body">
+                                <tr><td colspan="5" class="p-3 text-center text-slate-400">Loading session history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- OWNER MODULE -->
             <div id="view-owner" class="space-y-4 hidden">
                 
-                <!-- COMBINED STICKY HEADER & BALANCES SUMMARY -->
+                <!-- STICKY HEADER & BALANCES SUMMARY -->
                 <div class="sticky top-0 z-30 space-y-3 bg-slate-100/90 backdrop-blur-md pb-2 pt-1">
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-md flex flex-wrap justify-between items-center gap-3">
                         <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="resetAllBalancesToZero()" class="px-3 py-1.5 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset to Zero</button>
+                            <button onclick="resetAllBalancesToZero()" class="px-3 py-1.5 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 shadow-sm">🔄 Reset Session</button>
                             <button onclick="openAgentModal()" class="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700">+ Create Agent</button>
                             <button onclick="openCapitalModal()" class="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700">+ Inject Capital</button>
                             <button onclick="openNetworkModal()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-lg text-xs hover:bg-slate-800">+ Add Network</button>
                         </div>
                     </div>
 
-                    <!-- Sticky Balance Summary Cards Grid -->
+                    <!-- Sticky Balance Summary Cards Grid (CUMULATIVE & REAL-TIME) -->
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Operating Profit</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit</p>
                             <p class="text-base sm:text-lg font-black text-emerald-600 mt-0.5">TZS <span id="owner-profit">0</span></p>
                         </div>
                         <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
@@ -227,7 +249,7 @@
                             <p class="text-base sm:text-lg font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
                         </div>
                         <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cash Variance Alert</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Live Cash Variance Alert</p>
                             <p class="text-base sm:text-lg font-black mt-0.5 text-slate-900">TZS <span id="owner-variance">0</span></p>
                         </div>
                     </div>
@@ -301,18 +323,18 @@
                     </div>
                 </div>
 
-                <!-- MULTI-DAY HISTORICAL LOGS AUDIT TABLE -->
+                <!-- MULTI-DAY HISTORICAL LOGS AUDIT TABLE WITH EDIT UNLOCK WORKFLOW -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-2">
                         <div>
-                            <h3 class="font-bold text-slate-900 text-sm">📅 Multi-Day Historical Audit Logs</h3>
-                            <p class="text-[10px] text-slate-500">Track and review past daily sessions and backdated closures.</p>
+                            <h3 class="font-bold text-slate-900 text-sm">📅 Multi-Day Audit Logs & Edit Requests</h3>
+                            <p class="text-[10px] text-slate-500">Track past sessions and review agent edit requests for backdated closings.</p>
                         </div>
                         <input type="text" id="log-search-input" onkeyup="filterAuditLogs()" placeholder="Search date or agent..." class="p-1.5 border rounded text-xs bg-slate-50 focus:outline-none focus:border-emerald-500">
                     </div>
                     
                     <div class="border rounded-lg overflow-x-auto max-h-64">
-                        <table class="w-full text-left text-xs min-w-[600px]">
+                        <table class="w-full text-left text-xs min-w-[650px]">
                             <thead class="bg-slate-100 text-slate-600 border-b sticky top-0">
                                 <tr>
                                     <th class="p-2.5">Session Date</th>
@@ -321,7 +343,7 @@
                                     <th class="p-2.5">Commission</th>
                                     <th class="p-2.5">Expenses</th>
                                     <th class="p-2.5">Variance</th>
-                                    <th class="p-2.5 text-center">Status</th>
+                                    <th class="p-2.5 text-center">Status / Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="logs-table-body">
@@ -374,7 +396,7 @@
         </main>
     </div>
 
-    <!-- Consolidated Profile Modal -->
+    <!-- MODALS -->
     <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-2">
@@ -406,9 +428,7 @@
             </div>
 
             <div class="flex justify-between items-center border-t pt-3">
-                <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition">
-                    Logout
-                </button>
+                <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition">Logout</button>
                 <div class="flex gap-2">
                     <button onclick="closeProfileModal()" class="px-3 py-1.5 border rounded-lg text-xs font-semibold">Cancel</button>
                     <button onclick="saveProfileChanges()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow">Save Profile</button>
@@ -473,6 +493,7 @@
         </div>
     </div>
 
+    <!-- MAIN SCRIPT LOGIC -->
     <script>
         let currentUser = null;
         let accounts = [];
@@ -481,7 +502,6 @@
         let capitalLedger = [];
         let historicalLogs = [];
 
-        // Set default date to today for date picker
         document.addEventListener("DOMContentLoaded", () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('session-date-picker').value = todayStr;
@@ -544,15 +564,14 @@
                 calculateAll();
             });
 
-            // Listen to all multi-day historical entries
             db.collection("dailySummaries").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Sort by rawDate descending for chronological view
                 historicalLogs.sort((a, b) => (b.rawDate || '').localeCompare(a.rawDate || ''));
                 
                 renderAuditLogs(historicalLogs);
+                renderAgentLogsTable(historicalLogs);
                 renderYesterdayCard();
+                calculateAll();
             });
         }
 
@@ -560,7 +579,7 @@
 
         function renderYesterdayCard() {
             if (historicalLogs.length === 0) return;
-            const latestClosed = historicalLogs[0]; // Most recent closed session
+            const latestClosed = historicalLogs[0];
             
             document.getElementById('lbl-yesterday-date').innerText = latestClosed.date || 'Previous Session';
             document.getElementById('yest-volume').innerText = Number(latestClosed.volume || 0).toLocaleString();
@@ -576,6 +595,72 @@
             }
         }
 
+        function calculateAll() {
+            const openingCash = Number(document.getElementById('input-opening-cash').value) || 0;
+            const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
+
+            const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+            const todayVolume = todayDeposits + todayWithdrawals;
+            const todayCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const totalFloat = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
+
+            const cashCapitalInjected = capitalLedger
+                .filter(c => c.destination === 'Physical Cash Drawer')
+                .reduce((sum, c) => sum + c.amount, 0);
+
+            const totalCapitalInjected = capitalLedger.reduce((sum, c) => sum + c.amount, 0);
+
+            const expectedCash = openingCash + todayDeposits - todayWithdrawals - todayExpenses + cashCapitalInjected;
+            const cashVariance = actualCash - expectedCash;
+            const moneyPosition = actualCash + totalFloat;
+
+            // Cumulative Profit Logic across all history + active today
+            const historicalCommission = historicalLogs.reduce((sum, log) => sum + Number(log.commission || 0), 0);
+            const historicalExpenses = historicalLogs.reduce((sum, log) => sum + Number(log.expenses || 0), 0);
+            const cumulativeProfit = (historicalCommission + todayCommission) - (historicalExpenses + todayExpenses);
+
+            document.getElementById('lbl-today-capital').innerText = cashCapitalInjected.toLocaleString();
+            document.getElementById('lbl-expected-cash').innerText = expectedCash.toLocaleString();
+            document.getElementById('lbl-cash-variance').innerText = cashVariance.toLocaleString();
+
+            document.getElementById('rev-volume').innerText = todayVolume.toLocaleString();
+            document.getElementById('rev-comm').innerText = todayCommission.toLocaleString();
+            document.getElementById('rev-exp').innerText = todayExpenses.toLocaleString();
+
+            document.getElementById('owner-profit').innerText = cumulativeProfit.toLocaleString();
+            document.getElementById('owner-position').innerText = moneyPosition.toLocaleString();
+            document.getElementById('owner-capital').innerText = totalCapitalInjected.toLocaleString();
+            document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
+
+            document.getElementById('today-volume').innerText = todayVolume.toLocaleString();
+            document.getElementById('today-comm').innerText = todayCommission.toLocaleString();
+            document.getElementById('today-exp').innerText = todayExpenses.toLocaleString();
+            document.getElementById('today-profit').innerText = (todayCommission - todayExpenses).toLocaleString();
+
+            renderOwnerFloatGrid();
+        }
+
+        // UNLOCK & EDIT WORKFLOW
+        async function requestSessionUnlock(sessionDocId) {
+            if (!confirm("Request owner approval to unlock and edit this closed/backdated session?")) return;
+            
+            await db.collection("dailySummaries").doc(sessionDocId).update({
+                unlockRequested: true,
+                status: "PENDING_UNLOCK"
+            });
+            alert("Unlock request sent to owner dashboard!");
+        }
+
+        async function approveSessionUnlock(sessionDocId) {
+            await db.collection("dailySummaries").doc(sessionDocId).update({
+                unlockRequested: false,
+                status: "OPEN_FOR_EDIT"
+            });
+            alert("Session unlocked! Agent can now edit.");
+        }
+
         function renderAuditLogs(logs) {
             const tbody = document.getElementById('logs-table-body');
             if (!logs || logs.length === 0) {
@@ -587,6 +672,15 @@
                 const varNum = Number(log.variance || 0);
                 const varColor = varNum < 0 ? 'text-rose-600 font-bold' : varNum > 0 ? 'text-emerald-600 font-bold' : 'text-slate-600';
                 
+                let actionBtn = '';
+                if (currentUser && currentUser.role === 'OWNER' && log.status === 'PENDING_UNLOCK') {
+                    actionBtn = `<button onclick="approveSessionUnlock('${log.id}')" class="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-[10px] font-bold shadow-sm">Approve Edit</button>`;
+                } else if (log.status === 'OPEN_FOR_EDIT') {
+                    actionBtn = `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Unlocked for Edit</span>`;
+                } else {
+                    actionBtn = `<span class="text-[9px] font-bold text-slate-400">Locked</span>`;
+                }
+
                 return `
                     <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-2.5 font-bold text-slate-900">${log.date || log.rawDate}</td>
@@ -595,14 +689,56 @@
                         <td class="p-2.5 text-emerald-700 font-bold">TZS ${Number(log.commission || 0).toLocaleString()}</td>
                         <td class="p-2.5 text-rose-700 font-bold">TZS ${Number(log.expenses || 0).toLocaleString()}</td>
                         <td class="p-2.5 ${varColor}">TZS ${varNum.toLocaleString()}</td>
-                        <td class="p-2.5 text-center">
+                        <td class="p-2.5 text-center flex flex-col items-center gap-1">
                             ${log.isBackdated 
                                 ? '<span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Backdated</span>' 
                                 : '<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Standard</span>'}
+                            ${actionBtn}
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function renderAgentLogsTable(logs) {
+            const tbody = document.getElementById('agent-logs-table-body');
+            if(!tbody) return;
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400">No session logs found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => {
+                let actionBtn = '';
+                if (log.status === 'OPEN_FOR_EDIT') {
+                    actionBtn = `<button onclick="reopenSessionForEditing('${log.rawDate}')" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold">Edit Session</button>`;
+                } else if (log.status === 'PENDING_UNLOCK') {
+                    actionBtn = `<span class="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Pending Owner...</span>`;
+                } else {
+                    actionBtn = `<button onclick="requestSessionUnlock('${log.id}')" class="text-[10px] text-blue-600 font-bold underline">Request Unlock</button>`;
+                }
+
+                return `
+                    <tr class="border-b text-xs">
+                        <td class="p-2.5 font-bold text-slate-800">${log.date || log.rawDate}</td>
+                        <td class="p-2.5 text-slate-700">TZS ${Number(log.volume || 0).toLocaleString()}</td>
+                        <td class="p-2.5 text-emerald-700 font-bold">TZS ${Number(log.commission || 0).toLocaleString()}</td>
+                        <td class="p-2.5 font-bold">${log.isBackdated ? '<span class="text-amber-600">Backdated</span>' : '<span class="text-emerald-600">Standard</span>'}</td>
+                        <td class="p-2.5 text-center">${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function reopenSessionForEditing(rawDateStr) {
+            document.getElementById('session-date-picker').value = rawDateStr;
+            handleDateChange(rawDateStr);
+            document.getElementById('agent-form-container').classList.remove('hidden');
+            document.getElementById('agent-success').classList.add('hidden');
+            document.getElementById('session-badge').innerText = "SESSION REOPENED (EDITING)";
+            document.getElementById('session-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700";
+            setStep(1);
         }
 
         function filterAuditLogs() {
@@ -616,26 +752,7 @@
         }
 
         async function resetAllBalancesToZero() {
-            if (!confirm("Are you sure you want to reset all network floats, cash inputs, expenses, and capital records to zero for a fresh start today?")) return;
-
-            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
-            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
-            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-            const variance = Number(document.getElementById('owner-variance').innerText.replace(/,/g, '')) || 0;
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            // Save reset state as historical record
-            await db.collection("dailySummaries").doc(todayStr).set({
-                date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-                rawDate: todayStr,
-                volume: totalDeposits + totalWithdrawals,
-                commission: totalCommission,
-                expenses: totalExpenses,
-                variance: variance,
-                isBackdated: false,
-                submittedBy: currentUser ? currentUser.name : 'Owner Reset'
-            });
+            if (!confirm("Are you sure you want to reset current session network floats, cash inputs, and expenses for a fresh day?")) return;
 
             for (const net of networks) {
                 await db.collection("networks").doc(net.code).update({
@@ -650,14 +767,10 @@
                 await db.collection("expenses").doc(exp.id).delete();
             }
 
-            for (const cap of capitalLedger) {
-                await db.collection("capitalLedger").doc(cap.id).delete();
-            }
-
             document.getElementById('input-opening-cash').value = 0;
             document.getElementById('input-actual-cash').value = 0;
 
-            alert("All balances reset to 0! Today's summary logged to historical archives.");
+            alert("Session reset to 0!");
         }
 
         function handleLogin(e) {
@@ -710,19 +823,14 @@
             document.getElementById('modal-profile').classList.remove('hidden');
         }
 
-        function closeProfileModal() {
-            document.getElementById('modal-profile').classList.add('hidden');
-        }
+        function closeProfileModal() { document.getElementById('modal-profile').classList.add('hidden'); }
 
         async function saveProfileChanges() {
             const newName = document.getElementById('profile-display-name').value.trim();
             const newPhone = document.getElementById('profile-phone').value.trim();
             const newBranch = document.getElementById('profile-branch').value.trim();
 
-            if (!newName || !currentUser) {
-                alert('Please enter a valid display name.');
-                return;
-            }
+            if (!newName || !currentUser) return;
 
             await db.collection("accounts").doc(currentUser.id).update({ 
                 name: newName,
@@ -741,10 +849,7 @@
 
         async function updatePinFromProfile() {
             const newPin = document.getElementById('profile-new-pin').value.trim();
-            if (!newPin || !currentUser) {
-                alert('Please enter a valid numeric PIN.');
-                return;
-            }
+            if (!newPin || !currentUser) return;
 
             await db.collection("accounts").doc(currentUser.id).update({ 
                 password: newPin,
@@ -771,30 +876,17 @@
             const branch = document.getElementById('new-agent-branch').value.trim();
             const p = document.getElementById('new-agent-password').value.trim();
 
-            if(!name || !u || !p) { alert('Please fill in required fields.'); return; }
+            if(!name || !u || !p) return;
             if(accounts.some(a => a.username === u)) { alert('Username already taken!'); return; }
 
             await db.collection("accounts").add({ 
-                name, 
-                username: u, 
-                phone,
-                branch,
-                password: p, 
-                role: 'AGENT',
-                mustChangePassword: true 
+                name, username: u, phone, branch, password: p, role: 'AGENT', mustChangePassword: true 
             });
 
-            document.getElementById('new-agent-name').value = '';
-            document.getElementById('new-agent-username').value = '';
-            document.getElementById('new-agent-phone').value = '';
-            document.getElementById('new-agent-branch').value = '';
-            document.getElementById('new-agent-password').value = '';
             closeAgentModal();
         }
 
-        async function deleteAgentAccount(docId) {
-            await db.collection("accounts").doc(docId).delete();
-        }
+        async function deleteAgentAccount(docId) { await db.collection("accounts").doc(docId).delete(); }
 
         function renderAgentAccountsTable() {
             const tbody = document.getElementById('agents-table-body');
@@ -814,27 +906,20 @@
             `).join('');
         }
 
-        function openForcedPasswordModal() { 
-            document.getElementById('modal-password').classList.remove('hidden'); 
-        }
+        function openForcedPasswordModal() { document.getElementById('modal-password').classList.remove('hidden'); }
 
         async function savePasswordChange() {
             const newPass = document.getElementById('change-pass-new').value.trim();
-            if(!newPass || !currentUser) {
-                alert('Please enter a valid numeric PIN.');
-                return;
-            }
+            if(!newPass || !currentUser) return;
 
             await db.collection("accounts").doc(currentUser.id).update({ 
-                password: newPass,
-                mustChangePassword: false 
+                password: newPass, mustChangePassword: false 
             });
             
             currentUser.password = newPass;
             currentUser.mustChangePassword = false;
 
             alert('Password updated across cloud database!');
-            document.getElementById('change-pass-new').value = '';
             document.getElementById('modal-password').classList.add('hidden');
         }
 
@@ -899,48 +984,6 @@
             });
         }
 
-        function calculateAll() {
-            const openingCash = Number(document.getElementById('input-opening-cash').value) || 0;
-            const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
-
-            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
-            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
-            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-            const totalFloat = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
-
-            const cashCapitalInjected = capitalLedger
-                .filter(c => c.destination === 'Physical Cash Drawer')
-                .reduce((sum, c) => sum + c.amount, 0);
-
-            const totalCapitalInjected = capitalLedger.reduce((sum, c) => sum + c.amount, 0);
-
-            const expectedCash = openingCash + totalDeposits - totalWithdrawals - totalExpenses + cashCapitalInjected;
-            const cashVariance = actualCash - expectedCash;
-            const netProfit = totalCommission - totalExpenses;
-            const moneyPosition = actualCash + totalFloat;
-
-            document.getElementById('lbl-today-capital').innerText = cashCapitalInjected.toLocaleString();
-            document.getElementById('lbl-expected-cash').innerText = expectedCash.toLocaleString();
-            document.getElementById('lbl-cash-variance').innerText = cashVariance.toLocaleString();
-
-            document.getElementById('rev-volume').innerText = (totalDeposits + totalWithdrawals).toLocaleString();
-            document.getElementById('rev-comm').innerText = totalCommission.toLocaleString();
-            document.getElementById('rev-exp').innerText = totalExpenses.toLocaleString();
-
-            document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
-            document.getElementById('owner-position').innerText = moneyPosition.toLocaleString();
-            document.getElementById('owner-capital').innerText = totalCapitalInjected.toLocaleString();
-            document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
-
-            document.getElementById('today-volume').innerText = (totalDeposits + totalWithdrawals).toLocaleString();
-            document.getElementById('today-comm').innerText = totalCommission.toLocaleString();
-            document.getElementById('today-exp').innerText = totalExpenses.toLocaleString();
-            document.getElementById('today-profit').innerText = netProfit.toLocaleString();
-
-            renderOwnerFloatGrid();
-        }
-
         function renderOwnerFloatGrid() {
             const container = document.getElementById('owner-float-grid');
             container.innerHTML = '';
@@ -971,9 +1014,7 @@
             document.getElementById('exp-note').value = '';
         }
 
-        async function removeExpense(docId) {
-            await db.collection("expenses").doc(docId).delete();
-        }
+        async function removeExpense(docId) { await db.collection("expenses").doc(docId).delete(); }
 
         function renderExpenses() {
             const tbody = document.getElementById('expense-table-body');
@@ -996,8 +1037,6 @@
             if(!amt) return;
 
             await db.collection("capitalLedger").add({ destination: dest, amount: amt, note: note || 'Capital Injection' });
-            document.getElementById('cap-amount').value = '';
-            document.getElementById('cap-note').value = '';
             closeCapitalModal();
         }
 
@@ -1024,10 +1063,6 @@
             await db.collection("networks").doc(code).set({
                 code, name, minFloat: min, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0
             });
-
-            document.getElementById('net-code').value = '';
-            document.getElementById('net-name').value = '';
-            document.getElementById('net-min').value = '';
             closeNetworkModal();
         }
 
@@ -1044,7 +1079,6 @@
 
             const formattedDate = new Date(selectedDateVal).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
-            // Store directly in dailySummaries collection using unique date document ID
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 date: formattedDate,
                 rawDate: selectedDateVal,
@@ -1053,6 +1087,8 @@
                 expenses: totalExpenses,
                 variance: variance,
                 isBackdated: isBackdated,
+                status: "LOCKED",
+                unlockRequested: false,
                 submittedBy: currentUser ? currentUser.name : 'Agent'
             });
 
@@ -1077,8 +1113,7 @@
             let report = `📊 *WAKALA PRO - DAILY REPORT* ${isBackdated ? '(BACKDATED ENTRY ⚠️)' : ''}\n`;
             report += `📅 *Date:* ${sessionDate}\n`;
             report += `👤 *Agent:* ${currentUser ? currentUser.name : 'Agent'}\n`;
-            report += `🏢 *Branch:* ${currentUser && currentUser.branch ? currentUser.branch : 'Main'}\n`;
-            report += `📞 *Phone:* ${currentUser && currentUser.phone ? currentUser.phone : 'N/A'}\n\n`;
+            report += `🏢 *Branch:* ${currentUser && currentUser.branch ? currentUser.branch : 'Main'}\n\n`;
 
             report += `💵 *TRANSACTION SUMMARY*\n`;
             report += `• Total Volume: TZS ${(totalDeposits + totalWithdrawals).toLocaleString()}\n`;
@@ -1098,13 +1133,11 @@
 
             try {
                 await fetch(apiUrl, { mode: 'no-cors' });
-                
                 statusBox.className = "p-3 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 max-w-md mx-auto flex items-center justify-center gap-2";
                 statusBox.innerHTML = `✓ WhatsApp Report Sent Automatically to Owner (+${CALLMEBOT_PHONE})`;
             } catch (err) {
-                console.error("CallMeBot error:", err);
                 statusBox.className = "p-3 rounded-lg text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 max-w-md mx-auto flex items-center justify-center gap-2";
-                statusBox.innerHTML = `⚠️ Failed to send automated WhatsApp report. Check internet connection.`;
+                statusBox.innerHTML = `⚠️ Failed to send automated WhatsApp report.`;
             }
         }
     </script>
