@@ -564,9 +564,9 @@
                 calculateAll();
             });
 
-            db.collection("dailySummaries").onSnapshot(snapshot => {
+            // FIXED: Sort strictly by rawDate descending from Firestore query directly
+            db.collection("dailySummaries").orderBy("rawDate", "desc").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                historicalLogs.sort((a, b) => (b.rawDate || '').localeCompare(a.rawDate || ''));
                 
                 renderAuditLogs(historicalLogs);
                 renderAgentLogsTable(historicalLogs);
