@@ -515,6 +515,9 @@
             } else {
                 backdateTag.classList.add('hidden');
             }
+            // Trigger recalculation on session picker date change
+            renderYesterdayCard();
+            calculateAll();
         }
 
         function attachRealtimeListeners() {
@@ -564,7 +567,6 @@
                 calculateAll();
             });
 
-            // FIXED: Sort strictly by rawDate descending from Firestore query directly
             db.collection("dailySummaries").orderBy("rawDate", "desc").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -577,18 +579,42 @@
 
         attachRealtimeListeners();
 
+        // ACCURATE YESTERDAY VS ACTIVE SESSION LOGIC
         function renderYesterdayCard() {
             if (historicalLogs.length === 0) return;
-            const latestClosed = historicalLogs[0];
-            
-            document.getElementById('lbl-yesterday-date').innerText = latestClosed.date || 'Previous Session';
-            document.getElementById('yest-volume').innerText = Number(latestClosed.volume || 0).toLocaleString();
-            document.getElementById('yest-comm').innerText = Number(latestClosed.commission || 0).toLocaleString();
-            document.getElementById('yest-exp').innerText = Number(latestClosed.expenses || 0).toLocaleString();
-            document.getElementById('yest-variance').innerText = Number(latestClosed.variance || 0).toLocaleString();
+
+            const selectedSessionDate = document.getElementById('session-date-picker').value || new Date().toISOString().split('T')[0];
+
+            // Find calendar yesterday relative to the current active session
+            const activeDateObj = new Date(selectedSessionDate);
+            activeDateObj.setDate(activeDateObj.getDate() - 1);
+            const calendarYesterdayStr = activeDateObj.toISOString().split('T')[0];
+
+            // 1. Try to find log matching exact calendar yesterday
+            let previousSession = historicalLogs.find(log => log.rawDate === calendarYesterdayStr);
+
+            // 2. Fallback: Find the most recent recorded log PRIOR to the active session date
+            if (!previousSession) {
+                previousSession = historicalLogs.find(log => log.rawDate < selectedSessionDate);
+            }
+
+            if (!previousSession) {
+                document.getElementById('lbl-yesterday-date').innerText = 'No Previous Session';
+                document.getElementById('yest-volume').innerText = '0';
+                document.getElementById('yest-comm').innerText = '0';
+                document.getElementById('yest-exp').innerText = '0';
+                document.getElementById('yest-variance').innerText = '0';
+                return;
+            }
+
+            document.getElementById('lbl-yesterday-date').innerText = previousSession.date || previousSession.rawDate;
+            document.getElementById('yest-volume').innerText = Number(previousSession.volume || 0).toLocaleString();
+            document.getElementById('yest-comm').innerText = Number(previousSession.commission || 0).toLocaleString();
+            document.getElementById('yest-exp').innerText = Number(previousSession.expenses || 0).toLocaleString();
+            document.getElementById('yest-variance').innerText = Number(previousSession.variance || 0).toLocaleString();
 
             const backdateBadge = document.getElementById('lbl-yesterday-backdate-tag');
-            if (latestClosed.isBackdated) {
+            if (previousSession.isBackdated) {
                 backdateBadge.classList.remove('hidden');
             } else {
                 backdateBadge.classList.add('hidden');
