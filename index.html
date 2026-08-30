@@ -93,10 +93,14 @@
 
             <!-- AGENT MODULE -->
             <div id="view-agent" class="space-y-4 hidden">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
                     <div>
                         <h2 class="text-base font-bold text-slate-900">Agent Daily Session & Closing</h2>
-                        <p class="text-xs text-slate-500" id="session-date-display">Date: Loading...</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <label class="text-xs text-slate-500 font-semibold">Closing Date:</label>
+                            <input type="date" id="session-date-picker" onchange="handleDateChange(this.value)" class="text-xs font-bold text-slate-800 border rounded px-2 py-1 bg-slate-50 border-slate-300 focus:outline-none focus:border-emerald-500">
+                            <span id="backdate-indicator" class="hidden text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">⚠️ Backdating Session</span>
+                        </div>
                     </div>
                     <span id="session-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">SESSION OPEN</span>
                 </div>
@@ -185,7 +189,7 @@
                 <div id="agent-success" class="bg-white p-8 rounded-xl border border-slate-200 text-center space-y-4 hidden shadow-sm">
                     <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">✓</div>
                     <h3 class="text-xl font-black text-slate-900">Session Synced & Locked</h3>
-                    <p class="text-slate-500 text-xs max-w-md mx-auto">Owner dashboard has been updated in real time.</p>
+                    <p class="text-slate-500 text-xs max-w-md mx-auto">Owner dashboard and multi-day audit logs updated in real time.</p>
                     
                     <div id="whatsapp-status" class="p-3 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp report via CallMeBot API...
@@ -244,7 +248,10 @@
                         <div class="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700/80 space-y-2">
                             <div class="flex justify-between items-center">
                                 <span class="text-xs font-bold text-amber-400 uppercase">Yesterday's Final Summary</span>
-                                <span class="text-[10px] text-slate-400" id="lbl-yesterday-date">Last Closed Session</span>
+                                <div class="text-right">
+                                    <span class="text-[10px] text-slate-400 block" id="lbl-yesterday-date">Last Closed Session</span>
+                                    <span id="lbl-yesterday-backdate-tag" class="hidden text-[9px] font-bold text-amber-400 bg-amber-400/20 px-1.5 py-0.5 rounded">Backdated Entry</span>
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-xs">
                                 <div>
@@ -291,6 +298,38 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- MULTI-DAY HISTORICAL LOGS AUDIT TABLE -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b pb-2">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">📅 Multi-Day Historical Audit Logs</h3>
+                            <p class="text-[10px] text-slate-500">Track and review past daily sessions and backdated closures.</p>
+                        </div>
+                        <input type="text" id="log-search-input" onkeyup="filterAuditLogs()" placeholder="Search date or agent..." class="p-1.5 border rounded text-xs bg-slate-50 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    
+                    <div class="border rounded-lg overflow-x-auto max-h-64">
+                        <table class="w-full text-left text-xs min-w-[600px]">
+                            <thead class="bg-slate-100 text-slate-600 border-b sticky top-0">
+                                <tr>
+                                    <th class="p-2.5">Session Date</th>
+                                    <th class="p-2.5">Agent</th>
+                                    <th class="p-2.5">Volume</th>
+                                    <th class="p-2.5">Commission</th>
+                                    <th class="p-2.5">Expenses</th>
+                                    <th class="p-2.5">Variance</th>
+                                    <th class="p-2.5 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <tr>
+                                    <td colspan="7" class="p-4 text-center text-slate-400 font-semibold">No historical session logs recorded yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -440,7 +479,23 @@
         let networks = [];
         let expenses = [];
         let capitalLedger = [];
-        let yesterdaySummary = null;
+        let historicalLogs = [];
+
+        // Set default date to today for date picker
+        document.addEventListener("DOMContentLoaded", () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('session-date-picker').value = todayStr;
+        });
+
+        function handleDateChange(selectedDateStr) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const backdateTag = document.getElementById('backdate-indicator');
+            if (selectedDateStr < todayStr) {
+                backdateTag.classList.remove('hidden');
+            } else {
+                backdateTag.classList.add('hidden');
+            }
+        }
 
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
@@ -489,41 +544,97 @@
                 calculateAll();
             });
 
-            db.collection("dailySummaries").doc("yesterday").onSnapshot(doc => {
-                if (doc.exists) {
-                    yesterdaySummary = doc.data();
-                    renderYesterdaySummary();
-                }
+            // Listen to all multi-day historical entries
+            db.collection("dailySummaries").onSnapshot(snapshot => {
+                historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Sort by rawDate descending for chronological view
+                historicalLogs.sort((a, b) => (b.rawDate || '').localeCompare(a.rawDate || ''));
+                
+                renderAuditLogs(historicalLogs);
+                renderYesterdayCard();
             });
         }
 
         attachRealtimeListeners();
 
-        function renderYesterdaySummary() {
-            if (!yesterdaySummary) return;
-            document.getElementById('lbl-yesterday-date').innerText = yesterdaySummary.date || 'Previous Session';
-            document.getElementById('yest-volume').innerText = Number(yesterdaySummary.volume || 0).toLocaleString();
-            document.getElementById('yest-comm').innerText = Number(yesterdaySummary.commission || 0).toLocaleString();
-            document.getElementById('yest-exp').innerText = Number(yesterdaySummary.expenses || 0).toLocaleString();
-            document.getElementById('yest-variance').innerText = Number(yesterdaySummary.variance || 0).toLocaleString();
+        function renderYesterdayCard() {
+            if (historicalLogs.length === 0) return;
+            const latestClosed = historicalLogs[0]; // Most recent closed session
+            
+            document.getElementById('lbl-yesterday-date').innerText = latestClosed.date || 'Previous Session';
+            document.getElementById('yest-volume').innerText = Number(latestClosed.volume || 0).toLocaleString();
+            document.getElementById('yest-comm').innerText = Number(latestClosed.commission || 0).toLocaleString();
+            document.getElementById('yest-exp').innerText = Number(latestClosed.expenses || 0).toLocaleString();
+            document.getElementById('yest-variance').innerText = Number(latestClosed.variance || 0).toLocaleString();
+
+            const backdateBadge = document.getElementById('lbl-yesterday-backdate-tag');
+            if (latestClosed.isBackdated) {
+                backdateBadge.classList.remove('hidden');
+            } else {
+                backdateBadge.classList.add('hidden');
+            }
+        }
+
+        function renderAuditLogs(logs) {
+            const tbody = document.getElementById('logs-table-body');
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 font-semibold">No historical session logs recorded yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => {
+                const varNum = Number(log.variance || 0);
+                const varColor = varNum < 0 ? 'text-rose-600 font-bold' : varNum > 0 ? 'text-emerald-600 font-bold' : 'text-slate-600';
+                
+                return `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-2.5 font-bold text-slate-900">${log.date || log.rawDate}</td>
+                        <td class="p-2.5 font-semibold text-slate-700">${log.submittedBy || 'Agent'}</td>
+                        <td class="p-2.5 text-slate-800 font-semibold">TZS ${Number(log.volume || 0).toLocaleString()}</td>
+                        <td class="p-2.5 text-emerald-700 font-bold">TZS ${Number(log.commission || 0).toLocaleString()}</td>
+                        <td class="p-2.5 text-rose-700 font-bold">TZS ${Number(log.expenses || 0).toLocaleString()}</td>
+                        <td class="p-2.5 ${varColor}">TZS ${varNum.toLocaleString()}</td>
+                        <td class="p-2.5 text-center">
+                            ${log.isBackdated 
+                                ? '<span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Backdated</span>' 
+                                : '<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Standard</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterAuditLogs() {
+            const query = document.getElementById('log-search-input').value.toLowerCase();
+            const filtered = historicalLogs.filter(log => 
+                (log.date && log.date.toLowerCase().includes(query)) ||
+                (log.rawDate && log.rawDate.toLowerCase().includes(query)) ||
+                (log.submittedBy && log.submittedBy.toLowerCase().includes(query))
+            );
+            renderAuditLogs(filtered);
         }
 
         async function resetAllBalancesToZero() {
             if (!confirm("Are you sure you want to reset all network floats, cash inputs, expenses, and capital records to zero for a fresh start today?")) return;
 
-            // Save active figures as Yesterday's Summary before wiping
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
             const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const variance = Number(document.getElementById('owner-variance').innerText.replace(/,/g, '')) || 0;
+            const todayStr = new Date().toISOString().split('T')[0];
 
-            await db.collection("dailySummaries").doc("yesterday").set({
+            // Save reset state as historical record
+            await db.collection("dailySummaries").doc(todayStr).set({
                 date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+                rawDate: todayStr,
                 volume: totalDeposits + totalWithdrawals,
                 commission: totalCommission,
                 expenses: totalExpenses,
-                variance: variance
+                variance: variance,
+                isBackdated: false,
+                submittedBy: currentUser ? currentUser.name : 'Owner Reset'
             });
 
             for (const net of networks) {
@@ -546,7 +657,7 @@
             document.getElementById('input-opening-cash').value = 0;
             document.getElementById('input-actual-cash').value = 0;
 
-            alert("All balances reset to 0! Yesterday's summary saved.");
+            alert("All balances reset to 0! Today's summary logged to historical archives.");
         }
 
         function handleLogin(e) {
@@ -576,8 +687,6 @@
                 document.getElementById('view-owner').classList.remove('hidden');
                 document.getElementById('view-agent').classList.add('hidden');
             }
-
-            document.getElementById('session-date-display').innerText = `Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
             if (currentUser.mustChangePassword) {
                 openForcedPasswordModal();
@@ -824,7 +933,6 @@
             document.getElementById('owner-capital').innerText = totalCapitalInjected.toLocaleString();
             document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
 
-            // Populate Today's Live Summary Section
             document.getElementById('today-volume').innerText = (totalDeposits + totalWithdrawals).toLocaleString();
             document.getElementById('today-comm').innerText = totalCommission.toLocaleString();
             document.getElementById('today-exp').innerText = totalExpenses.toLocaleString();
@@ -923,18 +1031,42 @@
             closeNetworkModal();
         }
 
-        function submitClosing() {
+        async function submitClosing() {
+            const selectedDateVal = document.getElementById('session-date-picker').value;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isBackdated = selectedDateVal < todayStr;
+
+            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const variance = Number(document.getElementById('lbl-cash-variance').innerText.replace(/,/g, '')) || 0;
+
+            const formattedDate = new Date(selectedDateVal).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+            // Store directly in dailySummaries collection using unique date document ID
+            await db.collection("dailySummaries").doc(selectedDateVal).set({
+                date: formattedDate,
+                rawDate: selectedDateVal,
+                volume: totalDeposits + totalWithdrawals,
+                commission: totalCommission,
+                expenses: totalExpenses,
+                variance: variance,
+                isBackdated: isBackdated,
+                submittedBy: currentUser ? currentUser.name : 'Agent'
+            });
+
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
-            document.getElementById('session-badge').innerText = "CLOSED & LOCKED";
+            document.getElementById('session-badge').innerText = isBackdated ? "BACKDATED & LOCKED" : "CLOSED & LOCKED";
             document.getElementById('session-badge').className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700";
             
-            autoSendWhatsAppReport();
+            autoSendWhatsAppReport(isBackdated, formattedDate);
         }
 
-        async function autoSendWhatsAppReport() {
+        async function autoSendWhatsAppReport(isBackdated = false, customDateStr = '') {
             const statusBox = document.getElementById('whatsapp-status');
-            const today = new Date().toLocaleDateString('en-GB');
+            const sessionDate = customDateStr || new Date().toLocaleDateString('en-GB');
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
             const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
@@ -942,8 +1074,8 @@
             const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
             const variance = document.getElementById('lbl-cash-variance').innerText;
 
-            let report = `📊 *WAKALA PRO - DAILY REPORT*\n`;
-            report += `📅 *Date:* ${today}\n`;
+            let report = `📊 *WAKALA PRO - DAILY REPORT* ${isBackdated ? '(BACKDATED ENTRY ⚠️)' : ''}\n`;
+            report += `📅 *Date:* ${sessionDate}\n`;
             report += `👤 *Agent:* ${currentUser ? currentUser.name : 'Agent'}\n`;
             report += `🏢 *Branch:* ${currentUser && currentUser.branch ? currentUser.branch : 'Main'}\n`;
             report += `📞 *Phone:* ${currentUser && currentUser.phone ? currentUser.phone : 'N/A'}\n\n`;
