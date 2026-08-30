@@ -515,8 +515,7 @@
             } else {
                 backdateTag.classList.add('hidden');
             }
-            // Trigger recalculation on session picker date change
-            renderYesterdayCard();
+            renderSummaryCards();
             calculateAll();
         }
 
@@ -572,30 +571,48 @@
                 
                 renderAuditLogs(historicalLogs);
                 renderAgentLogsTable(historicalLogs);
-                renderYesterdayCard();
+                renderSummaryCards();
                 calculateAll();
             });
         }
 
         attachRealtimeListeners();
 
-        // ACCURATE YESTERDAY VS ACTIVE SESSION LOGIC
-        function renderYesterdayCard() {
+        // FIXED: Render both Yesterday and Today cards cleanly without DOM state conflicts
+        function renderSummaryCards() {
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // 1. TODAY'S LIVE / SUBMITTED SUMMARY
+            const todayEntry = historicalLogs.find(log => log.rawDate === todayStr);
+            if (todayEntry) {
+                document.getElementById('today-volume').innerText = Number(todayEntry.volume || 0).toLocaleString();
+                document.getElementById('today-comm').innerText = Number(todayEntry.commission || 0).toLocaleString();
+                document.getElementById('today-exp').innerText = Number(todayEntry.expenses || 0).toLocaleString();
+                document.getElementById('today-profit').innerText = (Number(todayEntry.commission || 0) - Number(todayEntry.expenses || 0)).toLocaleString();
+            } else {
+                // If not closed today, fall back to live active inputs
+                const activeDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+                const activeWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+                const activeComm = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+                const activeExp = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+                document.getElementById('today-volume').innerText = (activeDeposits + activeWithdrawals).toLocaleString();
+                document.getElementById('today-comm').innerText = activeComm.toLocaleString();
+                document.getElementById('today-exp').innerText = activeExp.toLocaleString();
+                document.getElementById('today-profit').innerText = (activeComm - activeExp).toLocaleString();
+            }
+
+            // 2. YESTERDAY'S SUMMARY
             if (historicalLogs.length === 0) return;
 
-            const selectedSessionDate = document.getElementById('session-date-picker').value || new Date().toISOString().split('T')[0];
-
-            // Find calendar yesterday relative to the current active session
-            const activeDateObj = new Date(selectedSessionDate);
+            const activeDateObj = new Date(todayStr);
             activeDateObj.setDate(activeDateObj.getDate() - 1);
             const calendarYesterdayStr = activeDateObj.toISOString().split('T')[0];
 
-            // 1. Try to find log matching exact calendar yesterday
             let previousSession = historicalLogs.find(log => log.rawDate === calendarYesterdayStr);
 
-            // 2. Fallback: Find the most recent recorded log PRIOR to the active session date
             if (!previousSession) {
-                previousSession = historicalLogs.find(log => log.rawDate < selectedSessionDate);
+                previousSession = historicalLogs.find(log => log.rawDate < todayStr);
             }
 
             if (!previousSession) {
@@ -642,7 +659,6 @@
             const cashVariance = actualCash - expectedCash;
             const moneyPosition = actualCash + totalFloat;
 
-            // Cumulative Profit Logic across all history + active today
             const historicalCommission = historicalLogs.reduce((sum, log) => sum + Number(log.commission || 0), 0);
             const historicalExpenses = historicalLogs.reduce((sum, log) => sum + Number(log.expenses || 0), 0);
             const cumulativeProfit = (historicalCommission + todayCommission) - (historicalExpenses + todayExpenses);
@@ -660,15 +676,9 @@
             document.getElementById('owner-capital').innerText = totalCapitalInjected.toLocaleString();
             document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
 
-            document.getElementById('today-volume').innerText = todayVolume.toLocaleString();
-            document.getElementById('today-comm').innerText = todayCommission.toLocaleString();
-            document.getElementById('today-exp').innerText = todayExpenses.toLocaleString();
-            document.getElementById('today-profit').innerText = (todayCommission - todayExpenses).toLocaleString();
-
             renderOwnerFloatGrid();
         }
 
-        // UNLOCK & EDIT WORKFLOW
         async function requestSessionUnlock(sessionDocId) {
             if (!confirm("Request owner approval to unlock and edit this closed/backdated session?")) return;
             
