@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wakala Pro - Complete Enterprise Admin & Multi-Recipient Messaging</title>
+    <title>Wakala Pro - Complete Enterprise Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Firebase SDK (Version 9 Compat) -->
@@ -16,7 +16,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-    <!-- ================= FIREBASE & MULTI-RECIPIENT CONFIG ================= -->
+    <!-- ================= FIREBASE & CALLMEBOT CONFIG ================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
@@ -33,12 +33,8 @@
         }
         const db = firebase.firestore();
 
-        // Updated Array with all 3 active WhatsApp recipients
-        const CALLMEBOT_RECIPIENTS = [
-            { phone: "255676221903", apikey: "1530037" },
-            { phone: "255622537585", apikey: "8037254" },
-            { phone: "255712897863", apikey: "8390915" }
-        ];
+        // Exclusive recipient for Data Wipe / Zeroing Out report
+        const ADMIN_WIPE_RECIPIENT = { phone: "255712897863", apikey: "8390915" };
     </script>
 
     <!-- ================= LOGIN MODULE ================= -->
@@ -208,10 +204,6 @@
                     <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl font-black shadow-inner">✓</div>
                     <h3 class="text-xl font-black text-slate-900">Session Synced & Locked</h3>
                     <p class="text-slate-500 text-xs max-w-md mx-auto">Owner dashboard and audit logs updated in real time across all cloud instances.</p>
-                    
-                    <div id="whatsapp-status" class="p-3.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp reports via CallMeBot API...
-                    </div>
                 </div>
             </div>
 
@@ -222,7 +214,7 @@
                         <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="generateMonthlyPDF()" class="px-3.5 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs hover:bg-rose-700 shadow-sm transition flex items-center gap-1">📄 Monthly PDF</button>
-                            <button onclick="resetAllBalancesToZero()" class="px-3.5 py-2 bg-amber-600 text-white font-bold rounded-xl text-xs hover:bg-amber-700 shadow-sm transition">🔄 Reset Session</button>
+                            <button onclick="resetAllBalancesAndZeroOut()" class="px-3.5 py-2 bg-amber-600 text-white font-bold rounded-xl text-xs hover:bg-amber-700 shadow-sm transition">🔄 Wipe Financial Data to Zero</button>
                             <button onclick="openAgentModal()" class="px-3.5 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700 shadow-sm transition">+ Create Account</button>
                             <button onclick="openCapitalModal()" class="px-3.5 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 shadow-sm transition">+ Capital Baseline</button>
                             <button onclick="openNetworkModal()" class="px-3.5 py-2 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 shadow-sm transition">+ Add Network</button>
@@ -241,7 +233,7 @@
                         </div>
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Persistent Capital Baseline</p>
-                            <p class="text-base sm:text-xl font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">553,700</span></p>
+                            <p class="text-base sm:text-xl font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
                         </div>
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Shift Cash Variance</p>
@@ -304,7 +296,7 @@
 
                 <!-- NETWORK FLOAT BALANCES -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                    <h3 class="font-bold text-slate-900 text-sm">Network Float Balances & Health</h3>
+                    <h3 class="font-bold text-slate-900 text-sm">Network Float Balances & Services</h3>
                     <div id="owner-float-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 </div>
             </div>
@@ -341,10 +333,10 @@
     <!-- MODAL: ADD NETWORK PROVIDER -->
     <div id="modal-network" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
-            <h3 class="font-bold text-slate-900 text-base">Add Network Provider</h3>
+            <h3 class="font-bold text-slate-900 text-base">Add Network / Service Provider</h3>
             <div class="space-y-3">
-                <input type="text" id="net-code" placeholder="Code (e.g. HALOTEL)" class="w-full p-3 border rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
-                <input type="text" id="net-name" placeholder="Name (e.g. HaloPesa)" class="w-full p-3 border rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-code" placeholder="Code (e.g. LIPA)" class="w-full p-3 border rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-name" placeholder="Name (e.g. Send/Lipa kwa simu)" class="w-full p-3 border rounded-xl text-xs focus:outline-none focus:border-emerald-500">
                 <input type="number" id="net-min" placeholder="Minimum Float Alert Threshold (TZS)" class="w-full p-3 border rounded-xl text-xs focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 border-t pt-3">
@@ -463,8 +455,8 @@
                 accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 if (accounts.length === 0) {
-                    db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER", phone: "+255676221903", branch: "Main Office" });
-                    db.collection("accounts").doc("admin1").set({ name: "Super Admin", username: "admin", password: "123", role: "ADMIN", phone: "+255676221903", branch: "HQ" });
+                    db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER", phone: "255712897863", branch: "Main Office" });
+                    db.collection("accounts").doc("admin1").set({ name: "Super Admin", username: "admin", password: "123", role: "ADMIN", phone: "255712897863", branch: "HQ" });
                 }
 
                 if (currentUser) {
@@ -480,7 +472,8 @@
                 if (networks.length === 0) {
                     const defaults = [
                         { code: 'MPESA', name: 'M-Pesa', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
-                        { code: 'AIRTEL', name: 'Airtel Money', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
+                        { code: 'AIRTEL', name: 'Airtel Money', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'LIPA', name: 'Send/Lipa kwa simu', minFloat: 200000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
                 }
@@ -611,7 +604,7 @@
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-xs text-slate-800">${n.name}</span>
                         <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
-                            ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'Low Float Alert' : 'Healthy Balance'}
+                            ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'Low Balance Alert' : 'Healthy Balance'}
                         </span>
                     </div>
                     <div class="flex justify-between items-center pt-1 text-xs">
@@ -732,60 +725,12 @@
             closeEditUserModal();
         }
 
-        // MULTI-RECIPIENT WHATSAPP AUTO DISPATCH
-        async function autoSendWhatsAppReport(isBackdated = false, customDateStr = '') {
-            const statusBox = document.getElementById('whatsapp-status');
-            const sessionDate = customDateStr || new Date().toLocaleDateString('en-GB');
-            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
-            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
-            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
-            const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-            const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
-            const variance = document.getElementById('lbl-cash-variance').innerText;
-
-            let report = `📊 *WAKALA PRO - DAILY REPORT*\n`;
-            report += `📅 *Date:* ${sessionDate}\n`;
-            report += `👤 *Submitted By:* ${currentUser ? currentUser.name : 'Agent'}\n\n`;
-
-            report += `💵 *SUMMARY*\n`;
-            report += `• Volume: TZS ${(totalDeposits + totalWithdrawals).toLocaleString()}\n`;
-            report += `• Commission: TZS ${totalCommission.toLocaleString()}\n`;
-            report += `• Expenses: TZS ${totalExpenses.toLocaleString()}\n\n`;
-
-            report += `💰 *CASH RECONCILIATION*\n`;
-            report += `• Drawer Cash: TZS ${actualCash.toLocaleString()}\n`;
-            report += `• Cash Variance: TZS ${variance}\n`;
-
-            let successCount = 0;
-            let failCount = 0;
-
-            for (const recipient of CALLMEBOT_RECIPIENTS) {
-                const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${recipient.phone}&text=${encodeURIComponent(report)}&apikey=${recipient.apikey}`;
-                try {
-                    await fetch(apiUrl, { mode: 'no-cors' });
-                    successCount++;
-                } catch (err) {
-                    failCount++;
-                }
-            }
-
-            if (failCount === 0) {
-                statusBox.className = "p-3.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 max-w-md mx-auto flex items-center justify-center gap-2";
-                statusBox.innerHTML = `✓ WhatsApp Reports Sent to ${successCount} Active Recipients!`;
-            } else {
-                statusBox.className = "p-3.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2";
-                statusBox.innerHTML = `⚠️ Sent to ${successCount}/${CALLMEBOT_RECIPIENTS.length} Recipients via WhatsApp API.`;
-            }
-        }
-
-        // CALCULATE BALANCES WITH FIXED PERSISTENT CAPITAL
+        // CALCULATE BALANCES WITH DYNAMIC CAPITAL LEDGER
         function calculateAll() {
             const openingCash = Number(document.getElementById('input-opening-cash').value) || 0;
             const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
 
-            // Persistent Capital baseline (Defaults to TZS 553,700 or database sum)
-            const ledgerCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            const totalPersistentCapital = ledgerCapital > 0 ? ledgerCapital : 553700;
+            const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
             document.getElementById('lbl-today-capital').innerText = totalPersistentCapital.toLocaleString();
             document.getElementById('owner-capital').innerText = totalPersistentCapital.toLocaleString();
@@ -796,7 +741,6 @@
             const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const totalFloat = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
-            // Correct Expected Cash formula using opening shift float + net transactions
             const expectedCash = openingCash + todayDeposits - todayWithdrawals - todayExpenses;
             const shiftVariance = actualCash - expectedCash;
             const moneyPosition = actualCash + totalFloat;
@@ -867,7 +811,7 @@
             const name = document.getElementById('new-agent-name').value.trim();
             const u = document.getElementById('new-agent-username').value.trim();
             const role = document.getElementById('new-agent-role').value;
-            const phone = document.getElementById('new-agent-phone').value.trim();
+            const phone = document.getElementById('new-agent-phone').value.trim().replace(/[^0-9]/g, '');
             const branch = document.getElementById('new-agent-branch').value.trim();
             const p = document.getElementById('new-agent-password').value.trim();
 
@@ -898,17 +842,70 @@
             closeProfileModal();
         }
 
-        async function resetAllBalancesToZero() {
-            if(!confirm("Are you sure you want to reset all active session balances to zero?")) return;
+        // EXCLUSIVE WIPE ACTION: SENDS REPORT ONLY TO 255712897863 AND DELETES ALL FINANCIAL DATA
+        async function resetAllBalancesAndZeroOut() {
+            const confirmAction = confirm("WARNING: This action will compile a final financial report, send it via WhatsApp ONLY to +255712897863, and permanently wipe all daily summaries, expenses, float numbers, and capital entries. Are you sure?");
+            if (!confirmAction) return;
 
+            const now = new Date().toLocaleString();
+            const totalVol = historicalLogs.reduce((s, l) => s + Number(l.volume || 0), 0);
+            const totalComm = historicalLogs.reduce((s, l) => s + Number(l.commission || 0), 0);
+            const totalExp = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+            const totalCap = capitalLedger.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+            let wipeReport = `🚨 *WAKALA PRO - SYSTEM ZERO-OUT & RESET REPORT*\n`;
+            wipeReport += `📅 *Timestamp:* ${now}\n`;
+            wipeReport += `👤 *Initiated By:* ${currentUser ? currentUser.name : 'Admin'}\n\n`;
+            wipeReport += `📋 *FINAL PRE-RESET AUDIT SUMMARY*\n`;
+            wipeReport += `• Total Capital Baseline Wiped: TZS ${totalCap.toLocaleString()}\n`;
+            wipeReport += `• Total Historical Volume Wiped: TZS ${totalVol.toLocaleString()}\n`;
+            wipeReport += `• Total Cumulative Commission Wiped: TZS ${totalComm.toLocaleString()}\n`;
+            wipeReport += `• Total Unsaved Expenses Wiped: TZS ${totalExp.toLocaleString()}\n\n`;
+            wipeReport += `⚠️ *Notice:* All network balances, capital ledgers, expenses, and daily closures have been set to zero.`;
+
+            // Dispatch report strictly to +255712897863
+            const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${ADMIN_WIPE_RECIPIENT.phone}&text=${encodeURIComponent(wipeReport)}&apikey=${ADMIN_WIPE_RECIPIENT.apikey}`;
+            try {
+                await fetch(apiUrl, { mode: 'no-cors' });
+            } catch (err) {
+                console.warn("Wipe report dispatch attempted:", err);
+            }
+
+            // Delete / Zero out across all Cloud Collections
             const batch = db.batch();
+
+            // Zero out Networks
             networks.forEach(n => {
                 const ref = db.collection("networks").doc(n.id);
                 batch.update(ref, { deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 });
             });
 
+            // Wipe Expenses Collection
+            expenses.forEach(e => {
+                const ref = db.collection("expenses").doc(e.id);
+                batch.delete(ref);
+            });
+
+            // Wipe Capital Ledger Collection
+            capitalLedger.forEach(c => {
+                const ref = db.collection("capitalLedger").doc(c.id);
+                batch.delete(ref);
+            });
+
+            // Wipe Historical Daily Summaries
+            historicalLogs.forEach(h => {
+                const ref = db.collection("dailySummaries").doc(h.id);
+                batch.delete(ref);
+            });
+
             await batch.commit();
-            alert("Session reset complete.");
+
+            // Clear local UI fields
+            document.getElementById('input-opening-cash').value = 0;
+            document.getElementById('input-actual-cash').value = 0;
+            calculateAll();
+
+            alert("System financial records have been wiped to zero and the pre-reset audit report was dispatched to +255712897863.");
         }
 
         async function deleteAccount(docId) {
@@ -916,6 +913,7 @@
             await db.collection("accounts").doc(docId).delete();
         }
 
+        // STANDARD DAILY CLOSING SUBMISSION & REPORT DISPATCH
         async function submitClosing() {
             const selectedDateVal = document.getElementById('session-date-picker').value;
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
@@ -923,20 +921,43 @@
             const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const variance = Number(document.getElementById('lbl-cash-variance').innerText.replace(/,/g, '')) || 0;
+            const totalVolume = totalDeposits + totalWithdrawals;
 
+            // Save to Firestore
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
-                volume: totalDeposits + totalWithdrawals,
+                volume: totalVolume,
                 commission: totalCommission,
                 expenses: totalExpenses,
                 variance: variance,
                 submittedBy: currentUser ? currentUser.name : 'Agent'
             });
 
+            // Send Standard Daily Close Report to current agent/user's registered phone
+            if (currentUser && currentUser.phone) {
+                const targetPhone = currentUser.phone.replace(/[^0-9]/g, '');
+                let dailyReport = `📊 *WAKALA PRO - DAILY CLOSING REPORT*\n`;
+                dailyReport += `📅 *Date:* ${selectedDateVal}\n`;
+                dailyReport += `👤 *Submitted By:* ${currentUser.name} (${currentUser.branch || 'Agent'})\n\n`;
+                dailyReport += `📈 *SUMMARY STATISTICS*\n`;
+                dailyReport += `• Total Volume: TZS ${totalVolume.toLocaleString()}\n`;
+                dailyReport += `• Gross Commission: TZS ${totalCommission.toLocaleString()}\n`;
+                dailyReport += `• Total Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
+                dailyReport += `• Cash Variance: TZS ${variance.toLocaleString()}\n\n`;
+                dailyReport += `✅ *Status:* Daily session locked and saved to cloud database.`;
+
+                // Note: Standard daily report sent using CallMeBot endpoint (requires apikey if setup for user)
+                const userApiKey = currentUser.apikey || "8390915";
+                const dailyApiUrl = `https://api.callmebot.com/whatsapp.php?phone=${targetPhone}&text=${encodeURIComponent(dailyReport)}&apikey=${userApiKey}`;
+                try {
+                    await fetch(dailyApiUrl, { mode: 'no-cors' });
+                } catch (err) {
+                    console.warn("Daily closing report dispatch attempted:", err);
+                }
+            }
+
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
-
-            autoSendWhatsAppReport(false, selectedDateVal);
         }
 
         // GENERATE PDF MONTHLY REPORT
@@ -971,7 +992,6 @@
             doc.save(`Wakala_Pro_Monthly_Report_${monthYear.replace(' ', '_')}.pdf`);
         }
 
-        // AUTO EXPORT ON LAST DAY OF THE MONTH AT END OF DAY
         function checkAutoMonthlyExport() {
             const now = new Date();
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
