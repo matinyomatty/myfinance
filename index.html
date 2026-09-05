@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wakala Pro - Mobile-Optimized Enterprise Admin</title>
+    <title>Wakala Pro - Complete Enterprise Admin & Multi-Recipient Messaging</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Firebase SDK (Version 9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-    <!-- ================= FIREBASE & CALLMEBOT CONFIG ================= -->
+    <!-- ================= FIREBASE & MULTI-RECIPIENT CONFIG ================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
@@ -29,8 +33,12 @@
         }
         const db = firebase.firestore();
 
-        const CALLMEBOT_PHONE = "255676221903";
-        const CALLMEBOT_APIKEY = "1530037";
+        // Updated Array with all 3 active WhatsApp recipients
+        const CALLMEBOT_RECIPIENTS = [
+            { phone: "255676221903", apikey: "1530037" },
+            { phone: "255622537585", apikey: "8037254" },
+            { phone: "255712897863", apikey: "8390915" }
+        ];
     </script>
 
     <!-- ================= LOGIN MODULE ================= -->
@@ -39,7 +47,7 @@
             <div class="text-center space-y-1">
                 <div class="w-12 h-12 bg-emerald-500 text-slate-900 font-black rounded-2xl text-2xl flex items-center justify-center mx-auto shadow-lg">W</div>
                 <h1 class="text-2xl font-black text-slate-900 tracking-tight">WAKALA<span class="text-emerald-500">PRO</span></h1>
-                <p class="text-xs text-slate-500 font-medium">Enterprise Agent & Wakala Management System</p>
+                <p class="text-xs text-slate-500 font-medium">Enterprise Agent & Management System</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-3">
@@ -67,7 +75,7 @@
     <!-- ================= MAIN APP DASHBOARD ================= -->
     <div id="view-app" class="hidden min-h-screen w-full flex flex-col">
         
-        <!-- HEADER WITH RESPONSIVE ADMIN SWITCHER -->
+        <!-- HEADER -->
         <header class="bg-slate-900 text-white px-4 py-3 sticky top-0 shadow-md shrink-0 w-full z-40">
             <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
@@ -136,7 +144,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-[11px] text-slate-500 font-bold uppercase">Capital Injected</label>
+                                    <label class="text-[11px] text-slate-500 font-bold uppercase">Capital Baseline</label>
                                     <p class="text-base font-bold text-emerald-600 mt-1">TZS <span id="lbl-today-capital">0</span></p>
                                 </div>
                                 <div>
@@ -202,24 +210,26 @@
                     <p class="text-slate-500 text-xs max-w-md mx-auto">Owner dashboard and audit logs updated in real time across all cloud instances.</p>
                     
                     <div id="whatsapp-status" class="p-3.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp report via CallMeBot API...
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span> Sending WhatsApp reports via CallMeBot API...
                     </div>
                 </div>
             </div>
 
-            <!-- OWNER / WAKALA VIEW PANEL -->
+            <!-- OWNER / ADMIN VIEW PANEL -->
             <div id="view-owner" class="space-y-4 hidden">
                 <div class="space-y-3">
                     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
                         <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
                         <div class="flex flex-wrap gap-2">
+                            <button onclick="generateMonthlyPDF()" class="px-3.5 py-2 bg-rose-600 text-white font-bold rounded-xl text-xs hover:bg-rose-700 shadow-sm transition flex items-center gap-1">📄 Monthly PDF</button>
                             <button onclick="resetAllBalancesToZero()" class="px-3.5 py-2 bg-amber-600 text-white font-bold rounded-xl text-xs hover:bg-amber-700 shadow-sm transition">🔄 Reset Session</button>
                             <button onclick="openAgentModal()" class="px-3.5 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700 shadow-sm transition">+ Create Account</button>
-                            <button onclick="openCapitalModal()" class="px-3.5 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 shadow-sm transition">+ Inject Capital</button>
+                            <button onclick="openCapitalModal()" class="px-3.5 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 shadow-sm transition">+ Capital Baseline</button>
                             <button onclick="openNetworkModal()" class="px-3.5 py-2 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 shadow-sm transition">+ Add Network</button>
                         </div>
                     </div>
 
+                    <!-- FIXED TOP CARDS -->
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit</p>
@@ -230,49 +240,41 @@
                             <p class="text-base sm:text-xl font-black text-slate-900 mt-0.5">TZS <span id="owner-position">0</span></p>
                         </div>
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Capital Injected Today</p>
-                            <p class="text-base sm:text-xl font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Persistent Capital Baseline</p>
+                            <p class="text-base sm:text-xl font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">553,700</span></p>
                         </div>
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Live Cash Variance Alert</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Shift Cash Variance</p>
                             <p class="text-base sm:text-xl font-black mt-0.5 text-slate-900">TZS <span id="owner-variance">0</span></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- DAILY COMPARISON PANEL -->
-                <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-4 sm:p-5 rounded-2xl text-white shadow-md space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                        <span class="p-1 px-2.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold">📊 BUSINESS PERFORMANCE</span>
-                        <span class="text-[10px] text-slate-400 font-medium">Realtime Cloud Sync</span>
+                <!-- ADMIN RECENT DAILY CLOSURES LOG TABLE -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">Daily Shift Closures & Submissions Log</h3>
+                            <p class="text-[11px] text-slate-500">Live feed of all daily shift closing submissions by agents.</p>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">Realtime Cloud Sync</span>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-bold text-amber-400 uppercase">Yesterday's Summary</span>
-                                <span class="text-[10px] text-slate-400 block" id="lbl-yesterday-date">Last Session</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div><p class="text-[10px] text-slate-400">Total Volume</p><p class="font-bold text-slate-200">TZS <span id="yest-volume">0</span></p></div>
-                                <div><p class="text-[10px] text-slate-400">Commission</p><p class="font-bold text-emerald-400">TZS <span id="yest-comm">0</span></p></div>
-                                <div><p class="text-[10px] text-slate-400">Expenses</p><p class="font-bold text-rose-400">TZS <span id="yest-exp">0</span></p></div>
-                                <div><p class="text-[10px] text-slate-400">Cash Variance</p><p class="font-bold text-slate-200">TZS <span id="yest-variance">0</span></p></div>
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-bold text-emerald-400 uppercase">Today's Live Summary</span>
-                                <span class="text-[10px] text-emerald-400 font-semibold animate-pulse">● Active Session</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div><p class="text-[10px] text-slate-400">Total Volume</p><p class="font-bold text-slate-100">TZS <span id="today-volume">0</span></p></div>
-                                <div><p class="text-[10px] text-slate-400">Commission</p><p class="font-bold text-emerald-400">TZS <span id="today-comm">0</span></p></div>
-                                <div><p class="text-[10px] text-slate-400">Expenses</p><p class="font-bold text-rose-400">TZS <span id="today-exp">0</span></p></div>
-                                <div><p class="text-[10px] text-slate-400">Expected Profit</p><p class="font-bold text-emerald-300">TZS <span id="today-profit">0</span></p></div>
-                            </div>
-                        </div>
+                    <div class="border rounded-xl overflow-x-auto">
+                        <table class="w-full text-left text-xs min-w-[650px]">
+                            <thead class="bg-slate-100 text-slate-600 border-b">
+                                <tr>
+                                    <th class="p-3">Closure Date</th>
+                                    <th class="p-3">Submitted By</th>
+                                    <th class="p-3 text-right">Volume</th>
+                                    <th class="p-3 text-right">Commission</th>
+                                    <th class="p-3 text-right">Expenses</th>
+                                    <th class="p-3 text-right">Cash Variance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-closure-table-body">
+                                <tr><td colspan="6" class="p-4 text-center text-slate-400">Loading daily closures...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -312,7 +314,7 @@
     <!-- MODAL: CAPITAL INJECTION -->
     <div id="modal-capital" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl border max-w-md w-full space-y-4 shadow-2xl">
-            <h3 class="font-bold text-slate-900 text-base">Inject Business Capital</h3>
+            <h3 class="font-bold text-slate-900 text-base">Adjust Capital Baseline</h3>
             <div class="space-y-3">
                 <div>
                     <label class="text-[11px] font-bold text-slate-600 uppercase">Target Channel</label>
@@ -325,13 +327,13 @@
                     <input type="number" id="cap-amount" placeholder="0" class="w-full p-3 border rounded-xl text-sm font-bold text-slate-800 mt-1 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
-                    <label class="text-[11px] font-bold text-slate-600 uppercase">Note / Source Description</label>
-                    <input type="text" id="cap-note" placeholder="e.g. Bank Withdrawal, Owner Loan" class="w-full p-3 border rounded-xl text-xs mt-1 focus:outline-none focus:border-emerald-500">
+                    <label class="text-[11px] font-bold text-slate-600 uppercase">Description / Source</label>
+                    <input type="text" id="cap-note" placeholder="e.g. Baseline Capital Adjustment" class="w-full p-3 border rounded-xl text-xs mt-1 focus:outline-none focus:border-emerald-500">
                 </div>
             </div>
             <div class="flex justify-end gap-2 border-t pt-3">
                 <button onclick="closeCapitalModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="saveCapitalInjection()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Inject Funds</button>
+                <button onclick="saveCapitalInjection()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Capital</button>
             </div>
         </div>
     </div>
@@ -352,7 +354,7 @@
         </div>
     </div>
 
-    <!-- MODAL: EDIT USER ACCOUNT DETAILS & USERNAME -->
+    <!-- MODAL: EDIT USER ACCOUNT -->
     <div id="modal-edit-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl border max-w-md w-full space-y-3 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-base">Edit User Account</h3>
@@ -429,7 +431,6 @@
                 </div>
             </div>
 
-            <!-- LOGOUT BUTTON IN PROFILE MODAL -->
             <div class="pt-2">
                 <button onclick="handleLogout()" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
                     🚪 Log Out / Sign Out
@@ -462,8 +463,8 @@
                 accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 if (accounts.length === 0) {
-                    db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER", phone: "+255676221903", branch: "Main Office", mustChangePassword: false });
-                    db.collection("accounts").doc("admin1").set({ name: "Super Admin", username: "admin", password: "123", role: "ADMIN", phone: "+255676221903", branch: "HQ", mustChangePassword: false });
+                    db.collection("accounts").doc("owner").set({ name: "Business Owner", username: "owner", password: "123", role: "OWNER", phone: "+255676221903", branch: "Main Office" });
+                    db.collection("accounts").doc("admin1").set({ name: "Super Admin", username: "admin", password: "123", role: "ADMIN", phone: "+255676221903", branch: "HQ" });
                 }
 
                 if (currentUser) {
@@ -502,8 +503,9 @@
 
             db.collection("dailySummaries").orderBy("rawDate", "desc").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderSummaryCards();
+                renderAdminClosureTable();
                 calculateAll();
+                checkAutoMonthlyExport();
             });
         }
 
@@ -638,6 +640,27 @@
             `).join('');
         }
 
+        function renderAdminClosureTable() {
+            const tbody = document.getElementById('admin-closure-table-body');
+            if(!tbody) return;
+
+            if (historicalLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = historicalLogs.map(s => `
+                <tr class="border-b hover:bg-slate-50 transition">
+                    <td class="p-3 font-bold text-slate-800">${s.rawDate}</td>
+                    <td class="p-3 text-slate-600 font-medium">${s.submittedBy || 'Agent'}</td>
+                    <td class="p-3 text-right font-semibold">TZS ${Number(s.volume || 0).toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-emerald-600">TZS ${Number(s.commission || 0).toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-rose-600">TZS ${Number(s.expenses || 0).toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold ${s.variance < 0 ? 'text-rose-600' : 'text-slate-800'}">TZS ${Number(s.variance || 0).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
         function renderExpenses() {
             const tbody = document.getElementById('expense-table-body');
             if(!tbody) return;
@@ -707,9 +730,9 @@
             });
 
             closeEditUserModal();
-            alert('Account updated successfully!');
         }
 
+        // MULTI-RECIPIENT WHATSAPP AUTO DISPATCH
         async function autoSendWhatsAppReport(isBackdated = false, customDateStr = '') {
             const statusBox = document.getElementById('whatsapp-status');
             const sessionDate = customDateStr || new Date().toLocaleDateString('en-GB');
@@ -733,25 +756,39 @@
             report += `• Drawer Cash: TZS ${actualCash.toLocaleString()}\n`;
             report += `• Cash Variance: TZS ${variance}\n`;
 
-            const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${CALLMEBOT_PHONE}&text=${encodeURIComponent(report)}&apikey=${CALLMEBOT_APIKEY}`;
+            let successCount = 0;
+            let failCount = 0;
 
-            try {
-                await fetch(apiUrl, { mode: 'no-cors' });
+            for (const recipient of CALLMEBOT_RECIPIENTS) {
+                const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${recipient.phone}&text=${encodeURIComponent(report)}&apikey=${recipient.apikey}`;
+                try {
+                    await fetch(apiUrl, { mode: 'no-cors' });
+                    successCount++;
+                } catch (err) {
+                    failCount++;
+                }
+            }
+
+            if (failCount === 0) {
                 statusBox.className = "p-3.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 max-w-md mx-auto flex items-center justify-center gap-2";
-                statusBox.innerHTML = `✓ WhatsApp Report Sent to Owner (+${CALLMEBOT_PHONE})`;
-            } catch (err) {
-                statusBox.className = "p-3.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 max-w-md mx-auto flex items-center justify-center gap-2";
-                statusBox.innerHTML = `⚠️ Failed to send WhatsApp report.`;
+                statusBox.innerHTML = `✓ WhatsApp Reports Sent to ${successCount} Active Recipients!`;
+            } else {
+                statusBox.className = "p-3.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 max-w-md mx-auto flex items-center justify-center gap-2";
+                statusBox.innerHTML = `⚠️ Sent to ${successCount}/${CALLMEBOT_RECIPIENTS.length} Recipients via WhatsApp API.`;
             }
         }
 
+        // CALCULATE BALANCES WITH FIXED PERSISTENT CAPITAL
         function calculateAll() {
             const openingCash = Number(document.getElementById('input-opening-cash').value) || 0;
             const actualCash = Number(document.getElementById('input-actual-cash').value) || 0;
 
-            const todayCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            document.getElementById('lbl-today-capital').innerText = todayCapital.toLocaleString();
-            document.getElementById('owner-capital').innerText = todayCapital.toLocaleString();
+            // Persistent Capital baseline (Defaults to TZS 553,700 or database sum)
+            const ledgerCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+            const totalPersistentCapital = ledgerCapital > 0 ? ledgerCapital : 553700;
+
+            document.getElementById('lbl-today-capital').innerText = totalPersistentCapital.toLocaleString();
+            document.getElementById('owner-capital').innerText = totalPersistentCapital.toLocaleString();
 
             const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
@@ -759,36 +796,21 @@
             const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const totalFloat = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
-            const expectedCash = openingCash + todayCapital + todayDeposits - todayWithdrawals - todayExpenses;
-            const cashVariance = actualCash - expectedCash;
+            // Correct Expected Cash formula using opening shift float + net transactions
+            const expectedCash = openingCash + todayDeposits - todayWithdrawals - todayExpenses;
+            const shiftVariance = actualCash - expectedCash;
             const moneyPosition = actualCash + totalFloat;
             const netProfit = todayCommission - todayExpenses;
 
             document.getElementById('lbl-expected-cash').innerText = expectedCash.toLocaleString();
-            document.getElementById('lbl-cash-variance').innerText = cashVariance.toLocaleString();
+            document.getElementById('lbl-cash-variance').innerText = shiftVariance.toLocaleString();
             document.getElementById('owner-position').innerText = moneyPosition.toLocaleString();
-            document.getElementById('owner-variance').innerText = cashVariance.toLocaleString();
+            document.getElementById('owner-variance').innerText = shiftVariance.toLocaleString();
             document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
 
             document.getElementById('rev-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
             document.getElementById('rev-comm').innerText = todayCommission.toLocaleString();
             document.getElementById('rev-exp').innerText = todayExpenses.toLocaleString();
-
-            document.getElementById('today-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
-            document.getElementById('today-comm').innerText = todayCommission.toLocaleString();
-            document.getElementById('today-exp').innerText = todayExpenses.toLocaleString();
-            document.getElementById('today-profit').innerText = netProfit.toLocaleString();
-        }
-
-        function renderSummaryCards() {
-            if (historicalLogs.length > 0) {
-                const prev = historicalLogs[0];
-                document.getElementById('lbl-yesterday-date').innerText = prev.rawDate || 'Previous';
-                document.getElementById('yest-volume').innerText = Number(prev.volume || 0).toLocaleString();
-                document.getElementById('yest-comm').innerText = Number(prev.commission || 0).toLocaleString();
-                document.getElementById('yest-exp').innerText = Number(prev.expenses || 0).toLocaleString();
-                document.getElementById('yest-variance').innerText = Number(prev.variance || 0).toLocaleString();
-            }
         }
 
         function handleDateChange(val) {
@@ -915,6 +937,53 @@
             document.getElementById('agent-success').classList.remove('hidden');
 
             autoSendWhatsAppReport(false, selectedDateVal);
+        }
+
+        // GENERATE PDF MONTHLY REPORT
+        function generateMonthlyPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const now = new Date();
+            const monthYear = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            doc.setFontSize(16);
+            doc.text(`Wakala Pro - Monthly Financial Audit`, 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Period: ${monthYear} | Exported: ${now.toLocaleDateString()}`, 14, 27);
+
+            const tableRows = historicalLogs.map(s => [
+                s.rawDate,
+                s.submittedBy || 'Agent',
+                `TZS ${Number(s.volume || 0).toLocaleString()}`,
+                `TZS ${Number(s.commission || 0).toLocaleString()}`,
+                `TZS ${Number(s.expenses || 0).toLocaleString()}`,
+                `TZS ${Number(s.variance || 0).toLocaleString()}`
+            ]);
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Closure Date', 'Submitted By', 'Volume', 'Commission', 'Expenses', 'Variance']],
+                body: tableRows,
+                theme: 'striped',
+                headStyles: { fillColor: [16, 185, 129] }
+            });
+
+            doc.save(`Wakala_Pro_Monthly_Report_${monthYear.replace(' ', '_')}.pdf`);
+        }
+
+        // AUTO EXPORT ON LAST DAY OF THE MONTH AT END OF DAY
+        function checkAutoMonthlyExport() {
+            const now = new Date();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            
+            if (tomorrow.getDate() === 1 && now.getHours() >= 23) {
+                const lastExport = localStorage.getItem('last_auto_export');
+                const todayKey = now.toISOString().split('T')[0];
+                if (lastExport !== todayKey) {
+                    generateMonthlyPDF();
+                    localStorage.setItem('last_auto_export', todayKey);
+                }
+            }
         }
     </script>
 </body>
