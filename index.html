@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wakala Pro - Enterprise Admin & Multi-Branch Management</title>
+    <title>Wakala Pro - Mobile-Optimized Enterprise Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Firebase SDK (Version 9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans h-screen w-screen overflow-hidden flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
     <!-- ================= FIREBASE & CALLMEBOT CONFIG ================= -->
     <script>
@@ -29,13 +29,12 @@
         }
         const db = firebase.firestore();
 
-        // CallMeBot WhatsApp Credentials
         const CALLMEBOT_PHONE = "255676221903";
         const CALLMEBOT_APIKEY = "1530037";
     </script>
 
     <!-- ================= LOGIN MODULE ================= -->
-    <div id="view-login" class="flex items-center justify-center h-full w-full p-4 bg-slate-900">
+    <div id="view-login" class="min-h-screen w-full flex items-center justify-center p-4 bg-slate-900">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-4">
             <div class="text-center space-y-1">
                 <div class="w-12 h-12 bg-emerald-500 text-slate-900 font-black rounded-2xl text-2xl flex items-center justify-center mx-auto shadow-lg">W</div>
@@ -66,39 +65,41 @@
     </div>
 
     <!-- ================= MAIN APP DASHBOARD ================= -->
-    <div id="view-app" class="hidden h-full flex flex-col overflow-hidden">
+    <div id="view-app" class="hidden min-h-screen w-full flex flex-col">
         
-        <!-- HEADER WITH VIEW SWITCHER FOR ADMIN -->
-        <header class="bg-slate-900 text-white px-4 pt-4 pb-3 flex justify-between items-center shadow-md shrink-0 w-full z-40">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 text-slate-900 font-black p-2 rounded-xl text-lg shadow-sm">W</div>
-                <div>
-                    <h1 class="text-base font-bold tracking-tight leading-none">WAKALA<span class="text-emerald-400">PRO</span></h1>
-                    <p class="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold mt-0.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Cloud Active & Synced
-                    </p>
-                </div>
-            </div>
-
-            <!-- ADMIN SWITCHER TAB -->
-            <div id="admin-view-switcher" class="hidden flex bg-slate-800 p-1 rounded-xl border border-slate-700 gap-1 shadow-inner">
-                <button onclick="switchAdminTab('OWNER')" id="tab-btn-owner" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition">Owner View</button>
-                <button onclick="switchAdminTab('AGENT')" id="tab-btn-agent" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-300 hover:text-white transition">Agent View</button>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <div class="text-right hidden sm:block">
-                    <p class="text-xs font-bold text-white leading-tight" id="user-display-name">User Name</p>
-                    <p class="text-[9px] text-slate-400" id="user-display-branch">Role: OWNER</p>
+        <!-- HEADER WITH RESPONSIVE ADMIN SWITCHER -->
+        <header class="bg-slate-900 text-white px-4 py-3 sticky top-0 shadow-md shrink-0 w-full z-40">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="bg-emerald-500 text-slate-900 font-black p-2 rounded-xl text-lg shadow-sm">W</div>
+                    <div>
+                        <h1 class="text-base font-bold tracking-tight leading-none">WAKALA<span class="text-emerald-400">PRO</span></h1>
+                        <p class="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Cloud Active
+                        </p>
+                    </div>
                 </div>
 
-                <button onclick="openProfileModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                    👤 Profile
-                </button>
+                <!-- ADMIN ROLE DUAL SWITCHER BUTTONS -->
+                <div id="admin-view-switcher" class="hidden flex bg-slate-800 p-1 rounded-xl border border-slate-700 gap-1 shadow-inner">
+                    <button onclick="switchAdminTab('OWNER')" id="tab-btn-owner" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition">Owner View</button>
+                    <button onclick="switchAdminTab('AGENT')" id="tab-btn-agent" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-300 hover:text-white transition">Agent View</button>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold text-white leading-tight" id="user-display-name">User Name</p>
+                        <p class="text-[9px] text-slate-400" id="user-display-branch">Role: OWNER</p>
+                    </div>
+
+                    <button onclick="openProfileModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        👤 Profile
+                    </button>
+                </div>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
+        <main class="flex-1 p-3 md:p-4 space-y-4 max-w-7xl w-full mx-auto">
 
             <!-- AGENT VIEW PANEL -->
             <div id="view-agent" class="space-y-4 hidden">
@@ -169,8 +170,8 @@
                                 <input type="text" id="exp-note" placeholder="Reason (e.g. Transport, Stationaries)" class="p-3 border border-slate-300 rounded-xl text-sm flex-1 focus:outline-none focus:border-emerald-500">
                                 <button onclick="addExpense()" class="px-5 py-3 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition">Add Expense</button>
                             </div>
-                            <div class="border rounded-xl overflow-hidden shadow-sm">
-                                <table class="w-full text-left text-xs">
+                            <div class="border rounded-xl overflow-x-auto shadow-sm">
+                                <table class="w-full text-left text-xs min-w-[300px]">
                                     <thead class="bg-slate-100 text-slate-600 border-b">
                                         <tr><th class="p-3">Reason</th><th class="p-3 text-right">Amount</th><th class="p-3 text-center">Action</th></tr>
                                     </thead>
@@ -208,8 +209,8 @@
 
             <!-- OWNER / WAKALA VIEW PANEL -->
             <div id="view-owner" class="space-y-4 hidden">
-                <div class="sticky top-0 z-30 space-y-3 bg-slate-100/90 backdrop-blur-md pb-2 pt-1">
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-md flex flex-wrap justify-between items-center gap-3">
+                <div class="space-y-3">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
                         <h2 class="text-base font-bold text-slate-900">Owner Dashboard</h2>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="resetAllBalancesToZero()" class="px-3.5 py-2 bg-amber-600 text-white font-bold rounded-xl text-xs hover:bg-amber-700 shadow-sm transition">🔄 Reset Session</button>
@@ -275,7 +276,7 @@
                     </div>
                 </div>
 
-                <!-- USER ACCOUNTS MANAGEMENT (USERNAME & ROLE EDITING) -->
+                <!-- USER ACCOUNTS TABLE -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center border-b pb-2">
                         <div>
@@ -284,7 +285,7 @@
                         </div>
                     </div>
                     <div class="border rounded-xl overflow-x-auto">
-                        <table class="w-full text-left text-xs min-w-[600px]">
+                        <table class="w-full text-left text-xs min-w-[550px]">
                             <thead class="bg-slate-100 text-slate-600 border-b">
                                 <tr>
                                     <th class="p-3">Name</th>
@@ -410,16 +411,31 @@
         </div>
     </div>
 
-    <!-- MODAL: USER PROFILE -->
+    <!-- MODAL: USER PROFILE & LOGOUT -->
     <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl border max-w-sm w-full space-y-3 shadow-2xl">
-            <h3 class="font-bold text-slate-900 text-base">User Profile & Security</h3>
-            <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase">Display Name</label>
-                <input type="text" id="prof-name" placeholder="Full Name" class="w-full p-2.5 border rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
-                <label class="text-[10px] font-bold text-slate-500 uppercase mt-2">New Security PIN</label>
-                <input type="password" id="prof-pin" placeholder="Update PIN" class="w-full p-2.5 border rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
+        <div class="bg-white p-6 rounded-2xl border max-w-sm w-full space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-900 text-base">User Profile</h3>
+                <span id="prof-role-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-800 border">ROLE</span>
             </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Display Name</label>
+                    <input type="text" id="prof-name" placeholder="Full Name" class="w-full p-2.5 border rounded-xl text-xs font-semibold mt-1 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">New Security PIN</label>
+                    <input type="password" id="prof-pin" placeholder="Update PIN" class="w-full p-2.5 border rounded-xl text-xs font-semibold mt-1 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- LOGOUT BUTTON IN PROFILE MODAL -->
+            <div class="pt-2">
+                <button onclick="handleLogout()" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
+                    🚪 Log Out / Sign Out
+                </button>
+            </div>
+
             <div class="flex justify-end gap-2 border-t pt-3">
                 <button onclick="closeProfileModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
                 <button onclick="saveProfileChanges()" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
@@ -525,6 +541,15 @@
                 document.getElementById('view-owner').classList.remove('hidden');
                 document.getElementById('view-agent').classList.add('hidden');
             }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            closeProfileModal();
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('view-app').classList.add('hidden');
+            document.getElementById('view-login').classList.remove('hidden');
         }
 
         function switchAdminTab(targetView) {
@@ -833,6 +858,7 @@
         function openProfileModal() {
             if(!currentUser) return;
             document.getElementById('prof-name').value = currentUser.name;
+            document.getElementById('prof-role-badge').innerText = currentUser.role;
             document.getElementById('modal-profile').classList.remove('hidden');
         }
 
