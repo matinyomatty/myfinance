@@ -13,8 +13,15 @@
     <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        /* Mobile Touch & Scroll Optimizations */
+        button, input, select { touch-action: manipulation; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-20">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-24">
 
     <script>
         const firebaseConfig = {
@@ -68,19 +75,19 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Username / Login ID</label>
-                    <input type="text" id="login-username" required class="w-full p-3 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="owner, admin, or agent username">
+                    <input type="text" id="login-username" required class="w-full h-12 px-3 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="owner, admin, or agent username">
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Password / PIN</label>
-                    <input type="password" id="login-password" inputmode="numeric" pattern="[0-9]*" required class="w-full p-3 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="••••••••">
+                    <input type="password" id="login-password" inputmode="numeric" pattern="[0-9]*" required class="w-full h-12 px-3 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none transition" placeholder="••••••••">
                 </div>
 
                 <div id="login-error" class="hidden p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
                     Invalid credentials! Please verify username and PIN.
                 </div>
 
-                <button type="submit" id="btn-login" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition text-sm">
+                <button type="submit" id="btn-login" class="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition text-sm flex items-center justify-center">
                     Sign In (Cloud Auth)
                 </button>
             </form>
@@ -106,9 +113,9 @@
                     <button onclick="switchAdminTab('AGENT')" id="tab-btn-agent" class="px-2.5 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white transition">Agent View</button>
                 </div>
                 
-                <div class="flex items-center gap-2">
-                    <button onclick="manualRefreshData()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
-                        🔄 Refresh
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button onclick="manualRefreshData()" class="h-9 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
+                        🔄 <span class="hidden sm:inline">Refresh</span>
                     </button>
                     
                     <div class="text-right hidden sm:block">
@@ -116,28 +123,28 @@
                         <p class="text-[9px] text-slate-400" id="user-display-branch">Role: OWNER</p>
                     </div>
 
-                    <button onclick="openProfileModal()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
-                        👤 Profile
+                    <button onclick="openProfileModal()" class="h-9 px-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
+                        👤 <span class="hidden sm:inline">Profile</span>
                     </button>
                 </div>
             </div>
         </header>
 
-        <main class="flex-1 p-2.5 md:p-4 space-y-3 max-w-7xl w-full mx-auto">
+        <main class="flex-1 p-2 sm:p-4 space-y-3 max-w-7xl w-full mx-auto">
 
             <!-- AGENT VIEW PANEL -->
             <div id="view-agent" class="space-y-3 hidden">
-                <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900">Agent Shift Submissions</h2>
                         <div class="flex items-center gap-2 mt-1">
                             <label class="text-[11px] text-slate-500 font-semibold">Closure Date:</label>
-                            <input type="date" id="session-date-picker" onchange="checkDateLockStatus(this.value)" class="text-[11px] font-bold text-slate-800 border rounded-lg px-2 py-0.5 bg-slate-50 border-slate-300 focus:outline-none focus:border-emerald-500">
+                            <input type="date" id="session-date-picker" onchange="checkDateLockStatus(this.value)" class="text-[11px] font-bold text-slate-800 border rounded-lg px-2 py-1 bg-slate-50 border-slate-300 focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                        <button onclick="openUpdateRequestModal()" class="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Balance Adjustment</button>
-                        <span id="session-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">SESSION OPEN</span>
+                        <button onclick="openUpdateRequestModal()" class="h-9 px-3 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Balance Adjustment</button>
+                        <span id="session-badge" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">SESSION OPEN</span>
                     </div>
                 </div>
 
@@ -146,27 +153,27 @@
                 </div>
 
                 <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex md:flex-col gap-1 overflow-x-auto md:col-span-1">
-                        <button onclick="setStep(1)" id="step-btn-1" class="flex-1 text-center md:text-left p-2 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition shrink-0">1. Balances</button>
-                        <button onclick="setStep(2)" id="step-btn-2" class="flex-1 text-center md:text-left p-2 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition shrink-0">2. Expenses</button>
-                        <button onclick="setStep(3)" id="step-btn-3" class="flex-1 text-center md:text-left p-2 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition shrink-0">3. Review</button>
+                    <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:col-span-1">
+                        <button onclick="setStep(1)" id="step-btn-1" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition">1. Balances</button>
+                        <button onclick="setStep(2)" id="step-btn-2" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">2. Expenses</button>
+                        <button onclick="setStep(3)" id="step-btn-3" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">3. Review</button>
                     </div>
 
-                    <div class="md:col-span-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="md:col-span-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
                         <!-- Step 1 -->
                         <div id="step-1" class="space-y-3">
                             <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">1. Network & Cash Drawer Closing Balances</h3>
                             <div id="network-inputs-container" class="space-y-2.5"></div>
-                            <button onclick="setStep(2)" class="w-full py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition">Proceed to Expenses →</button>
+                            <button onclick="setStep(2)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Expenses →</button>
                         </div>
 
                         <!-- Step 2 -->
                         <div id="step-2" class="space-y-3 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">2. Expenses Logging</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <input type="number" id="exp-amount" placeholder="Amount (TZS)" class="p-2.5 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
-                                <input type="text" id="exp-note" placeholder="Reason (e.g. Transport)" class="p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
-                                <button onclick="addExpense()" class="py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition">Add Expense</button>
+                                <input type="number" id="exp-amount" placeholder="Amount (TZS)" class="h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
+                                <input type="text" id="exp-note" placeholder="Reason (e.g. Transport)" class="h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                                <button onclick="addExpense()" class="h-11 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition flex items-center justify-center">Add Expense</button>
                             </div>
                             <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
                                 <table class="w-full text-left text-xs min-w-[280px]">
@@ -176,18 +183,18 @@
                                     <tbody id="expense-table-body"></tbody>
                                 </table>
                             </div>
-                            <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition">Proceed to Review →</button>
+                            <button onclick="setStep(3)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Review →</button>
                         </div>
 
                         <!-- Step 3 -->
                         <div id="step-3" class="space-y-3 hidden">
                             <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Final Review & Lock</h3>
-                            <div class="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                            <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
                                 <div class="flex justify-between"><span>Total Activity Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Total Commission / Fees:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-rose-700 font-semibold">Total Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
                             </div>
-                            <button id="btn-submit-close" onclick="submitClosing()" class="w-full py-3 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition">
+                            <button id="btn-submit-close" onclick="submitClosing()" class="w-full h-12 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition flex items-center justify-center">
                                 Sync & Lock Daily Shift
                             </button>
                         </div>
@@ -208,30 +215,30 @@
                         <h2 class="text-sm font-bold text-slate-900">Owner Dashboard</h2>
                         
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                            <button onclick="generateMonthlyPDF()" class="p-2 bg-rose-600 text-white font-bold rounded-xl text-[11px] hover:bg-rose-700 shadow-sm transition flex items-center justify-center gap-1">📄 Monthly PDF</button>
-                            <button onclick="resetAllBalancesAndZeroOut()" class="p-2 bg-amber-600 text-white font-bold rounded-xl text-[11px] hover:bg-amber-700 shadow-sm transition flex items-center justify-center gap-1">🔄 Zero Out Data</button>
-                            <button onclick="openAgentModal()" class="p-2 bg-blue-600 text-white font-bold rounded-xl text-[11px] hover:bg-blue-700 shadow-sm transition flex items-center justify-center gap-1">+ Account</button>
-                            <button onclick="openCapitalModal()" class="p-2 bg-emerald-600 text-white font-bold rounded-xl text-[11px] hover:bg-emerald-700 shadow-sm transition flex items-center justify-center gap-1">+ Capital</button>
-                            <button onclick="openNetworkModal()" class="p-2 bg-slate-900 text-white font-bold rounded-xl text-[11px] hover:bg-slate-800 shadow-sm transition col-span-2 sm:col-span-1 flex items-center justify-center gap-1">+ Network</button>
+                            <button onclick="generateMonthlyPDF()" class="h-10 bg-rose-600 text-white font-bold rounded-xl text-[11px] hover:bg-rose-700 shadow-sm transition flex items-center justify-center gap-1">📄 Monthly PDF</button>
+                            <button onclick="resetAllBalancesAndZeroOut()" class="h-10 bg-amber-600 text-white font-bold rounded-xl text-[11px] hover:bg-amber-700 shadow-sm transition flex items-center justify-center gap-1">🔄 Zero Out Data</button>
+                            <button onclick="openAgentModal()" class="h-10 bg-blue-600 text-white font-bold rounded-xl text-[11px] hover:bg-blue-700 shadow-sm transition flex items-center justify-center gap-1">+ Account</button>
+                            <button onclick="openCapitalModal()" class="h-10 bg-emerald-600 text-white font-bold rounded-xl text-[11px] hover:bg-emerald-700 shadow-sm transition flex items-center justify-center gap-1">+ Capital</button>
+                            <button onclick="openNetworkModal()" class="h-10 bg-slate-900 text-white font-bold rounded-xl text-[11px] hover:bg-slate-800 shadow-sm transition col-span-2 sm:col-span-1 flex items-center justify-center gap-1">+ Network</button>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit</p>
-                            <p class="text-sm sm:text-base font-black text-emerald-600 mt-0.5">TZS <span id="owner-profit">0</span></p>
+                            <p class="text-xs sm:text-base font-black text-emerald-600 mt-0.5 truncate">TZS <span id="owner-profit">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
-                            <p class="text-sm sm:text-base font-black text-slate-900 mt-0.5">TZS <span id="owner-position">0</span></p>
+                            <p class="text-xs sm:text-base font-black text-slate-900 mt-0.5 truncate">TZS <span id="owner-position">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Capital Baseline</p>
-                            <p class="text-sm sm:text-base font-black text-blue-600 mt-0.5">TZS <span id="owner-capital">0</span></p>
+                            <p class="text-xs sm:text-base font-black text-blue-600 mt-0.5 truncate">TZS <span id="owner-capital">0</span></p>
                         </div>
                         <div id="position-change-card" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Variance vs Yesterday</p>
-                            <p class="text-sm sm:text-base font-black mt-0.5" id="owner-position-change">TZS 0</p>
+                            <p class="text-xs sm:text-base font-black mt-0.5 truncate" id="owner-position-change">TZS 0</p>
                         </div>
                     </div>
                 </div>
@@ -305,8 +312,8 @@
         </button>
     </div>
 
-    <div id="modal-ai-assistant" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full h-[520px] flex flex-col shadow-2xl overflow-hidden">
+    <div id="modal-ai-assistant" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden z-50">
+        <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full h-[520px] max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center border-b border-slate-800">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-900 flex items-center justify-center font-black text-sm">AI</div>
@@ -326,8 +333,8 @@
             </div>
 
             <div class="p-2.5 bg-white border-t border-slate-200 flex gap-2">
-                <input type="text" id="ai-input-query" onkeydown="if(event.key==='Enter') sendAiQuery()" placeholder="Ask AI e.g. 'What is our net profit so far?'" class="flex-1 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
-                <button onclick="sendAiQuery()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition">Ask</button>
+                <input type="text" id="ai-input-query" onkeydown="if(event.key==='Enter') sendAiQuery()" placeholder="Ask AI e.g. 'What is our net profit so far?'" class="flex-1 h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <button onclick="sendAiQuery()" class="px-4 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center">Ask</button>
             </div>
         </div>
     </div>
@@ -340,20 +347,20 @@
             <div class="space-y-2.5">
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Target Provider</label>
-                    <select id="req-target" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500"></select>
+                    <select id="req-target" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500"></select>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Adjusted New Balance (TZS)</label>
-                    <input type="number" id="req-amount" placeholder="0" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 mt-0.5 focus:outline-none focus:border-emerald-500">
+                    <input type="number" id="req-amount" placeholder="0" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 mt-0.5 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Reason / Note</label>
-                    <input type="text" id="req-note" placeholder="e.g. Cash drawer reconciliation correction" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs mt-0.5 focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="req-note" placeholder="e.g. Cash drawer reconciliation correction" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs mt-0.5 focus:outline-none focus:border-emerald-500">
                 </div>
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
-                <button onclick="closeUpdateRequestModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="submitUpdateRequest()" class="px-3.5 py-1.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Apply Adjustment</button>
+                <button onclick="closeUpdateRequestModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="submitUpdateRequest()" class="h-10 px-3.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Apply Adjustment</button>
             </div>
         </div>
     </div>
@@ -365,20 +372,20 @@
             <div class="space-y-2.5">
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Target Channel</label>
-                    <select id="cap-target" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500"></select>
+                    <select id="cap-target" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500"></select>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Amount (TZS)</label>
-                    <input type="number" id="cap-amount" placeholder="0" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 mt-0.5 focus:outline-none focus:border-emerald-500">
+                    <input type="number" id="cap-amount" placeholder="0" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 mt-0.5 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Description / Source</label>
-                    <input type="text" id="cap-note" placeholder="e.g. Additional Capital Injection" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs mt-0.5 focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="cap-note" placeholder="e.g. Additional Capital Injection" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs mt-0.5 focus:outline-none focus:border-emerald-500">
                 </div>
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
-                <button onclick="closeCapitalModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="saveCapitalInjection()" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Capital</button>
+                <button onclick="closeCapitalModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveCapitalInjection()" class="h-10 px-3.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Capital</button>
             </div>
         </div>
     </div>
@@ -388,13 +395,13 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-sm">Add Network / Service Provider</h3>
             <div class="space-y-2.5">
-                <input type="text" id="net-code" placeholder="Code (e.g. HALOPESA)" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
-                <input type="text" id="net-name" placeholder="Name (e.g. HaloPesa Float)" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
-                <input type="number" id="net-min" placeholder="Minimum Float Threshold (TZS)" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-code" placeholder="Code (e.g. HALOPESA)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-name" placeholder="Name (e.g. HaloPesa Float)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="number" id="net-min" placeholder="Minimum Float Threshold (TZS)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
-                <button onclick="closeNetworkModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="saveNewNetwork()" class="px-3.5 py-1.5 bg-slate-900 text-white font-bold rounded-xl text-xs shadow-md hover:bg-slate-800">Add Provider</button>
+                <button onclick="closeNetworkModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveNewNetwork()" class="h-10 px-3.5 bg-slate-900 text-white font-bold rounded-xl text-xs shadow-md hover:bg-slate-800">Add Provider</button>
             </div>
         </div>
     </div>
@@ -406,15 +413,15 @@
             <input type="hidden" id="edit-user-docid">
             <div>
                 <label class="text-[10px] font-bold text-slate-600 uppercase">Display Name</label>
-                <input type="text" id="edit-user-name" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                <input type="text" id="edit-user-name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-slate-600 uppercase">Username</label>
-                <input type="text" id="edit-user-username" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-bold text-blue-700 mt-0.5 focus:outline-none focus:border-emerald-500">
+                <input type="text" id="edit-user-username" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-bold text-blue-700 mt-0.5 focus:outline-none focus:border-emerald-500">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-slate-600 uppercase">Role Access</label>
-                <select id="edit-user-role" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500">
+                <select id="edit-user-role" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500">
                     <option value="AGENT">AGENT</option>
                     <option value="ADMIN">ADMIN</option>
                     <option value="OWNER">OWNER</option>
@@ -422,15 +429,15 @@
             </div>
             <div>
                 <label class="text-[10px] font-bold text-slate-600 uppercase">Branch Name</label>
-                <input type="text" id="edit-user-branch" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                <input type="text" id="edit-user-branch" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-slate-600 uppercase">Phone Number</label>
-                <input type="tel" id="edit-user-phone" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                <input type="tel" id="edit-user-phone" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
-                <button onclick="closeEditUserModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="saveUserEditChanges()" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
+                <button onclick="closeEditUserModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveUserEditChanges()" class="h-10 px-3.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
             </div>
         </div>
     </div>
@@ -440,20 +447,20 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-2.5 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-sm">Create New System Account</h3>
             <div class="space-y-2">
-                <input type="text" id="new-agent-name" placeholder="Full Name" class="w-full p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
-                <input type="text" id="new-agent-username" placeholder="Username (Login ID)" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
-                <select id="new-agent-role" class="w-full p-2 border border-slate-300 rounded-xl text-xs bg-slate-50 font-semibold focus:outline-none focus:border-emerald-500">
+                <input type="text" id="new-agent-name" placeholder="Full Name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="new-agent-username" placeholder="Username (Login ID)" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
+                <select id="new-agent-role" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs bg-slate-50 font-semibold focus:outline-none focus:border-emerald-500">
                     <option value="AGENT">AGENT</option>
                     <option value="ADMIN">ADMIN</option>
                     <option value="OWNER">OWNER</option>
                 </select>
-                <input type="tel" id="new-agent-phone" placeholder="Phone Number (+255...)" class="w-full p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
-                <input type="text" id="new-agent-branch" placeholder="Branch Location Name" class="w-full p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
-                <input type="password" id="new-agent-password" inputmode="numeric" pattern="[0-9]*" placeholder="Initial Numeric PIN" class="w-full p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="tel" id="new-agent-phone" placeholder="Phone Number (+255...)" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="new-agent-branch" placeholder="Branch Location Name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="password" id="new-agent-password" inputmode="numeric" pattern="[0-9]*" placeholder="Initial Numeric PIN" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
-                <button onclick="closeAgentModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="saveNewAgentAccount()" class="px-3.5 py-1.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Create Account</button>
+                <button onclick="closeAgentModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveNewAgentAccount()" class="h-10 px-3.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Create Account</button>
             </div>
         </div>
     </div>
@@ -468,23 +475,23 @@
             <div class="space-y-2">
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase">Display Name</label>
-                    <input type="text" id="prof-name" placeholder="Full Name" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="prof-name" placeholder="Full Name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase">New Security PIN</label>
-                    <input type="password" id="prof-pin" placeholder="Update PIN" class="w-full p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                    <input type="password" id="prof-pin" placeholder="Update PIN" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
                 </div>
             </div>
 
             <div class="pt-1">
-                <button onclick="handleLogout()" class="w-full py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                <button onclick="handleLogout()" class="w-full h-10 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5">
                     🚪 Log Out / Sign Out
                 </button>
             </div>
 
             <div class="flex justify-end gap-2 border-t pt-2.5">
-                <button onclick="closeProfileModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="saveProfileChanges()" class="px-3.5 py-1.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
+                <button onclick="closeProfileModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveProfileChanges()" class="h-10 px-3.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
             </div>
         </div>
     </div>
@@ -505,36 +512,7 @@
         });
 
         function manualRefreshData() {
-            db.collection("accounts").get().then(snapshot => {
-                accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderUsersTable();
-            });
-            db.collection("networks").get().then(snapshot => {
-                networks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderNetworkInputs();
-                renderOwnerFloats();
-                populateDropdowns();
-                calculateAll();
-            });
-            db.collection("expenses").get().then(snapshot => {
-                expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderExpenses();
-                calculateAll();
-            });
-            db.collection("capitalLedger").get().then(snapshot => {
-                capitalLedger = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                calculateAll();
-            });
-            db.collection("dailySummaries").orderBy("rawDate", "asc").get().then(snapshot => {
-                historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAdminClosureTable();
-                calculateAll();
-                checkDateLockStatus(document.getElementById('session-date-picker').value);
-            });
-            db.collection("updateRequests").get().then(snapshot => {
-                updateRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderUpdateRequests();
-            });
+            window.location.reload();
         }
 
         function attachRealtimeListeners() {
@@ -687,19 +665,19 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         <div>
                             <label class="text-[9px] text-slate-500 font-bold">Deposits (TZS)</label>
-                            <input type="number" value="${n.deposits || 0}" onchange="updateNetworkVal('${n.id}', 'deposits', this.value)" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                            <input type="number" value="${n.deposits || 0}" onchange="updateNetworkVal('${n.id}', 'deposits', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
                             <label class="text-[9px] text-slate-500 font-bold">Withdrawals (TZS)</label>
-                            <input type="number" value="${n.withdrawals || 0}" onchange="updateNetworkVal('${n.id}', 'withdrawals', this.value)" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                            <input type="number" value="${n.withdrawals || 0}" onchange="updateNetworkVal('${n.id}', 'withdrawals', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
                             <label class="text-[9px] text-slate-500 font-bold">Closing Balance (TZS)</label>
-                            <input type="number" value="${n.closingFloat || 0}" onchange="updateNetworkVal('${n.id}', 'closingFloat', this.value)" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                            <input type="number" value="${n.closingFloat || 0}" onchange="updateNetworkVal('${n.id}', 'closingFloat', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
                             <label class="text-[9px] text-slate-500 font-bold">Commission/Fees (TZS)</label>
-                            <input type="number" value="${n.commission || 0}" onchange="updateNetworkVal('${n.id}', 'commission', this.value)" class="w-full p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                            <input type="number" value="${n.commission || 0}" onchange="updateNetworkVal('${n.id}', 'commission', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
                 </div>
@@ -761,9 +739,11 @@
             const todayCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-            // Calculation based on actual network assets
+            // True Accounting Formula: Money Position = Total Float Balances
             const runningMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
-            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses);
+            
+            // Cumulative Net Profit Calculation
+            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + (todayCommission - todayExpenses);
 
             const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
@@ -772,7 +752,7 @@
             document.getElementById('owner-position').innerText = runningMoneyPosition.toLocaleString();
             document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
 
-            const lastLog = historicalLogs[historicalLogs.length - 1];
+            const lastLog = historicalLogs.length > 0 ? historicalLogs[historicalLogs.length - 1] : null;
             const prevPosition = lastLog ? Number(lastLog.moneyPosition || 0) : totalPersistentCapital;
             const todayNetVariance = runningMoneyPosition - prevPosition;
 
@@ -781,13 +761,13 @@
                 const formattedVar = Math.abs(todayNetVariance).toLocaleString();
                 if (todayNetVariance > 0) {
                     varianceElem.innerText = `+TZS ${formattedVar}`;
-                    varianceElem.className = "text-sm sm:text-base font-black mt-0.5 text-emerald-600";
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-emerald-600 truncate";
                 } else if (todayNetVariance < 0) {
                     varianceElem.innerText = `-TZS ${formattedVar}`;
-                    varianceElem.className = "text-sm sm:text-base font-black mt-0.5 text-rose-600";
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-rose-600 truncate";
                 } else {
                     varianceElem.innerText = `TZS 0`;
-                    varianceElem.className = "text-sm sm:text-base font-black mt-0.5 text-slate-800";
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-slate-800 truncate";
                 }
             }
 
@@ -874,7 +854,6 @@
 
             const chat = document.getElementById('ai-messages-container');
             
-            // Add user message
             chat.innerHTML += `
                 <div class="flex justify-end">
                     <div class="bg-emerald-600 text-white p-2.5 rounded-xl max-w-[80%] font-medium">${input.value}</div>
@@ -883,17 +862,18 @@
             
             input.value = '';
 
-            // Compute metrics
             const totalVol = historicalLogs.reduce((acc, l) => acc + Number(l.volume || 0), 0);
             const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.commission || 0), 0);
             const totalExp = historicalLogs.reduce((acc, l) => acc + Number(l.expenses || 0), 0);
-            const netProfit = totalComm - totalExp;
+            const todayComm = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const todayExp = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const netProfit = (totalComm - totalExp) + (todayComm - todayExp);
             const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
             
             let reply = "";
 
             if(q.includes("profit") || q.includes("net")) {
-                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Commissions: TZS ${totalComm.toLocaleString()} - Expenses: TZS ${totalExp.toLocaleString()}).`;
+                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Historical Net: TZS ${(totalComm - totalExp).toLocaleString()} + Today's Active Net: TZS ${(todayComm - todayExp).toLocaleString()}).`;
             } else if(q.includes("volume") || q.includes("turnover")) {
                 reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
             } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
@@ -904,7 +884,7 @@
                     const agent = l.submittedBy || 'Unknown';
                     agentStats[agent] = (agentStats[agent] || 0) + Number(l.volume || 0);
                 });
-                const topAgent = Object.keys(agentStats).reduce((a, b) => agentStats[a] > agentStats[b] ? a : b, "N/A");
+                const topAgent = Object.keys(agentStats).length > 0 ? Object.keys(agentStats).reduce((a, b) => agentStats[a] > agentStats[b] ? a : b) : "N/A";
                 reply = `👤 **Agent Activity Analysis:**\nMost active agent by overall volume is **${topAgent}**.`;
             } else {
                 reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit:** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
@@ -983,10 +963,10 @@
         function setStep(step) {
             for(let i=1; i<=3; i++) {
                 document.getElementById(`step-${i}`).classList.add('hidden');
-                document.getElementById(`step-btn-${i}`).className = "flex-1 text-center md:text-left p-2 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition shrink-0";
+                document.getElementById(`step-btn-${i}`).className = "flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition";
             }
             document.getElementById(`step-${step}`).classList.remove('hidden');
-            document.getElementById(`step-btn-${step}`).className = "flex-1 text-center md:text-left p-2 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition shrink-0";
+            document.getElementById(`step-btn-${step}`).className = "flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition";
         }
 
         function openCapitalModal() { document.getElementById('modal-capital').classList.remove('hidden'); }
