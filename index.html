@@ -6,7 +6,7 @@
     <title>Wakala Pro - Accounting Standard Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK (Version 9 Compat) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -14,10 +14,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-20">
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
             authDomain: "wakalapro-4c16e.firebaseapp.com",
@@ -50,7 +49,6 @@
 
             try {
                 await fetch(apiUrl, { mode: 'no-cors' });
-                console.log(`WhatsApp Alert sent to ${targetPhone}`);
             } catch (err) {
                 const img = new Image();
                 img.src = apiUrl;
@@ -110,7 +108,7 @@
                 
                 <div class="flex items-center gap-2">
                     <button onclick="manualRefreshData()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
-                        🔄 Update Data
+                        🔄 Refresh
                     </button>
                     
                     <div class="text-right hidden sm:block">
@@ -138,13 +136,13 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                        <button onclick="openUpdateRequestModal()" class="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Direct Balance Adjustment</button>
+                        <button onclick="openUpdateRequestModal()" class="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Balance Adjustment</button>
                         <span id="session-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">SESSION OPEN</span>
                     </div>
                 </div>
 
                 <div id="lock-warning-banner" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-2xl text-[11px] text-rose-800 font-bold">
-                    🔒 Day already closed. Direct adjustments or shift resyncs are active.
+                    🔒 Date entry already exists. Resubmitting will update records.
                 </div>
 
                 <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -178,12 +176,12 @@
                                     <tbody id="expense-table-body"></tbody>
                                 </table>
                             </div>
-                            <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition">Proceed to Review & Lock →</button>
+                            <button onclick="setStep(3)" class="w-full py-3 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition">Proceed to Review →</button>
                         </div>
 
                         <!-- Step 3 -->
                         <div id="step-3" class="space-y-3 hidden">
-                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Final Lock & Review</h3>
+                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Final Review & Lock</h3>
                             <div class="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
                                 <div class="flex justify-between"><span>Total Activity Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Total Commission / Fees:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
@@ -240,12 +238,7 @@
 
                 <!-- DIRECT ADJUSTMENT LOG SECTION -->
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                    <div class="flex justify-between items-center border-b pb-1.5 border-slate-100">
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-xs">Agent Direct Adjustments Log</h3>
-                            <p class="text-[10px] text-slate-500">Direct float adjustments executed by agents.</p>
-                        </div>
-                    </div>
+                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Agent Direct Adjustments Log</h3>
                     <div id="update-requests-list" class="space-y-1.5">
                         <p class="text-xs text-slate-400 italic">No recent adjustments logged.</p>
                     </div>
@@ -304,6 +297,41 @@
         </main>
     </div>
 
+    <!-- AI FINANCIAL ASSISTANT BOT WIDGET -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button onclick="toggleAiModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3.5 rounded-full shadow-2xl flex items-center gap-2 border-2 border-white transition transform hover:scale-105">
+            <span class="text-xl">🤖</span>
+            <span class="text-xs hidden sm:inline">AI Financial Assistant</span>
+        </button>
+    </div>
+
+    <div id="modal-ai-assistant" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full h-[520px] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-900 flex items-center justify-center font-black text-sm">AI</div>
+                    <div>
+                        <h3 class="text-xs font-bold">Wakala Analytics AI</h3>
+                        <p class="text-[9px] text-emerald-400">Live Financial Query Engine</p>
+                    </div>
+                </div>
+                <button onclick="toggleAiModal()" class="text-slate-400 hover:text-white font-bold text-sm px-2">✕</button>
+            </div>
+
+            <div id="ai-messages-container" class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 space-y-1.5 shadow-sm">
+                    <p class="font-bold text-emerald-600 text-[11px]">👋 Hello! I am your Wakala AI Financial Assistant.</p>
+                    <p class="text-[11px] leading-relaxed">Ask me anything about your current money positions, agent trends, volume analysis, or total net profit margins!</p>
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-white border-t border-slate-200 flex gap-2">
+                <input type="text" id="ai-input-query" onkeydown="if(event.key==='Enter') sendAiQuery()" placeholder="Ask AI e.g. 'What is our net profit so far?'" class="flex-1 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <button onclick="sendAiQuery()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition">Ask</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: AGENT DIRECT UPDATE ADJUSTMENT -->
     <div id="modal-update-request" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
@@ -325,7 +353,7 @@
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
                 <button onclick="closeUpdateRequestModal()" class="px-3.5 py-1.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="submitUpdateRequest()" class="px-3.5 py-1.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Apply Adjustment Immediately</button>
+                <button onclick="submitUpdateRequest()" class="px-3.5 py-1.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Apply Adjustment</button>
             </div>
         </div>
     </div>
@@ -532,8 +560,6 @@
                         { code: 'LIPA', name: 'Send/Lipa Merchant Float', minFloat: 200000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
-                } else if (!networks.some(n => n.code === 'DRAWER')) {
-                    db.collection("networks").doc('DRAWER').set({ code: 'DRAWER', name: 'Physical Cash Drawer', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 });
                 }
                 renderNetworkInputs();
                 renderOwnerFloats();
@@ -586,17 +612,13 @@
             document.getElementById('user-display-name').innerText = currentUser.name;
             document.getElementById('user-display-branch').innerText = `Role: ${currentUser.role}`;
 
-            if(currentUser.role === 'ADMIN') {
+            if(currentUser.role === 'ADMIN' || currentUser.role === 'OWNER') {
                 document.getElementById('admin-view-switcher').classList.remove('hidden');
                 switchAdminTab('OWNER');
-            } else if(currentUser.role === 'AGENT') {
+            } else {
                 document.getElementById('admin-view-switcher').classList.add('hidden');
                 document.getElementById('view-agent').classList.remove('hidden');
                 document.getElementById('view-owner').classList.add('hidden');
-            } else {
-                document.getElementById('admin-view-switcher').classList.add('hidden');
-                document.getElementById('view-owner').classList.remove('hidden');
-                document.getElementById('view-agent').classList.add('hidden');
             }
 
             checkDateLockStatus(document.getElementById('session-date-picker').value);
@@ -640,21 +662,15 @@
                     sessionBadge.innerText = "SESSION LOCKED";
                     sessionBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200";
                 }
-
                 lockBanner.classList.remove('hidden');
-                submitBtn.disabled = false;
-                submitBtn.className = "w-full py-3 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition";
-                submitBtn.innerText = "Update & Resync Daily Shift Entry";
+                submitBtn.innerText = "Update Daily Shift Entry";
             } else {
                 const sessionBadge = document.getElementById('session-badge');
                 if (sessionBadge) {
                     sessionBadge.innerText = "SESSION OPEN";
                     sessionBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
                 }
-
                 lockBanner.classList.add('hidden');
-                submitBtn.disabled = false;
-                submitBtn.className = "w-full py-3 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition";
                 submitBtn.innerText = "Sync & Lock Daily Closing";
             }
         }
@@ -745,8 +761,9 @@
             const todayCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-            const runningMoneyPosition = totalPersistentCapital + totalHistoricalCommissions - totalHistoricalExpenses + todayCommission - todayExpenses;
-            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + (todayCommission - todayExpenses);
+            // Calculation based on actual network assets
+            const runningMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
+            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses);
 
             const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
@@ -755,7 +772,10 @@
             document.getElementById('owner-position').innerText = runningMoneyPosition.toLocaleString();
             document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
 
-            const todayNetVariance = todayCommission - todayExpenses;
+            const lastLog = historicalLogs[historicalLogs.length - 1];
+            const prevPosition = lastLog ? Number(lastLog.moneyPosition || 0) : totalPersistentCapital;
+            const todayNetVariance = runningMoneyPosition - prevPosition;
+
             const varianceElem = document.getElementById('owner-position-change');
             if (varianceElem) {
                 const formattedVar = Math.abs(todayNetVariance).toLocaleString();
@@ -812,24 +832,16 @@
                 return;
             }
 
-            const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            let runningTotal = totalPersistentCapital;
-
-            tbody.innerHTML = historicalLogs.map(s => {
-                const dayComm = Number(s.commission || 0);
-                const dayExp = Number(s.expenses || 0);
-                runningTotal += (dayComm - dayExp);
-
-                return `
+            tbody.innerHTML = historicalLogs.map(s => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td class="p-2.5 font-bold text-slate-800">${s.rawDate}</td>
                     <td class="p-2.5 text-slate-600 font-medium">${s.submittedBy || 'Agent'}</td>
                     <td class="p-2.5 text-right font-semibold">TZS ${Number(s.volume || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${dayComm.toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-bold text-rose-600">TZS ${dayExp.toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-black text-slate-900">TZS ${runningTotal.toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(s.commission || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(s.expenses || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-black text-slate-900">TZS ${Number(s.moneyPosition || 0).toLocaleString()}</td>
                 </tr>
-            `}).join('');
+            `).join('');
         }
 
         function renderUpdateRequests() {
@@ -849,6 +861,64 @@
                     <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-lg text-[10px] font-bold">Applied</span>
                 </div>
             `).join('');
+        }
+
+        function toggleAiModal() {
+            document.getElementById('modal-ai-assistant').classList.toggle('hidden');
+        }
+
+        function sendAiQuery() {
+            const input = document.getElementById('ai-input-query');
+            const q = input.value.trim().toLowerCase();
+            if(!q) return;
+
+            const chat = document.getElementById('ai-messages-container');
+            
+            // Add user message
+            chat.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-emerald-600 text-white p-2.5 rounded-xl max-w-[80%] font-medium">${input.value}</div>
+                </div>
+            `;
+            
+            input.value = '';
+
+            // Compute metrics
+            const totalVol = historicalLogs.reduce((acc, l) => acc + Number(l.volume || 0), 0);
+            const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.commission || 0), 0);
+            const totalExp = historicalLogs.reduce((acc, l) => acc + Number(l.expenses || 0), 0);
+            const netProfit = totalComm - totalExp;
+            const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
+            
+            let reply = "";
+
+            if(q.includes("profit") || q.includes("net")) {
+                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Commissions: TZS ${totalComm.toLocaleString()} - Expenses: TZS ${totalExp.toLocaleString()}).`;
+            } else if(q.includes("volume") || q.includes("turnover")) {
+                reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
+            } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
+                reply = `💰 **Current Money Position:**\nTotal liquid float and cash across all channels is **TZS ${currPosition.toLocaleString()}**.`;
+            } else if(q.includes("agent") || q.includes("branch")) {
+                const agentStats = {};
+                historicalLogs.forEach(l => {
+                    const agent = l.submittedBy || 'Unknown';
+                    agentStats[agent] = (agentStats[agent] || 0) + Number(l.volume || 0);
+                });
+                const topAgent = Object.keys(agentStats).reduce((a, b) => agentStats[a] > agentStats[b] ? a : b, "N/A");
+                reply = `👤 **Agent Activity Analysis:**\nMost active agent by overall volume is **${topAgent}**.`;
+            } else {
+                reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit:** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
+            }
+
+            chat.innerHTML += `
+                <div class="flex justify-start">
+                    <div class="bg-white border border-slate-200 p-2.5 rounded-xl max-w-[85%] text-slate-800 space-y-1 shadow-sm leading-relaxed">
+                        ${reply.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+
+            chat.scrollTop = chat.scrollHeight;
         }
 
         function openUpdateRequestModal() { document.getElementById('modal-update-request').classList.remove('hidden'); }
@@ -879,7 +949,7 @@
 
             closeUpdateRequestModal();
             calculateAll();
-            alert("Balance adjusted directly and synced!");
+            alert("Balance adjusted directly!");
         }
 
         function renderExpenses() {
@@ -1049,11 +1119,7 @@
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const totalVolume = totalDeposits + totalWithdrawals;
 
-            const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            const historicalCommExceptToday = historicalLogs.filter(l => l.rawDate !== selectedDateVal).reduce((sum, l) => sum + Number(l.commission || 0), 0);
-            const historicalExpExceptToday = historicalLogs.filter(l => l.rawDate !== selectedDateVal).reduce((sum, l) => sum + Number(l.expenses || 0), 0);
-
-            const computedMoneyPosition = totalPersistentCapital + historicalCommExceptToday + totalCommission - (historicalExpExceptToday + totalExpenses);
+            const computedMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
@@ -1104,24 +1170,15 @@
             doc.text(`Period: ${monthYear} | Exported: ${now.toLocaleDateString()}`, 14, 27);
 
             const sortedLogs = [...historicalLogs].sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
-            const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            
-            let runningTotal = totalPersistentCapital;
 
-            const tableRows = sortedLogs.map(s => {
-                const dayComm = Number(s.commission || 0);
-                const dayExp = Number(s.expenses || 0);
-                runningTotal += (dayComm - dayExp);
-
-                return [
-                    s.rawDate,
-                    s.submittedBy || 'Agent',
-                    `TZS ${Number(s.volume || 0).toLocaleString()}`,
-                    `TZS ${dayComm.toLocaleString()}`,
-                    `TZS ${dayExp.toLocaleString()}`,
-                    `TZS ${runningTotal.toLocaleString()}`
-                ];
-            });
+            const tableRows = sortedLogs.map(s => [
+                s.rawDate,
+                s.submittedBy || 'Agent',
+                `TZS ${Number(s.volume || 0).toLocaleString()}`,
+                `TZS ${Number(s.commission || 0).toLocaleString()}`,
+                `TZS ${Number(s.expenses || 0).toLocaleString()}`,
+                `TZS ${Number(s.moneyPosition || 0).toLocaleString()}`
+            ]);
 
             doc.autoTable({
                 startY: 35,
@@ -1136,4 +1193,3 @@
     </script>
 </body>
 </html>
-
