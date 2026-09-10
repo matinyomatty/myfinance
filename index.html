@@ -701,7 +701,7 @@
             grid.innerHTML = networks.map(n => `
                 <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 space-y-1">
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-xs text-slate-800">${n.name}</span>
+                        <span class="font-bold text-xs text-slate-800">${n.name} (${n.code})</span>
                         <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
                             ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'Low Balance' : 'Healthy'}
                         </span>
@@ -710,21 +710,41 @@
                         <span class="text-slate-500 font-medium">Closing Balance:</span>
                         <span class="font-black text-slate-900">TZS ${Number(n.closingFloat || 0).toLocaleString()}</span>
                     </div>
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 mt-2">
+                        <button onclick="openEditNetworkModal('${n.id}')" class="text-[10px] font-bold text-blue-600 hover:underline">Edit</button>
+                        <button onclick="deleteNetwork('${n.id}')" class="text-[10px] font-bold text-rose-600 hover:underline">Delete</button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        function openEditNetworkModal(docId) {
+            const net = networks.find(n => n.id === docId);
+            if (!net) return;
+            const newName = prompt("Enter new Network/Service Name:", net.name);
+            if (newName === null || newName.trim() === "") return;
+            const newMin = prompt("Enter minimum float threshold (TZS):", net.minFloat || 0);
+
+            db.collection("networks").doc(docId).update({
+                name: newName.trim(),
+                minFloat: Number(newMin) || 0
+            }).then(() => alert("Network updated successfully!"));
+        }
+
+        async function deleteNetwork(docId) {
+            if (!confirm("Are you sure you want to delete this Network/Service provider?")) return;
+            await db.collection("networks").doc(docId).delete();
+            alert("Network deleted successfully!");
         }
 
         function calculateAll() {
             const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
             
-            // ACCORDING TO WAKALA ACCOUNTING STANDARDS & PDF SPECIFICATIONS:
-            // Running Money Position = Initial Capital + Total Historical Commissions - Total Historical Expenses
             const totalHistoricalCommissions = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
             const totalHistoricalExpenses = historicalLogs.reduce((sum, l) => sum + Number(l.expenses || 0), 0);
             const todayCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-            // True Running Ledger Money Position matching PDF exactly:
             const runningMoneyPosition = totalPersistentCapital + totalHistoricalCommissions - totalHistoricalExpenses + todayCommission - todayExpenses;
             const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + (todayCommission - todayExpenses);
 
@@ -735,7 +755,6 @@
             document.getElementById('owner-position').innerText = runningMoneyPosition.toLocaleString();
             document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
 
-            // Daily Variance = Net Daily Earnings (Today Commission - Today Expenses)
             const todayNetVariance = todayCommission - todayExpenses;
             const varianceElem = document.getElementById('owner-position-change');
             if (varianceElem) {
@@ -1054,8 +1073,20 @@
             dailyReport += `• Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
             dailyReport += `• Money Position: TZS ${computedMoneyPosition.toLocaleString()}\n`;
 
-            const recipientPhone = currentUser && currentUser.phone ? currentUser.phone : SUPER_ADMIN_PHONE;
-            sendWhatsAppMessage(recipientPhone, dailyReport);
+            const recipientPhones = new Set();
+            if (currentUser && currentUser.phone) recipientPhones.add(currentUser.phone);
+
+            accounts.forEach(acc => {
+                if ((acc.role === 'OWNER' || acc.role === 'ADMIN') && acc.phone) {
+                    recipientPhones.add(acc.phone);
+                }
+            });
+
+            if (recipientPhones.size === 0) recipientPhones.add(SUPER_ADMIN_PHONE);
+
+            recipientPhones.forEach(phoneNum => {
+                sendWhatsAppMessage(phoneNum, dailyReport);
+            });
 
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
@@ -1105,3 +1136,4 @@
     </script>
 </body>
 </html>
+
