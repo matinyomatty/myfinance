@@ -15,7 +15,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* Mobile Touch & Scroll Optimizations */
         button, input, select { touch-action: manipulation; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -535,7 +534,7 @@
                         { code: 'DRAWER', name: 'Physical Cash Drawer', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'MPESA', name: 'M-Pesa Float', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'AIRTEL', name: 'Airtel Money Float', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
-                        { code: 'LIPA', name: 'Send/Lipa Merchant Float', minFloat: 200000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
+                        { code: 'LIPA', name: 'Send/Lipa Merchant Float', minFloat: 200000, deposits: 0, withdrawals: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
                 }
@@ -734,16 +733,22 @@
         function calculateAll() {
             const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
             
+            // Calculate totals strictly from locked historical logs
             const totalHistoricalCommissions = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
             const totalHistoricalExpenses = historicalLogs.reduce((sum, l) => sum + Number(l.expenses || 0), 0);
-            const todayCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
-            const todayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-
-            // True Accounting Formula: Money Position = Total Float Balances
-            const runningMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
             
-            // Cumulative Net Profit Calculation
-            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + (todayCommission - todayExpenses);
+            // Active shift inputs
+            const selectedDateVal = document.getElementById('session-date-picker')?.value;
+            const isDateLocked = historicalLogs.some(l => l.rawDate === selectedDateVal);
+            
+            const todayCommission = isDateLocked ? 0 : networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const todayExpenses = isDateLocked ? 0 : expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+            // True Accounting Formula for Money Position: Current sum of closing floats minus active pending expenses
+            const runningMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0) - todayExpenses;
+            
+            // Fixed Cumulative Net Profit Calculation (Eliminates double counting)
+            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + todayCommission - todayExpenses;
 
             const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
@@ -772,8 +777,8 @@
             }
 
             document.getElementById('rev-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
-            document.getElementById('rev-comm').innerText = todayCommission.toLocaleString();
-            document.getElementById('rev-exp').innerText = todayExpenses.toLocaleString();
+            document.getElementById('rev-comm').innerText = (isDateLocked ? networks.reduce((sum, n) => sum + Number(n.commission || 0), 0) : todayCommission).toLocaleString();
+            document.getElementById('rev-exp').innerText = (isDateLocked ? expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) : todayExpenses).toLocaleString();
         }
 
         function populateDropdowns() {
@@ -865,15 +870,13 @@
             const totalVol = historicalLogs.reduce((acc, l) => acc + Number(l.volume || 0), 0);
             const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.commission || 0), 0);
             const totalExp = historicalLogs.reduce((acc, l) => acc + Number(l.expenses || 0), 0);
-            const todayComm = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
-            const todayExp = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-            const netProfit = (totalComm - totalExp) + (todayComm - todayExp);
+            const netProfit = totalComm - totalExp;
             const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
             
             let reply = "";
 
             if(q.includes("profit") || q.includes("net")) {
-                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Historical Net: TZS ${(totalComm - totalExp).toLocaleString()} + Today's Active Net: TZS ${(todayComm - todayExp).toLocaleString()}).`;
+                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Historical Net Profit).`;
             } else if(q.includes("volume") || q.includes("turnover")) {
                 reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
             } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
@@ -1099,8 +1102,9 @@
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const totalVolume = totalDeposits + totalWithdrawals;
 
-            const computedMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
+            const computedMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0) - totalExpenses;
 
+            // 1. Commit Shift Closure
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
                 volume: totalVolume,
@@ -1109,6 +1113,17 @@
                 moneyPosition: computedMoneyPosition,
                 submittedBy: currentUser ? currentUser.name : 'Agent'
             });
+
+            // 2. Reset Live Input Counters (Deposits, Withdrawals, Expenses, Commissions) for the next shift
+            const batch = db.batch();
+            networks.forEach(n => {
+                const ref = db.collection("networks").doc(n.id);
+                batch.update(ref, { deposits: 0, withdrawals: 0, commission: 0 });
+            });
+            expenses.forEach(e => {
+                batch.delete(db.collection("expenses").doc(e.id));
+            });
+            await batch.commit();
 
             let dailyReport = `📊 *WAKALA PRO - DAILY CLOSING REPORT*\n`;
             dailyReport += `📅 *Date:* ${selectedDateVal}\n`;
