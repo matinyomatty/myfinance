@@ -3,26 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wakala Pro - Standard Ledger Edition</title>
+    <title>Wakala Pro - Accounting Standard Edition</title>
+    
+    <!-- Tailwind CSS Framework CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase Cloud SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <!-- PDF Generation Libraries -->
+    <!-- Client-Side PDF Generation Engines -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        button, input, select { touch-action: manipulation; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Touch and scroll behavior optimization */
+        button, input, select { 
+            touch-action: manipulation; 
+        }
+        .no-scrollbar::-webkit-scrollbar { 
+            display: none; 
+        }
+        .no-scrollbar { 
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+        }
+        .custom-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-24">
 
-    <!-- LOGIN MODULE -->
+    <!-- FIREBASE INITIALIZATION & WHATSAPP DISPATCH SERVICE -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
+            authDomain: "wakalapro-4c16e.firebaseapp.com",
+            projectId: "wakalapro-4c16e",
+            storageBucket: "wakalapro-4c16e.firebasestorage.app",
+            messagingSenderId: "839902634063",
+            appId: "1:839902634063:web:dc78fdc4aaa13918c14a3a",
+            measurementId: "G-3CDSLNMD5M"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        const CALLMEBOT_DIRECTORY = {
+            "255712897863": "8390915",
+            "255622537585": "8037254",
+            "255676221903": "1530037"
+        };
+
+        const SUPER_ADMIN_PHONE = "255712897863";
+
+        async function sendWhatsAppMessage(phoneNumber, message) {
+            const cleanedPhone = phoneNumber ? phoneNumber.replace(/[^0-9]/g, '') : SUPER_ADMIN_PHONE;
+            const apiKey = CALLMEBOT_DIRECTORY[cleanedPhone] || CALLMEBOT_DIRECTORY[SUPER_ADMIN_PHONE];
+            const targetPhone = CALLMEBOT_DIRECTORY[cleanedPhone] ? cleanedPhone : SUPER_ADMIN_PHONE;
+            const encodedText = encodeURIComponent(message);
+            const apiUrl = `https://api.callmebot.com/whatsapp.php?phone=${targetPhone}&text=${encodedText}&apikey=${apiKey}`;
+
+            try {
+                await fetch(apiUrl, { mode: 'no-cors' });
+            } catch (err) {
+                const img = new Image();
+                img.src = apiUrl;
+            }
+        }
+    </script>
+
+    <!-- AUTHENTICATION MODULE -->
     <div id="view-login" class="min-h-screen w-full flex items-center justify-center p-4 bg-slate-900">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-700 max-w-md w-full p-6 space-y-5">
             <div class="text-center space-y-1">
@@ -53,7 +108,7 @@
         </div>
     </div>
 
-    <!-- MAIN APP DASHBOARD -->
+    <!-- MAIN APP DASHBOARD VIEW -->
     <div id="view-app" class="hidden min-h-screen w-full flex flex-col">
         <header class="bg-slate-900 text-white px-3 py-2.5 sticky top-0 shadow-md shrink-0 w-full z-40">
             <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
@@ -67,7 +122,7 @@
                     </div>
                 </div>
 
-                <div id="admin-view-switcher" class="flex bg-slate-800 p-0.5 rounded-xl border border-slate-700 gap-0.5 shadow-inner">
+                <div id="admin-view-switcher" class="hidden flex bg-slate-800 p-0.5 rounded-xl border border-slate-700 gap-0.5 shadow-inner">
                     <button onclick="switchAdminTab('OWNER')" id="tab-btn-owner" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition">Owner View</button>
                     <button onclick="switchAdminTab('AGENT')" id="tab-btn-agent" class="px-2.5 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white transition">Agent View</button>
                 </div>
@@ -78,29 +133,40 @@
                     </button>
                     
                     <div class="text-right hidden sm:block">
-                        <p class="text-xs font-bold text-white leading-tight" id="user-display-name">Owner</p>
+                        <p class="text-xs font-bold text-white leading-tight" id="user-display-name">User Name</p>
                         <p class="text-[9px] text-slate-400" id="user-display-branch">Role: OWNER</p>
                     </div>
+
+                    <button onclick="openProfileModal()" class="h-9 px-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
+                        👤 <span class="hidden sm:inline">Profile</span>
+                    </button>
                 </div>
             </div>
         </header>
 
         <main class="flex-1 p-2 sm:p-4 space-y-3 max-w-7xl w-full mx-auto">
 
-            <!-- AGENT VIEW PANEL -->
+            <!-- AGENT SUBMISSION PANEL -->
             <div id="view-agent" class="space-y-3 hidden">
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900">Agent Shift Submissions</h2>
                         <div class="flex items-center gap-2 mt-1">
                             <label class="text-[11px] text-slate-500 font-semibold">Closure Date:</label>
-                            <input type="date" id="session-date-picker" class="text-[11px] font-bold text-slate-800 border rounded-lg px-2 py-1 bg-slate-50 border-slate-300 focus:outline-none focus:border-emerald-500">
+                            <input type="date" id="session-date-picker" onchange="checkDateLockStatus(this.value)" class="text-[11px] font-bold text-slate-800 border rounded-lg px-2 py-1 bg-slate-50 border-slate-300 focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
-                    <span id="session-badge" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">SESSION OPEN</span>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <button onclick="openUpdateRequestModal()" class="h-9 px-3 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Balance Adjustment</button>
+                        <span id="session-badge" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">SESSION OPEN</span>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div id="lock-warning-banner" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-2xl text-[11px] text-rose-800 font-bold">
+                    🔒 Date entry already exists. Resubmitting will update records.
+                </div>
+
+                <div id="agent-form-container" class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:col-span-1">
                         <button onclick="setStep(1)" id="step-btn-1" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition">1. Balances</button>
                         <button onclick="setStep(2)" id="step-btn-2" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">2. Expenses</button>
@@ -110,7 +176,7 @@
                     <div class="md:col-span-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
                         <!-- Step 1 -->
                         <div id="step-1" class="space-y-3">
-                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">1. Network Shift Metrics & Commissions</h3>
+                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">1. Network & Cash Drawer Closing Balances</h3>
                             <div id="network-inputs-container" class="space-y-2.5"></div>
                             <button onclick="setStep(2)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Expenses →</button>
                         </div>
@@ -148,31 +214,54 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="agent-success" class="bg-white p-6 rounded-2xl border border-slate-200 text-center space-y-3 hidden shadow-sm">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black shadow-inner">✓</div>
+                    <h3 class="text-lg font-black text-slate-900">Session Synced & Locked</h3>
+                    <p class="text-slate-500 text-xs max-w-md mx-auto">Realtime update completed across all connected devices.</p>
+                </div>
             </div>
 
-            <!-- OWNER / ADMIN VIEW PANEL -->
-            <div id="view-owner" class="space-y-3">
+            <!-- OWNER DASHBOARD PANEL -->
+            <div id="view-owner" class="space-y-3 hidden">
                 <div class="space-y-2.5">
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
                         <h2 class="text-sm font-bold text-slate-900">Owner Dashboard</h2>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="generateMonthlyPDF()" class="h-10 px-4 bg-rose-600 text-white font-bold rounded-xl text-[11px] hover:bg-rose-700 shadow-sm transition flex items-center justify-center gap-1">📄 Export PDF Audit Report</button>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                            <button onclick="generateMonthlyPDF()" class="h-10 bg-rose-600 text-white font-bold rounded-xl text-[11px] hover:bg-rose-700 shadow-sm transition flex items-center justify-center gap-1">📄 Monthly PDF</button>
+                            <button onclick="resetAllBalancesAndZeroOut()" class="h-10 bg-amber-600 text-white font-bold rounded-xl text-[11px] hover:bg-amber-700 shadow-sm transition flex items-center justify-center gap-1">🔄 Zero Out Data</button>
+                            <button onclick="openAgentModal()" class="h-10 bg-blue-600 text-white font-bold rounded-xl text-[11px] hover:bg-blue-700 shadow-sm transition flex items-center justify-center gap-1">+ Account</button>
+                            <button onclick="openCapitalModal()" class="h-10 bg-emerald-600 text-white font-bold rounded-xl text-[11px] hover:bg-emerald-700 shadow-sm transition flex items-center justify-center gap-1">+ Capital</button>
+                            <button onclick="openNetworkModal()" class="h-10 bg-slate-900 text-white font-bold rounded-xl text-[11px] hover:bg-slate-800 shadow-sm col-span-2 sm:col-span-1 flex items-center justify-center gap-1">+ Network</button>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit</p>
-                            <p class="text-base font-black text-emerald-600 mt-0.5 truncate">TZS <span id="owner-profit">0</span></p>
+                            <p class="text-xs sm:text-base font-black text-emerald-600 mt-0.5 truncate">TZS <span id="owner-profit">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
-                            <p class="text-base font-black text-slate-900 mt-0.5 truncate">TZS <span id="owner-position">0</span></p>
+                            <p class="text-xs sm:text-base font-black text-slate-900 mt-0.5 truncate">TZS <span id="owner-position">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Capital Baseline</p>
-                            <p class="text-base font-black text-blue-600 mt-0.5 truncate">TZS <span id="owner-capital">0</span></p>
+                            <p class="text-xs sm:text-base font-black text-blue-600 mt-0.5 truncate">TZS <span id="owner-capital">0</span></p>
                         </div>
+                        <div id="position-change-card" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Variance vs Yesterday</p>
+                            <p class="text-xs sm:text-base font-black mt-0.5 truncate" id="owner-position-change">TZS 0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIRECT ADJUSTMENT LOG SECTION -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Agent Direct Adjustments Log</h3>
+                    <div id="update-requests-list" class="space-y-1.5">
+                        <p class="text-xs text-slate-400 italic">No recent adjustments logged.</p>
                     </div>
                 </div>
 
@@ -180,7 +269,7 @@
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <div class="flex justify-between items-center border-b pb-1.5 border-slate-100">
                         <h3 class="font-bold text-slate-900 text-xs">Daily Shift Submissions Log</h3>
-                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">Cloud Sync Active</span>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">Cloud Sync</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-x-auto">
                         <table class="w-full text-left text-xs min-w-[500px]">
@@ -200,82 +289,273 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- USER ACCOUNTS TABLE -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">System Access & Accounts</h3>
+                    <div class="border border-slate-200 rounded-xl overflow-x-auto">
+                        <table class="w-full text-left text-xs min-w-[500px]">
+                            <thead class="bg-slate-100 text-slate-600 border-b">
+                                <tr>
+                                    <th class="p-2.5">Name</th>
+                                    <th class="p-2.5">Username</th>
+                                    <th class="p-2.5">Role</th>
+                                    <th class="p-2.5">Branch</th>
+                                    <th class="p-2.5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agents-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- NETWORK & CASH BALANCES -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Network Float & Cash Drawer Balances</h3>
+                    <div id="owner-float-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+                </div>
             </div>
         </main>
     </div>
 
+    <!-- AI FINANCIAL ASSISTANT BOT WIDGET -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button onclick="toggleAiModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3.5 rounded-full shadow-2xl flex items-center gap-2 border-2 border-white transition transform hover:scale-105">
+            <span class="text-xl">🤖</span>
+            <span class="text-xs hidden sm:inline">AI Financial Assistant</span>
+        </button>
+    </div>
+
+    <div id="modal-ai-assistant" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden z-50">
+        <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full h-[520px] max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-900 flex items-center justify-center font-black text-sm">AI</div>
+                    <div>
+                        <h3 class="text-xs font-bold">Wakala Analytics AI</h3>
+                        <p class="text-[9px] text-emerald-400">Live Financial Query Engine</p>
+                    </div>
+                </div>
+                <button onclick="toggleAiModal()" class="text-slate-400 hover:text-white font-bold text-sm px-2">✕</button>
+            </div>
+
+            <div id="ai-messages-container" class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 space-y-1.5 shadow-sm">
+                    <p class="font-bold text-emerald-600 text-[11px]">👋 Hello! I am your Wakala AI Financial Assistant.</p>
+                    <p class="text-[11px] leading-relaxed">Ask me anything about your current money positions, agent trends, volume analysis, or total net profit margins!</p>
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-white border-t border-slate-200 flex gap-2">
+                <input type="text" id="ai-input-query" onkeydown="if(event.key==='Enter') sendAiQuery()" placeholder="Ask AI e.g. 'What is our net profit so far?'" class="flex-1 h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <button onclick="sendAiQuery()" class="px-4 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center">Ask</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AGENT DIRECT UPDATE ADJUSTMENT -->
+    <div id="modal-update-request" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-sm">Direct Balance Adjustment</h3>
+            <p class="text-[10px] text-slate-500">Agent can adjust balances directly without approval.</p>
+            <div class="space-y-2.5">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Target Provider</label>
+                    <select id="req-target" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Adjusted New Balance (TZS)</label>
+                    <input type="number" id="req-amount" placeholder="0" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 mt-0.5 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Reason / Note</label>
+                    <input type="text" id="req-note" placeholder="e.g. Cash drawer reconciliation correction" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs mt-0.5 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-2.5">
+                <button onclick="closeUpdateRequestModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="submitUpdateRequest()" class="h-10 px-3.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Apply Adjustment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CAPITAL INJECTION -->
+    <div id="modal-capital" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-sm">Adjust Capital Baseline</h3>
+            <div class="space-y-2.5">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Target Channel</label>
+                    <select id="cap-target" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Amount (TZS)</label>
+                    <input type="number" id="cap-amount" placeholder="0" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 mt-0.5 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-600 uppercase">Description / Source</label>
+                    <input type="text" id="cap-note" placeholder="e.g. Additional Capital Injection" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs mt-0.5 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-2.5">
+                <button onclick="closeCapitalModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveCapitalInjection()" class="h-10 px-3.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Capital</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD NETWORK PROVIDER -->
+    <div id="modal-network" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-sm">Add Network / Service Provider</h3>
+            <div class="space-y-2.5">
+                <input type="text" id="net-code" placeholder="Code (e.g. HALOPESA)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-name" placeholder="Name (e.g. HaloPesa Float)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="number" id="net-min" placeholder="Minimum Float Threshold (TZS)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-2.5">
+                <button onclick="closeNetworkModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveNewNetwork()" class="h-10 px-3.5 bg-slate-900 text-white font-bold rounded-xl text-xs shadow-md hover:bg-slate-800">Add Provider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT USER ACCOUNT -->
+    <div id="modal-edit-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-2.5 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-sm">Edit User Account</h3>
+            <input type="hidden" id="edit-user-docid">
+            <div>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Display Name</label>
+                <input type="text" id="edit-user-name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Username</label>
+                <input type="text" id="edit-user-username" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-bold text-blue-700 mt-0.5 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Role Access</label>
+                <select id="edit-user-role" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 bg-slate-50 focus:outline-none focus:border-emerald-500">
+                    <option value="AGENT">AGENT</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="OWNER">OWNER</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Branch Name</label>
+                <input type="text" id="edit-user-branch" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-600 uppercase">Phone Number</label>
+                <input type="tel" id="edit-user-phone" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-2.5">
+                <button onclick="closeEditUserModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveUserEditChanges()" class="h-10 px-3.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE NEW ACCOUNT -->
+    <div id="modal-agent" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-2.5 shadow-2xl">
+            <h3 class="font-bold text-slate-900 text-sm">Create New System Account</h3>
+            <div class="space-y-2">
+                <input type="text" id="new-agent-name" placeholder="Full Name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="new-agent-username" placeholder="Username (Login ID)" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500">
+                <select id="new-agent-role" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs bg-slate-50 font-semibold focus:outline-none focus:border-emerald-500">
+                    <option value="AGENT">AGENT</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="OWNER">OWNER</option>
+                </select>
+                <input type="tel" id="new-agent-phone" placeholder="Phone Number (+255...)" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="new-agent-branch" placeholder="Branch Location Name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="password" id="new-agent-password" inputmode="numeric" pattern="[0-9]*" placeholder="Initial Numeric PIN" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-2.5">
+                <button onclick="closeAgentModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveNewAgentAccount()" class="h-10 px-3.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: USER PROFILE & LOGOUT -->
+    <div id="modal-profile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-sm w-full space-y-3 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                <h3 class="font-bold text-slate-900 text-sm">User Profile</h3>
+                <span id="prof-role-badge" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-slate-100 text-slate-800 border border-slate-200">ROLE</span>
+            </div>
+            <div class="space-y-2">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Display Name</label>
+                    <input type="text" id="prof-name" placeholder="Full Name" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">New Security PIN</label>
+                    <input type="password" id="prof-pin" placeholder="Update PIN" class="w-full h-10 p-2 border border-slate-300 rounded-xl text-xs font-semibold mt-0.5 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="pt-1">
+                <button onclick="handleLogout()" class="w-full h-10 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                    🚪 Log Out / Sign Out
+                </button>
+            </div>
+
+            <div class="flex justify-end gap-2 border-t pt-2.5">
+                <button onclick="closeProfileModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button onclick="saveProfileChanges()" class="h-10 px-3.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-emerald-700">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC ENGINE -->
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBhC-j4zQ_1bktlchzTwbZz7iYOY7iDWow",
-            authDomain: "wakalapro-4c16e.firebaseapp.com",
-            projectId: "wakalapro-4c16e",
-            storageBucket: "wakalapro-4c16e.firebasestorage.app",
-            messagingSenderId: "839902634063",
-            appId: "1:839902634063:web:dc78fdc4aaa13918c14a3a",
-            measurementId: "G-3CDSLNMD5M"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
-
-        let currentUser = { name: "Owner Admin", role: "OWNER" };
+        let currentUser = null;
+        let accounts = [];
         let networks = [];
         let expenses = [];
-        let capitalLedger = [{ amount: 10000000 }];
+        let capitalLedger = [];
         let historicalLogs = [];
+        let updateRequests = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('session-date-picker').value = todayStr;
-            attachRealtimeListeners();
-            showAppView();
         });
 
-        function handleLogin(e) {
-            e.preventDefault();
-            showAppView();
-        }
-
-        function showAppView() {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-app').classList.remove('hidden');
-        }
-
-        function manualRefreshData() { 
-            window.location.reload(); 
-        }
-
-        function switchAdminTab(tab) {
-            if (tab === 'OWNER') {
-                document.getElementById('view-owner').classList.remove('hidden');
-                document.getElementById('view-agent').classList.add('hidden');
-                document.getElementById('tab-btn-owner').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition";
-                document.getElementById('tab-btn-agent').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white transition";
-            } else {
-                document.getElementById('view-owner').classList.add('hidden');
-                document.getElementById('view-agent').classList.remove('hidden');
-                document.getElementById('tab-btn-agent').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition";
-                document.getElementById('tab-btn-owner').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white transition";
-            }
-        }
-
-        function setStep(stepNum) {
-            [1, 2, 3].forEach(s => {
-                document.getElementById(`step-${s}`).classList.add('hidden');
-                document.getElementById(`step-btn-${s}`).className = "flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition";
-            });
-            document.getElementById(`step-${stepNum}`).classList.remove('hidden');
-            document.getElementById(`step-btn-${stepNum}`).className = "flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition";
-            updateReviewTotals();
+        function manualRefreshData() {
+            window.location.reload();
         }
 
         function attachRealtimeListeners() {
+            db.collection("accounts").onSnapshot(snapshot => {
+                accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (accounts.length === 0) {
+                    db.collection("accounts").doc("superadmin").set({ name: "Super Admin", username: "superadmin", password: "123", role: "OWNER", phone: "255712897863", branch: "HQ" });
+                }
+                if (currentUser) {
+                    const updatedSelf = accounts.find(a => a.id === currentUser.id);
+                    if (updatedSelf) currentUser = updatedSelf;
+                }
+                renderUsersTable();
+            });
+
             db.collection("networks").onSnapshot(snapshot => {
                 networks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (networks.length === 0) {
+                    const defaults = [
+                        { code: 'DRAWER', name: 'Physical Cash Drawer', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'MPESA', name: 'M-Pesa Float', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'AIRTEL', name: 'Airtel Money Float', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'LIPA', name: 'Send/Lipa Merchant Float', minFloat: 200000, deposits: 0, withdrawals: 0, commission: 0 }
+                    ];
+                    defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
+                }
                 renderNetworkInputs();
+                renderOwnerFloats();
+                populateDropdowns();
                 calculateAll();
             });
 
@@ -285,124 +565,555 @@
                 calculateAll();
             });
 
+            db.collection("capitalLedger").onSnapshot(snapshot => {
+                capitalLedger = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                calculateAll();
+            });
+
             db.collection("dailySummaries").orderBy("rawDate", "asc").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAdminClosureTable();
                 calculateAll();
+                checkDateLockStatus(document.getElementById('session-date-picker').value);
             });
+
+            db.collection("updateRequests").onSnapshot(snapshot => {
+                updateRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderUpdateRequests();
+            });
+        }
+
+        attachRealtimeListeners();
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value.trim();
+            const p = document.getElementById('login-password').value.trim();
+            const foundUser = accounts.find(acc => acc.username === u && acc.password === p);
+
+            if(!foundUser) {
+                document.getElementById('login-error').classList.remove('hidden');
+                return;
+            }
+
+            currentUser = foundUser;
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-app').classList.remove('hidden');
+
+            document.getElementById('user-display-name').innerText = currentUser.name;
+            document.getElementById('user-display-branch').innerText = `Role: ${currentUser.role}`;
+
+            if(currentUser.role === 'ADMIN' || currentUser.role === 'OWNER') {
+                document.getElementById('admin-view-switcher').classList.remove('hidden');
+                switchAdminTab('OWNER');
+            } else {
+                document.getElementById('admin-view-switcher').classList.add('hidden');
+                document.getElementById('view-agent').classList.remove('hidden');
+                document.getElementById('view-owner').classList.add('hidden');
+            }
+
+            checkDateLockStatus(document.getElementById('session-date-picker').value);
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            closeProfileModal();
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('view-app').classList.add('hidden');
+            document.getElementById('view-login').classList.remove('hidden');
+        }
+
+        function switchAdminTab(targetView) {
+            if(targetView === 'OWNER') {
+                document.getElementById('view-owner').classList.remove('hidden');
+                document.getElementById('view-agent').classList.add('hidden');
+                document.getElementById('tab-btn-owner').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition";
+                document.getElementById('tab-btn-agent').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white transition";
+            } else {
+                document.getElementById('view-agent').classList.remove('hidden');
+                document.getElementById('view-owner').classList.add('hidden');
+                document.getElementById('tab-btn-agent').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition";
+                document.getElementById('tab-btn-owner').className = "px-2.5 py-1 text-[11px] font-bold rounded-lg text-slate-300 hover:text-white transition";
+            }
+        }
+
+        function checkDateLockStatus(selectedDate) {
+            const existingClosure = historicalLogs.find(l => l.rawDate === selectedDate);
+            const lockBanner = document.getElementById('lock-warning-banner');
+            const submitBtn = document.getElementById('btn-submit-close');
+
+            document.getElementById('agent-success').classList.add('hidden');
+            document.getElementById('agent-form-container').classList.remove('hidden');
+            setStep(1);
+
+            if (existingClosure) {
+                const sessionBadge = document.getElementById('session-badge');
+                if (sessionBadge) {
+                    sessionBadge.innerText = "SESSION LOCKED";
+                    sessionBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200";
+                }
+                lockBanner.classList.remove('hidden');
+                submitBtn.innerText = "Update Daily Shift Entry";
+            } else {
+                const sessionBadge = document.getElementById('session-badge');
+                if (sessionBadge) {
+                    sessionBadge.innerText = "SESSION OPEN";
+                    sessionBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
+                }
+                lockBanner.classList.add('hidden');
+                submitBtn.innerText = "Sync & Lock Daily Closing";
+            }
         }
 
         function renderNetworkInputs() {
             const container = document.getElementById('network-inputs-container');
-            if (networks.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400">No active networks configured.</p>`;
-                return;
-            }
+            if(!container) return;
             container.innerHTML = networks.map(n => `
-                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                    <p class="font-bold text-xs text-slate-800">${n.name || 'Network'}</p>
-                    <div class="grid grid-cols-3 gap-2">
+                <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 space-y-2">
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
+                        <span class="font-bold text-xs text-slate-800">${n.name} (${n.code})</span>
+                        <span class="text-[9px] text-slate-500 font-bold">Min Target: TZS ${Number(n.minFloat || 0).toLocaleString()}</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         <div>
-                            <label class="text-[10px] text-slate-500 font-bold uppercase">Volume</label>
-                            <input type="number" value="${n.volume || 0}" onchange="updateNetworkVal('${n.id}', 'volume', this.value)" class="w-full h-9 p-2 border border-slate-300 rounded-lg text-xs font-semibold">
+                            <label class="text-[9px] text-slate-500 font-bold">Deposits (TZS)</label>
+                            <input type="number" value="${n.deposits || 0}" onchange="updateNetworkVal('${n.id}', 'deposits', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
-                            <label class="text-[10px] text-slate-500 font-bold uppercase">Commission</label>
-                            <input type="number" value="${n.commission || 0}" onchange="updateNetworkVal('${n.id}', 'commission', this.value)" class="w-full h-9 p-2 border border-slate-300 rounded-lg text-xs font-semibold">
+                            <label class="text-[9px] text-slate-500 font-bold">Withdrawals (TZS)</label>
+                            <input type="number" value="${n.withdrawals || 0}" onchange="updateNetworkVal('${n.id}', 'withdrawals', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
-                            <label class="text-[10px] text-slate-500 font-bold uppercase">Float</label>
-                            <input type="number" value="${n.closingFloat || 0}" onchange="updateNetworkVal('${n.id}', 'closingFloat', this.value)" class="w-full h-9 p-2 border border-slate-300 rounded-lg text-xs font-semibold">
+                            <label class="text-[9px] text-slate-500 font-bold">Closing Balance (TZS)</label>
+                            <input type="number" value="${n.closingFloat || 0}" onchange="updateNetworkVal('${n.id}', 'closingFloat', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="text-[9px] text-slate-500 font-bold">Commission/Fees (TZS)</label>
+                            <input type="number" value="${n.commission || 0}" onchange="updateNetworkVal('${n.id}', 'commission', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        async function updateNetworkVal(id, field, val) {
-            await db.collection("networks").doc(id).update({ [field]: Number(val) });
+        async function updateNetworkVal(id, field, value) {
+            const numericVal = Number(value) || 0;
+            await db.collection("networks").doc(id).update({ [field]: numericVal });
         }
 
-        async function addExpense() {
-            const amount = Number(document.getElementById('exp-amount').value);
-            const note = document.getElementById('exp-note').value;
-            if (!amount || !note) return;
+        function renderOwnerFloats() {
+            const grid = document.getElementById('owner-float-grid');
+            if(!grid) return;
+            grid.innerHTML = networks.map(n => `
+                <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-xs text-slate-800">${n.name} (${n.code})</span>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
+                            ${Number(n.closingFloat || 0) < Number(n.minFloat || 0) ? 'Low Balance' : 'Healthy'}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 text-xs">
+                        <span class="text-slate-500 font-medium">Closing Balance:</span>
+                        <span class="font-black text-slate-900">TZS ${Number(n.closingFloat || 0).toLocaleString()}</span>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 mt-2">
+                        <button onclick="openEditNetworkModal('${n.id}')" class="text-[10px] font-bold text-blue-600 hover:underline">Edit</button>
+                        <button onclick="deleteNetwork('${n.id}')" class="text-[10px] font-bold text-rose-600 hover:underline">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-            await db.collection("expenses").add({ amount, note });
-            document.getElementById('exp-amount').value = '';
-            document.getElementById('exp-note').value = '';
+        function openEditNetworkModal(docId) {
+            const net = networks.find(n => n.id === docId);
+            if (!net) return;
+            const newName = prompt("Enter new Network/Service Name:", net.name);
+            if (newName === null || newName.trim() === "") return;
+            const newMin = prompt("Enter minimum float threshold (TZS):", net.minFloat || 0);
+
+            db.collection("networks").doc(docId).update({
+                name: newName.trim(),
+                minFloat: Number(newMin) || 0
+            }).then(() => alert("Network updated successfully!"));
+        }
+
+        async function deleteNetwork(docId) {
+            if (!confirm("Are you sure you want to delete this Network/Service provider?")) return;
+            await db.collection("networks").doc(docId).delete();
+            alert("Network deleted successfully!");
+        }
+
+        function calculateAll() {
+            const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+            
+            const totalHistoricalCommissions = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
+            const totalHistoricalExpenses = historicalLogs.reduce((sum, l) => sum + Number(l.expenses || 0), 0);
+            
+            const selectedDateVal = document.getElementById('session-date-picker')?.value;
+            const isDateLocked = historicalLogs.some(l => l.rawDate === selectedDateVal);
+            
+            const todayCommission = isDateLocked ? 0 : networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const todayExpenses = isDateLocked ? 0 : expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+            const runningMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0) - todayExpenses;
+            
+            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + todayCommission - todayExpenses;
+
+            const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+
+            document.getElementById('owner-capital').innerText = totalPersistentCapital.toLocaleString();
+            document.getElementById('owner-position').innerText = runningMoneyPosition.toLocaleString();
+            document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
+
+            const lastLog = historicalLogs.length > 0 ? historicalLogs[historicalLogs.length - 1] : null;
+            const prevPosition = lastLog ? Number(lastLog.moneyPosition || 0) : totalPersistentCapital;
+            const todayNetVariance = runningMoneyPosition - prevPosition;
+
+            const varianceElem = document.getElementById('owner-position-change');
+            if (varianceElem) {
+                const formattedVar = Math.abs(todayNetVariance).toLocaleString();
+                if (todayNetVariance > 0) {
+                    varianceElem.innerText = `+TZS ${formattedVar}`;
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-emerald-600 truncate";
+                } else if (todayNetVariance < 0) {
+                    varianceElem.innerText = `-TZS ${formattedVar}`;
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-rose-600 truncate";
+                } else {
+                    varianceElem.innerText = `TZS 0`;
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-slate-800 truncate";
+                }
+            }
+
+            document.getElementById('rev-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
+            document.getElementById('rev-comm').innerText = (isDateLocked ? networks.reduce((sum, n) => sum + Number(n.commission || 0), 0) : todayCommission).toLocaleString();
+            document.getElementById('rev-exp').innerText = (isDateLocked ? expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) : todayExpenses).toLocaleString();
+        }
+
+        function populateDropdowns() {
+            const reqSel = document.getElementById('req-target');
+            if(reqSel) {
+                reqSel.innerHTML = networks.map(n => `<option value="${n.code}">${n.name}</option>`).join('');
+            }
+            const capSel = document.getElementById('cap-target');
+            if(capSel) {
+                capSel.innerHTML = networks.map(n => `<option value="${n.code}">${n.name}</option>`).join('');
+            }
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('agents-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = accounts.map(a => `
+                <tr class="border-b border-slate-100">
+                    <td class="p-2.5 font-bold text-slate-800">${a.name}</td>
+                    <td class="p-2.5 font-bold text-blue-700">${a.username}</td>
+                    <td class="p-2.5 font-bold">${a.role}</td>
+                    <td class="p-2.5 text-slate-600">${a.branch || 'Main Branch'}</td>
+                    <td class="p-2.5 text-right flex justify-end gap-2">
+                        <button onclick="openEditUserModal('${a.id}')" class="text-xs font-bold text-blue-600 hover:underline">Edit</button>
+                        <button onclick="deleteAccount('${a.id}')" class="text-xs font-bold text-rose-600 hover:underline">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminClosureTable() {
+            const tbody = document.getElementById('admin-closure-table-body');
+            if(!tbody) return;
+            if (historicalLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = historicalLogs.map(s => `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                    <td class="p-2.5 font-bold text-slate-800">${s.rawDate}</td>
+                    <td class="p-2.5 text-slate-600 font-medium">${s.submittedBy || 'Agent'}</td>
+                    <td class="p-2.5 text-right font-semibold">TZS ${Number(s.volume || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(s.commission || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(s.expenses || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-black text-slate-900">TZS ${Number(s.moneyPosition || 0).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderUpdateRequests() {
+            const container = document.getElementById('update-requests-list');
+            if(!container) return;
+            if(updateRequests.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic">No recent adjustments logged.</p>`;
+                return;
+            }
+            container.innerHTML = updateRequests.map(r => `
+                <div class="p-2.5 border border-slate-200 rounded-xl bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                    <div>
+                        <span class="font-bold text-slate-800">${r.requestedBy}</span> adjusted <span class="font-bold text-blue-600">${r.target}</span> to 
+                        <span class="font-black text-slate-900">TZS ${Number(r.amount || 0).toLocaleString()}</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Reason: ${r.note || 'No note provided'}</p>
+                    </div>
+                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-lg text-[10px] font-bold">Applied</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleAiModal() {
+            document.getElementById('modal-ai-assistant').classList.toggle('hidden');
+        }
+
+        function sendAiQuery() {
+            const input = document.getElementById('ai-input-query');
+            const q = input.value.trim().toLowerCase();
+            if(!q) return;
+
+            const chat = document.getElementById('ai-messages-container');
+            
+            chat.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-emerald-600 text-white p-2.5 rounded-xl max-w-[80%] font-medium">${input.value}</div>
+                </div>
+            `;
+            
+            input.value = '';
+
+            const totalVol = historicalLogs.reduce((acc, l) => acc + Number(l.volume || 0), 0);
+            const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.commission || 0), 0);
+            const totalExp = historicalLogs.reduce((acc, l) => acc + Number(l.expenses || 0), 0);
+            const netProfit = totalComm - totalExp;
+            const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
+            
+            let reply = "";
+
+            if(q.includes("profit") || q.includes("net")) {
+                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Historical Net Profit).`;
+            } else if(q.includes("volume") || q.includes("turnover")) {
+                reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
+            } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
+                reply = `💰 **Current Money Position:**\nTotal liquid float and cash across all channels is **TZS ${currPosition.toLocaleString()}**.`;
+            } else if(q.includes("agent") || q.includes("branch")) {
+                const agentStats = {};
+                historicalLogs.forEach(l => {
+                    const agent = l.submittedBy || 'Unknown';
+                    agentStats[agent] = (agentStats[agent] || 0) + Number(l.volume || 0);
+                });
+                const topAgent = Object.keys(agentStats).length > 0 ? Object.keys(agentStats).reduce((a, b) => agentStats[a] > agentStats[b] ? a : b) : "N/A";
+                reply = `👤 **Agent Activity Analysis:**\nMost active agent by overall volume is **${topAgent}**.`;
+            } else {
+                reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit:** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
+            }
+
+            chat.innerHTML += `
+                <div class="flex justify-start">
+                    <div class="bg-white border border-slate-200 p-2.5 rounded-xl max-w-[85%] text-slate-800 space-y-1 shadow-sm leading-relaxed">
+                        ${reply.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function openUpdateRequestModal() { document.getElementById('modal-update-request').classList.remove('hidden'); }
+        function closeUpdateRequestModal() { document.getElementById('modal-update-request').classList.add('hidden'); }
+
+        async function submitUpdateRequest() {
+            const target = document.getElementById('req-target').value;
+            const amt = Number(document.getElementById('req-amount').value);
+            const note = document.getElementById('req-note').value.trim();
+            if(isNaN(amt)) return;
+
+            const netDoc = networks.find(n => n.code === target);
+            if (netDoc) {
+                await db.collection("networks").doc(netDoc.id).update({ closingFloat: amt });
+            }
+
+            await db.collection("updateRequests").add({
+                target: target,
+                amount: amt,
+                note: note,
+                requestedBy: currentUser ? currentUser.name : 'Agent',
+                status: 'Applied Direct',
+                createdAt: new Date()
+            });
+
+            const alertMsg = `⚡ *DIRECT BALANCE ADJUSTMENT*\nBy: ${currentUser ? currentUser.name : 'Agent'}\nTarget: ${target}\nNew Balance: TZS ${amt.toLocaleString()}\nNote: ${note}`;
+            sendWhatsAppMessage(SUPER_ADMIN_PHONE, alertMsg);
+
+            closeUpdateRequestModal();
+            calculateAll();
+            alert("Balance adjusted directly!");
         }
 
         function renderExpenses() {
             const tbody = document.getElementById('expense-table-body');
+            if(!tbody) return;
             tbody.innerHTML = expenses.map(e => `
                 <tr class="border-b border-slate-100">
-                    <td class="p-2.5 text-slate-700">${e.note}</td>
-                    <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(e.amount).toLocaleString()}</td>
-                    <td class="p-2.5 text-center"><button onclick="deleteExpense('${e.id}')" class="text-rose-500 font-bold">✕</button></td>
+                    <td class="p-2.5 font-medium text-slate-700">${e.note}</td>
+                    <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(e.amount || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="deleteExpense('${e.id}')" class="text-xs text-rose-600 font-bold hover:underline">Delete</button>
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        async function addExpense() {
+            const amt = Number(document.getElementById('exp-amount').value);
+            const note = document.getElementById('exp-note').value.trim();
+            if(!amt || !note) return;
+
+            await db.collection("expenses").add({ amount: amt, note: note, createdAt: new Date() });
+            document.getElementById('exp-amount').value = '';
+            document.getElementById('exp-note').value = '';
         }
 
         async function deleteExpense(id) {
             await db.collection("expenses").doc(id).delete();
         }
 
-        function updateReviewTotals() {
-            const totalVol = networks.reduce((s, n) => s + Number(n.volume || 0), 0);
-            const totalComm = networks.reduce((s, n) => s + Number(n.commission || 0), 0);
-            const totalExp = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
-
-            document.getElementById('rev-volume').innerText = totalVol.toLocaleString();
-            document.getElementById('rev-comm').innerText = totalComm.toLocaleString();
-            document.getElementById('rev-exp').innerText = totalExp.toLocaleString();
+        function setStep(step) {
+            for(let i=1; i<=3; i++) {
+                document.getElementById(`step-${i}`).classList.add('hidden');
+                document.getElementById(`step-btn-${i}`).className = "flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition";
+            }
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            document.getElementById(`step-btn-${step}`).className = "flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition";
         }
 
-        function calculateAll() {
-            const capitalBase = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            const totalCommissions = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
-            const totalExpenses = historicalLogs.reduce((sum, l) => sum + Number(l.expenses || 0), 0);
-            
-            // Standard accounting rule implementation
-            const cumulativeProfit = totalCommissions - totalExpenses;
-            const currentMoneyPosition = capitalBase + cumulativeProfit;
+        function openCapitalModal() { document.getElementById('modal-capital').classList.remove('hidden'); }
+        function closeCapitalModal() { document.getElementById('modal-capital').classList.add('hidden'); }
 
-            document.getElementById('owner-capital').innerText = capitalBase.toLocaleString();
-            document.getElementById('owner-profit').innerText = cumulativeProfit.toLocaleString();
-            document.getElementById('owner-position').innerText = currentMoneyPosition.toLocaleString();
-        }
+        async function saveCapitalInjection() {
+            const target = document.getElementById('cap-target').value;
+            const amt = Number(document.getElementById('cap-amount').value);
+            const note = document.getElementById('cap-note').value.trim();
+            if(!amt) return;
 
-        function renderAdminClosureTable() {
-            const tbody = document.getElementById('admin-closure-table-body');
-            if (historicalLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400">No shift submissions recorded yet.</td></tr>`;
-                return;
+            await db.collection("capitalLedger").add({ target, amount: amt, note, createdAt: new Date() });
+            const netDoc = networks.find(n => n.code === target);
+            if (netDoc) {
+                const newFloat = Number(netDoc.closingFloat || 0) + amt;
+                await db.collection("networks").doc(netDoc.id).update({ closingFloat: newFloat });
             }
 
-            tbody.innerHTML = historicalLogs.map(l => `
-                <tr class="border-b border-slate-100 font-medium">
-                    <td class="p-2.5 text-slate-900 font-bold">${l.rawDate}</td>
-                    <td class="p-2.5 text-slate-600">${l.submittedBy || 'Agent'}</td>
-                    <td class="p-2.5 text-right font-semibold">TZS ${Number(l.volume || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(l.commission || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(l.expenses || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-black text-slate-900">TZS ${Number(l.moneyPosition || 0).toLocaleString()}</td>
-                </tr>
-            `).join('');
+            closeCapitalModal();
+            calculateAll();
+        }
+
+        function openNetworkModal() { document.getElementById('modal-network').classList.remove('hidden'); }
+        function closeNetworkModal() { document.getElementById('modal-network').classList.add('hidden'); }
+
+        async function saveNewNetwork() {
+            const code = document.getElementById('net-code').value.trim().toUpperCase();
+            const name = document.getElementById('net-name').value.trim();
+            const min = Number(document.getElementById('net-min').value) || 0;
+            if(!code || !name) return;
+
+            await db.collection("networks").doc(code).set({ code, name, minFloat: min, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 });
+            closeNetworkModal();
+        }
+
+        function openAgentModal() { document.getElementById('modal-agent').classList.remove('hidden'); }
+        function closeAgentModal() { document.getElementById('modal-agent').classList.add('hidden'); }
+
+        async function saveNewAgentAccount() {
+            const name = document.getElementById('new-agent-name').value.trim();
+            const u = document.getElementById('new-agent-username').value.trim();
+            const role = document.getElementById('new-agent-role').value;
+            const phone = document.getElementById('new-agent-phone').value.trim().replace(/[^0-9]/g, '');
+            const branch = document.getElementById('new-agent-branch').value.trim();
+            const p = document.getElementById('new-agent-password').value.trim();
+            if(!name || !u || !p) return;
+
+            await db.collection("accounts").add({ name, username: u, role, phone, branch, password: p });
+            closeAgentModal();
+        }
+
+        function openEditUserModal(docId) {
+            const targetAcc = accounts.find(a => a.id === docId);
+            if (!targetAcc) return;
+            document.getElementById('edit-user-docid').value = targetAcc.id;
+            document.getElementById('edit-user-name').value = targetAcc.name || '';
+            document.getElementById('edit-user-username').value = targetAcc.username || '';
+            document.getElementById('edit-user-role').value = targetAcc.role || 'AGENT';
+            document.getElementById('edit-user-branch').value = targetAcc.branch || '';
+            document.getElementById('edit-user-phone').value = targetAcc.phone || '';
+            document.getElementById('modal-edit-user').classList.remove('hidden');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('modal-edit-user').classList.add('hidden');
+        }
+
+        async function saveUserEditChanges() {
+            const docId = document.getElementById('edit-user-docid').value;
+            if (!docId) return;
+
+            const name = document.getElementById('edit-user-name').value.trim();
+            const username = document.getElementById('edit-user-username').value.trim();
+            const role = document.getElementById('edit-user-role').value;
+            const branch = document.getElementById('edit-user-branch').value.trim();
+            const phone = document.getElementById('edit-user-phone').value.trim();
+
+            await db.collection("accounts").doc(docId).update({ name, username, role, branch, phone });
+            closeEditUserModal();
+        }
+
+        function openProfileModal() {
+            if(!currentUser) return;
+            document.getElementById('prof-name').value = currentUser.name;
+            document.getElementById('prof-role-badge').innerText = currentUser.role;
+            document.getElementById('modal-profile').classList.remove('hidden');
+        }
+
+        function closeProfileModal() { document.getElementById('modal-profile').classList.add('hidden'); }
+
+        async function saveProfileChanges() {
+            const newName = document.getElementById('prof-name').value.trim();
+            const newPin = document.getElementById('prof-pin').value.trim();
+            const updates = {};
+            if(newName) updates.name = newName;
+            if(newPin) updates.password = newPin;
+
+            await db.collection("accounts").doc(currentUser.id).update(updates);
+            closeProfileModal();
+        }
+
+        async function resetAllBalancesAndZeroOut() {
+            if (!confirm("WARNING: Wipe all financial data to zero?")) return;
+
+            const batch = db.batch();
+            networks.forEach(n => {
+                const ref = db.collection("networks").doc(n.id);
+                batch.update(ref, { deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 });
+            });
+            expenses.forEach(e => { batch.delete(db.collection("expenses").doc(e.id)); });
+            capitalLedger.forEach(c => { batch.delete(db.collection("capitalLedger").doc(c.id)); });
+            historicalLogs.forEach(h => { batch.delete(db.collection("dailySummaries").doc(h.id)); });
+
+            await batch.commit();
+            calculateAll();
+            alert("System zeroed out successfully!");
+        }
+
+        async function deleteAccount(docId) {
+            if(!confirm("Are you sure you want to delete this user?")) return;
+            await db.collection("accounts").doc(docId).delete();
         }
 
         async function submitClosing() {
             const selectedDateVal = document.getElementById('session-date-picker').value;
-            const totalVolume = networks.reduce((sum, n) => sum + Number(n.volume || 0), 0);
+
+            const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
             const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+            const totalVolume = totalDeposits + totalWithdrawals;
 
-            const capitalBase = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            const pastCommissions = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
-            const pastExpenses = historicalLogs.reduce((sum, l) => sum + Number(l.expenses || 0), 0);
-            
-            // Accrued snapshot Money Position calculation
-            const computedMoneyPosition = capitalBase + (pastCommissions + totalCommission) - (pastExpenses + totalExpenses);
+            const computedMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0) - totalExpenses;
 
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
@@ -413,26 +1124,58 @@
                 submittedBy: currentUser ? currentUser.name : 'Agent'
             });
 
-            // Flush live operational buffers
             const batch = db.batch();
             networks.forEach(n => {
-                batch.update(db.collection("networks").doc(n.id), { volume: 0, commission: 0, closingFloat: 0 });
+                const ref = db.collection("networks").doc(n.id);
+                batch.update(ref, { deposits: 0, withdrawals: 0, commission: 0 });
             });
             expenses.forEach(e => {
                 batch.delete(db.collection("expenses").doc(e.id));
             });
             await batch.commit();
 
-            alert("Daily Shift Successfully Locked and Synced!");
-            setStep(1);
+            let dailyReport = `📊 *WAKALA PRO - DAILY CLOSING REPORT*\n`;
+            dailyReport += `📅 *Date:* ${selectedDateVal}\n`;
+            dailyReport += `👤 *Submitted By:* ${currentUser ? currentUser.name : 'Agent'}\n\n`;
+            dailyReport += `📈 *SUMMARY*\n`;
+            dailyReport += `• Total Volume: TZS ${totalVolume.toLocaleString()}\n`;
+            dailyReport += `• Commission/Fees: TZS ${totalCommission.toLocaleString()}\n`;
+            dailyReport += `• Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
+            dailyReport += `• Money Position: TZS ${computedMoneyPosition.toLocaleString()}\n`;
+
+            const recipientPhones = new Set();
+            if (currentUser && currentUser.phone) recipientPhones.add(currentUser.phone);
+
+            accounts.forEach(acc => {
+                if ((acc.role === 'OWNER' || acc.role === 'ADMIN') && acc.phone) {
+                    recipientPhones.add(acc.phone);
+                }
+            });
+
+            if (recipientPhones.size === 0) recipientPhones.add(SUPER_ADMIN_PHONE);
+
+            recipientPhones.forEach(phoneNum => {
+                sendWhatsAppMessage(phoneNum, dailyReport);
+            });
+
+            document.getElementById('agent-form-container').classList.add('hidden');
+            document.getElementById('agent-success').classList.remove('hidden');
         }
 
         function generateMonthlyPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            doc.text(`Wakala Pro - Financial Audit Ledger`, 14, 20);
-            const tableRows = historicalLogs.map(s => [
+            const now = new Date();
+            const monthYear = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            doc.setFontSize(16);
+            doc.text(`Wakala Pro - Financial Audit & Ledger`, 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Period: ${monthYear} | Exported: ${now.toLocaleDateString()}`, 14, 27);
+
+            const sortedLogs = [...historicalLogs].sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+
+            const tableRows = sortedLogs.map(s => [
                 s.rawDate,
                 s.submittedBy || 'Agent',
                 `TZS ${Number(s.volume || 0).toLocaleString()}`,
@@ -442,13 +1185,14 @@
             ]);
 
             doc.autoTable({
-                startY: 30,
-                head: [['Date', 'Submitted By', 'Volume', 'Commission', 'Expenses', 'Money Position']],
+                startY: 35,
+                head: [['Closure Date', 'Submitted By', 'Volume', 'Commission / Fees', 'Expenses', 'Money Position']],
                 body: tableRows,
+                theme: 'striped',
                 headStyles: { fillColor: [16, 185, 129] }
             });
 
-            doc.save(`Monthly_Ledger_${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`Wakala_Pro_Monthly_Ledger_${monthYear.replace(/\s+/g, '_')}.pdf`);
         }
     </script>
 </body>
