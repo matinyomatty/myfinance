@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wakala Pro - Accounting Standard Edition</title>
+    <title>Wakala Pro - Remote Accounting & Control Standard</title>
     
     <!-- Tailwind CSS Framework CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,21 +17,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* Touch and scroll behavior optimization */
-        button, input, select { 
-            touch-action: manipulation; 
-        }
-        .no-scrollbar::-webkit-scrollbar { 
-            display: none; 
-        }
-        .no-scrollbar { 
-            -ms-overflow-style: none; 
-            scrollbar-width: none; 
-        }
-        .custom-glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-        }
+        button, input, select { touch-action: manipulation; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen w-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-24">
@@ -83,7 +71,7 @@
             <div class="text-center space-y-1">
                 <div class="w-12 h-12 bg-emerald-500 text-slate-900 font-black rounded-2xl text-2xl flex items-center justify-center mx-auto shadow-lg">W</div>
                 <h1 class="text-2xl font-black text-slate-900 tracking-tight">WAKALA<span class="text-emerald-500">PRO</span></h1>
-                <p class="text-xs text-slate-500 font-medium">Accounting Standard Ledger System</p>
+                <p class="text-xs text-slate-500 font-medium">Remote Financial Governance & Ledger</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -157,7 +145,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                        <button onclick="openUpdateRequestModal()" class="h-9 px-3 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Balance Adjustment</button>
+                        <button onclick="openUpdateRequestModal()" class="h-9 px-3 bg-blue-50 text-blue-700 border border-blue-200 font-bold rounded-xl text-[11px] hover:bg-blue-100 transition">⚡ Request Adjustment</button>
                         <span id="session-badge" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">SESSION OPEN</span>
                     </div>
                 </div>
@@ -170,7 +158,7 @@
                     <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:col-span-1">
                         <button onclick="setStep(1)" id="step-btn-1" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition">1. Balances</button>
                         <button onclick="setStep(2)" id="step-btn-2" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">2. Expenses</button>
-                        <button onclick="setStep(3)" id="step-btn-3" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">3. Review</button>
+                        <button onclick="setStep(3)" id="step-btn-3" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">3. Proof & Lock</button>
                     </div>
 
                     <div class="md:col-span-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -197,17 +185,26 @@
                                     <tbody id="expense-table-body"></tbody>
                                 </table>
                             </div>
-                            <button onclick="setStep(3)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Review →</button>
+                            <button onclick="setStep(3)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Proof & Lock →</button>
                         </div>
 
                         <!-- Step 3 -->
                         <div id="step-3" class="space-y-3 hidden">
-                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Final Review & Lock</h3>
+                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Drawer Photo Proof & Lock Shift</h3>
                             <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
                                 <div class="flex justify-between"><span>Total Activity Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Total Commission / Fees:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-rose-700 font-semibold">Total Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
                             </div>
+
+                            <div class="space-y-1.5 pt-1">
+                                <label class="block text-[11px] font-bold text-slate-700 uppercase">Attach Physical Cash Drawer Photo Proof <span class="text-rose-600">*</span></label>
+                                <input type="file" id="drawer-photo-proof" accept="image/*" onchange="previewDrawerPhoto(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1">
+                                <div id="photo-preview-container" class="hidden mt-2">
+                                    <img id="photo-preview-img" class="h-28 rounded-xl border border-slate-300 object-cover shadow-sm">
+                                </div>
+                            </div>
+
                             <button id="btn-submit-close" onclick="submitClosing()" class="w-full h-12 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition flex items-center justify-center">
                                 Sync & Lock Daily Shift
                             </button>
@@ -218,7 +215,7 @@
                 <div id="agent-success" class="bg-white p-6 rounded-2xl border border-slate-200 text-center space-y-3 hidden shadow-sm">
                     <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black shadow-inner">✓</div>
                     <h3 class="text-lg font-black text-slate-900">Session Synced & Locked</h3>
-                    <p class="text-slate-500 text-xs max-w-md mx-auto">Realtime update completed across all connected devices.</p>
+                    <p class="text-slate-500 text-xs max-w-md mx-auto">Realtime update completed across all connected remote devices.</p>
                 </div>
             </div>
 
@@ -226,14 +223,13 @@
             <div id="view-owner" class="space-y-3 hidden">
                 <div class="space-y-2.5">
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
-                        <h2 class="text-sm font-bold text-slate-900">Owner Dashboard</h2>
+                        <h2 class="text-sm font-bold text-slate-900">Owner Remote Governance Center</h2>
                         
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                             <button onclick="generateMonthlyPDF()" class="h-10 bg-rose-600 text-white font-bold rounded-xl text-[11px] hover:bg-rose-700 shadow-sm transition flex items-center justify-center gap-1">📄 Monthly PDF</button>
-                            <button onclick="resetAllBalancesAndZeroOut()" class="h-10 bg-amber-600 text-white font-bold rounded-xl text-[11px] hover:bg-amber-700 shadow-sm transition flex items-center justify-center gap-1">🔄 Zero Out Data</button>
                             <button onclick="openAgentModal()" class="h-10 bg-blue-600 text-white font-bold rounded-xl text-[11px] hover:bg-blue-700 shadow-sm transition flex items-center justify-center gap-1">+ Account</button>
                             <button onclick="openCapitalModal()" class="h-10 bg-emerald-600 text-white font-bold rounded-xl text-[11px] hover:bg-emerald-700 shadow-sm transition flex items-center justify-center gap-1">+ Capital</button>
-                            <button onclick="openNetworkModal()" class="h-10 bg-slate-900 text-white font-bold rounded-xl text-[11px] hover:bg-slate-800 shadow-sm col-span-2 sm:col-span-1 flex items-center justify-center gap-1">+ Network</button>
+                            <button onclick="openNetworkModal()" class="h-10 bg-slate-900 text-white font-bold rounded-xl text-[11px] hover:bg-slate-800 shadow-sm flex items-center justify-center gap-1">+ Network</button>
                         </div>
                     </div>
 
@@ -243,7 +239,7 @@
                             <p class="text-xs sm:text-base font-black text-emerald-600 mt-0.5 truncate">TZS <span id="owner-profit">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Money Position</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Actual Physical Float</p>
                             <p class="text-xs sm:text-base font-black text-slate-900 mt-0.5 truncate">TZS <span id="owner-position">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
@@ -251,17 +247,38 @@
                             <p class="text-xs sm:text-base font-black text-blue-600 mt-0.5 truncate">TZS <span id="owner-capital">0</span></p>
                         </div>
                         <div id="position-change-card" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Variance vs Yesterday</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Audit Variance Status</p>
                             <p class="text-xs sm:text-base font-black mt-0.5 truncate" id="owner-position-change">TZS 0</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- DIRECT ADJUSTMENT LOG SECTION -->
+                <!-- PROVIDER COMMISSION BREAKDOWN TABLE -->
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Agent Direct Adjustments Log</h3>
+                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Provider-Level Commission & Float Overview</h3>
+                    <div class="border border-slate-200 rounded-xl overflow-x-auto">
+                        <table class="w-full text-left text-xs min-w-[550px]">
+                            <thead class="bg-slate-100 text-slate-600 border-b">
+                                <tr>
+                                    <th class="p-2.5">Network / Provider</th>
+                                    <th class="p-2.5 text-right">Today's Commission</th>
+                                    <th class="p-2.5 text-right">Historical Earned</th>
+                                    <th class="p-2.5 text-right">Min Target Float</th>
+                                    <th class="p-2.5 text-center">Float Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="provider-commission-table-body">
+                                <tr><td colspan="5" class="p-3 text-center text-slate-400">Loading provider breakdown...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PENDING ADJUSTMENT REQUESTS GOVERNANCE QUEUE -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Pending Agent Adjustment Approvals</h3>
                     <div id="update-requests-list" class="space-y-1.5">
-                        <p class="text-xs text-slate-400 italic">No recent adjustments logged.</p>
+                        <p class="text-xs text-slate-400 italic">No pending adjustment requests requiring remote sign-off.</p>
                     </div>
                 </div>
 
@@ -272,7 +289,7 @@
                         <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">Cloud Sync</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-x-auto">
-                        <table class="w-full text-left text-xs min-w-[500px]">
+                        <table class="w-full text-left text-xs min-w-[550px]">
                             <thead class="bg-slate-100 text-slate-600 border-b">
                                 <tr>
                                     <th class="p-2.5">Date</th>
@@ -281,10 +298,11 @@
                                     <th class="p-2.5 text-right">Commission</th>
                                     <th class="p-2.5 text-right">Expenses</th>
                                     <th class="p-2.5 text-right">Money Position</th>
+                                    <th class="p-2.5 text-center">Proof Image</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-closure-table-body">
-                                <tr><td colspan="6" class="p-3 text-center text-slate-400">Loading closures...</td></tr>
+                                <tr><td colspan="7" class="p-3 text-center text-slate-400">Loading closures...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -342,7 +360,7 @@
             <div id="ai-messages-container" class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 text-xs">
                 <div class="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 space-y-1.5 shadow-sm">
                     <p class="font-bold text-emerald-600 text-[11px]">👋 Hello! I am your Wakala AI Financial Assistant.</p>
-                    <p class="text-[11px] leading-relaxed">Ask me anything about your current money positions, agent trends, volume analysis, or total net profit margins!</p>
+                    <p class="text-[11px] leading-relaxed">Ask me anything about your money positions, agent trends, volume analysis, or total net profit margins!</p>
                 </div>
             </div>
 
@@ -353,11 +371,11 @@
         </div>
     </div>
 
-    <!-- MODAL: AGENT DIRECT UPDATE ADJUSTMENT -->
+    <!-- MODAL: AGENT ADJUSTMENT REQUEST -->
     <div id="modal-update-request" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
-            <h3 class="font-bold text-slate-900 text-sm">Direct Balance Adjustment</h3>
-            <p class="text-[10px] text-slate-500">Agent can adjust balances directly without approval.</p>
+            <h3 class="font-bold text-slate-900 text-sm">Request Direct Balance Adjustment</h3>
+            <p class="text-[10px] text-slate-500">Submissions enter a pending queue requiring Owner approval.</p>
             <div class="space-y-2.5">
                 <div>
                     <label class="text-[10px] font-bold text-slate-600 uppercase">Target Provider</label>
@@ -374,7 +392,7 @@
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
                 <button onclick="closeUpdateRequestModal()" class="h-10 px-3.5 border border-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button onclick="submitUpdateRequest()" class="h-10 px-3.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Apply Adjustment</button>
+                <button onclick="submitUpdateRequest()" class="h-10 px-3.5 bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md hover:bg-blue-700">Submit Request</button>
             </div>
         </div>
     </div>
@@ -519,6 +537,7 @@
         let capitalLedger = [];
         let historicalLogs = [];
         let updateRequests = [];
+        let drawerPhotoBase64 = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -527,6 +546,19 @@
 
         function manualRefreshData() {
             window.location.reload();
+        }
+
+        function previewDrawerPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    drawerPhotoBase64 = e.target.result;
+                    document.getElementById('photo-preview-img').src = drawerPhotoBase64;
+                    document.getElementById('photo-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function attachRealtimeListeners() {
@@ -549,12 +581,13 @@
                         { code: 'DRAWER', name: 'Physical Cash Drawer', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'MPESA', name: 'M-Pesa Float', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'AIRTEL', name: 'Airtel Money Float', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
-                        { code: 'LIPA', name: 'Send/Lipa Merchant Float', minFloat: 200000, deposits: 0, withdrawals: 0, commission: 0 }
+                        { code: 'HALOPESA', name: 'HaloPesa Float', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
                 }
                 renderNetworkInputs();
                 renderOwnerFloats();
+                renderProviderCommissionTable();
                 populateDropdowns();
                 calculateAll();
             });
@@ -573,6 +606,7 @@
             db.collection("dailySummaries").orderBy("rawDate", "asc").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAdminClosureTable();
+                renderProviderCommissionTable();
                 calculateAll();
                 checkDateLockStatus(document.getElementById('session-date-picker').value);
             });
@@ -726,6 +760,37 @@
             `).join('');
         }
 
+        function renderProviderCommissionTable() {
+            const tbody = document.getElementById('provider-commission-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = networks.map(net => {
+                const todayComm = Number(net.commission || 0);
+                const historicalEarned = historicalLogs.reduce((sum, log) => {
+                    if (log.providerCommissions && log.providerCommissions[net.code]) {
+                        return sum + Number(log.providerCommissions[net.code] || 0);
+                    }
+                    return sum;
+                }, 0);
+
+                const isLow = Number(net.closingFloat || 0) < Number(net.minFloat || 0);
+
+                return `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="p-2.5 font-bold text-slate-800">${net.name} (${net.code})</td>
+                        <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${todayComm.toLocaleString()}</td>
+                        <td class="p-2.5 text-right font-black text-slate-900">TZS ${historicalEarned.toLocaleString()}</td>
+                        <td class="p-2.5 text-right font-medium text-slate-600">TZS ${Number(net.minFloat || 0).toLocaleString()}</td>
+                        <td class="p-2.5 text-center">
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isLow ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
+                                ${isLow ? 'Deficit Warning' : 'Active / Healthy'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         function openEditNetworkModal(docId) {
             const net = networks.find(n => n.id === docId);
             if (!net) return;
@@ -746,46 +811,41 @@
         }
 
         function calculateAll() {
-            const totalPersistentCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            
-            const totalHistoricalCommissions = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
-            const totalHistoricalExpenses = historicalLogs.reduce((sum, l) => sum + Number(l.expenses || 0), 0);
-            
+            const totalCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+            const totalComm = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
+            const totalExp = historicalLogs.reduce((sum, e) => sum + Number(e.expenses || 0), 0);
+
             const selectedDateVal = document.getElementById('session-date-picker')?.value;
             const isDateLocked = historicalLogs.some(l => l.rawDate === selectedDateVal);
             
             const todayCommission = isDateLocked ? 0 : networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
             const todayExpenses = isDateLocked ? 0 : expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-            const runningMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0) - todayExpenses;
-            
-            const netProfit = (totalHistoricalCommissions - totalHistoricalExpenses) + todayCommission - todayExpenses;
+            const expectedPosition = totalCapital + totalComm + todayCommission - (totalExp + todayExpenses);
+            const actualPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
-            const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
-            const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+            const trueVariance = actualPosition - expectedPosition;
 
-            document.getElementById('owner-capital').innerText = totalPersistentCapital.toLocaleString();
-            document.getElementById('owner-position').innerText = runningMoneyPosition.toLocaleString();
-            document.getElementById('owner-profit').innerText = netProfit.toLocaleString();
-
-            const lastLog = historicalLogs.length > 0 ? historicalLogs[historicalLogs.length - 1] : null;
-            const prevPosition = lastLog ? Number(lastLog.moneyPosition || 0) : totalPersistentCapital;
-            const todayNetVariance = runningMoneyPosition - prevPosition;
+            document.getElementById('owner-capital').innerText = totalCapital.toLocaleString();
+            document.getElementById('owner-position').innerText = actualPosition.toLocaleString();
+            document.getElementById('owner-profit').innerText = ((totalComm - totalExp) + todayCommission - todayExpenses).toLocaleString();
 
             const varianceElem = document.getElementById('owner-position-change');
             if (varianceElem) {
-                const formattedVar = Math.abs(todayNetVariance).toLocaleString();
-                if (todayNetVariance > 0) {
-                    varianceElem.innerText = `+TZS ${formattedVar}`;
-                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-emerald-600 truncate";
-                } else if (todayNetVariance < 0) {
-                    varianceElem.innerText = `-TZS ${formattedVar}`;
+                if (trueVariance < 0) {
+                    varianceElem.innerText = `-TZS ${Math.abs(trueVariance).toLocaleString()} (DEFICIT)`;
                     varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-rose-600 truncate";
+                } else if (trueVariance > 0) {
+                    varianceElem.innerText = `+TZS ${trueVariance.toLocaleString()} (SURPLUS)`;
+                    varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-emerald-600 truncate";
                 } else {
-                    varianceElem.innerText = `TZS 0`;
+                    varianceElem.innerText = `TZS 0 (BALANCED)`;
                     varianceElem.className = "text-xs sm:text-base font-black mt-0.5 text-slate-800 truncate";
                 }
             }
+
+            const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
+            const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
 
             document.getElementById('rev-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
             document.getElementById('rev-comm').innerText = (isDateLocked ? networks.reduce((sum, n) => sum + Number(n.commission || 0), 0) : todayCommission).toLocaleString();
@@ -824,7 +884,7 @@
             const tbody = document.getElementById('admin-closure-table-body');
             if(!tbody) return;
             if (historicalLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
                 return;
             }
 
@@ -836,27 +896,56 @@
                     <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(s.commission || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(s.expenses || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-black text-slate-900">TZS ${Number(s.moneyPosition || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-center">
+                        ${s.drawerPhoto ? `<button onclick="viewPhotoModal('${s.drawerPhoto}')" class="text-xs font-bold text-blue-600 hover:underline">View Photo</button>` : `<span class="text-slate-400 italic">None</span>`}
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        function viewPhotoModal(photoUrl) {
+            const w = window.open("");
+            w.document.write(`<img src="${photoUrl}" style="max-width:100%; height:auto;" />`);
         }
 
         function renderUpdateRequests() {
             const container = document.getElementById('update-requests-list');
             if(!container) return;
             if(updateRequests.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic">No recent adjustments logged.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 italic">No pending adjustment requests requiring remote sign-off.</p>`;
                 return;
             }
             container.innerHTML = updateRequests.map(r => `
                 <div class="p-2.5 border border-slate-200 rounded-xl bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
                     <div>
-                        <span class="font-bold text-slate-800">${r.requestedBy}</span> adjusted <span class="font-bold text-blue-600">${r.target}</span> to 
+                        <span class="font-bold text-slate-800">${r.requestedBy}</span> requested adjustment for <span class="font-bold text-blue-600">${r.target}</span> to 
                         <span class="font-black text-slate-900">TZS ${Number(r.amount || 0).toLocaleString()}</span>
                         <p class="text-[10px] text-slate-500 mt-0.5">Reason: ${r.note || 'No note provided'}</p>
                     </div>
-                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-lg text-[10px] font-bold">Applied</span>
+                    <div class="flex items-center gap-1.5">
+                        ${r.status === 'PENDING' ? `
+                            ${currentUser && (currentUser.role === 'OWNER' || currentUser.role === 'ADMIN') ? `
+                                <button onclick="approveAdjustment('${r.id}', '${r.target}', ${r.amount})" class="px-2 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold shadow-sm hover:bg-emerald-700">Approve</button>
+                                <button onclick="rejectAdjustment('${r.id}')" class="px-2 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold shadow-sm hover:bg-rose-700">Reject</button>
+                            ` : `<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-lg text-[10px] font-bold">Pending Approval</span>`}
+                        ` : `<span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold">${r.status}</span>`}
+                    </div>
                 </div>
             `).join('');
+        }
+
+        async function approveAdjustment(reqId, target, amount) {
+            const netDoc = networks.find(n => n.code === target);
+            if (netDoc) {
+                await db.collection("networks").doc(netDoc.id).update({ closingFloat: amount });
+            }
+            await db.collection("updateRequests").doc(reqId).update({ status: 'APPROVED', approvedBy: currentUser.name });
+            alert("Adjustment approved and synced!");
+        }
+
+        async function rejectAdjustment(reqId) {
+            await db.collection("updateRequests").doc(reqId).update({ status: 'REJECTED', approvedBy: currentUser.name });
+            alert("Adjustment request rejected.");
         }
 
         function toggleAiModal() {
@@ -892,14 +981,6 @@
                 reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
             } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
                 reply = `💰 **Current Money Position:**\nTotal liquid float and cash across all channels is **TZS ${currPosition.toLocaleString()}**.`;
-            } else if(q.includes("agent") || q.includes("branch")) {
-                const agentStats = {};
-                historicalLogs.forEach(l => {
-                    const agent = l.submittedBy || 'Unknown';
-                    agentStats[agent] = (agentStats[agent] || 0) + Number(l.volume || 0);
-                });
-                const topAgent = Object.keys(agentStats).length > 0 ? Object.keys(agentStats).reduce((a, b) => agentStats[a] > agentStats[b] ? a : b) : "N/A";
-                reply = `👤 **Agent Activity Analysis:**\nMost active agent by overall volume is **${topAgent}**.`;
             } else {
                 reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit:** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
             }
@@ -924,26 +1005,35 @@
             const note = document.getElementById('req-note').value.trim();
             if(isNaN(amt)) return;
 
-            const netDoc = networks.find(n => n.code === target);
-            if (netDoc) {
-                await db.collection("networks").doc(netDoc.id).update({ closingFloat: amt });
+            if (currentUser && (currentUser.role === 'OWNER' || currentUser.role === 'ADMIN')) {
+                const netDoc = networks.find(n => n.code === target);
+                if (netDoc) {
+                    await db.collection("networks").doc(netDoc.id).update({ closingFloat: amt });
+                }
+                await db.collection("updateRequests").add({
+                    target: target,
+                    amount: amt,
+                    note: note,
+                    requestedBy: currentUser.name,
+                    status: 'DIRECT OWNER ADJUSTMENT',
+                    createdAt: new Date()
+                });
+                alert("Balance updated directly as Owner!");
+            } else {
+                await db.collection("updateRequests").add({
+                    target: target,
+                    amount: amt,
+                    note: note,
+                    requestedBy: currentUser ? currentUser.name : 'Agent',
+                    status: 'PENDING',
+                    createdAt: new Date()
+                });
+                const alertMsg = `⚠️ *ADJUSTMENT APPROVAL REQUESTED*\nBy: ${currentUser ? currentUser.name : 'Agent'}\nTarget: ${target}\nRequested Balance: TZS ${amt.toLocaleString()}\nNote: ${note}`;
+                sendWhatsAppMessage(SUPER_ADMIN_PHONE, alertMsg);
+                alert("Adjustment request submitted to Owner for remote verification.");
             }
 
-            await db.collection("updateRequests").add({
-                target: target,
-                amount: amt,
-                note: note,
-                requestedBy: currentUser ? currentUser.name : 'Agent',
-                status: 'Applied Direct',
-                createdAt: new Date()
-            });
-
-            const alertMsg = `⚡ *DIRECT BALANCE ADJUSTMENT*\nBy: ${currentUser ? currentUser.name : 'Agent'}\nTarget: ${target}\nNew Balance: TZS ${amt.toLocaleString()}\nNote: ${note}`;
-            sendWhatsAppMessage(SUPER_ADMIN_PHONE, alertMsg);
-
             closeUpdateRequestModal();
-            calculateAll();
-            alert("Balance adjusted directly!");
         }
 
         function renderExpenses() {
@@ -1082,29 +1172,17 @@
             closeProfileModal();
         }
 
-        async function resetAllBalancesAndZeroOut() {
-            if (!confirm("WARNING: Wipe all financial data to zero?")) return;
-
-            const batch = db.batch();
-            networks.forEach(n => {
-                const ref = db.collection("networks").doc(n.id);
-                batch.update(ref, { deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 });
-            });
-            expenses.forEach(e => { batch.delete(db.collection("expenses").doc(e.id)); });
-            capitalLedger.forEach(c => { batch.delete(db.collection("capitalLedger").doc(c.id)); });
-            historicalLogs.forEach(h => { batch.delete(db.collection("dailySummaries").doc(h.id)); });
-
-            await batch.commit();
-            calculateAll();
-            alert("System zeroed out successfully!");
-        }
-
         async function deleteAccount(docId) {
             if(!confirm("Are you sure you want to delete this user?")) return;
             await db.collection("accounts").doc(docId).delete();
         }
 
         async function submitClosing() {
+            if (!drawerPhotoBase64) {
+                alert("SECURITY NOTICE: You must attach a physical cash drawer photo before submitting the daily shift!");
+                return;
+            }
+
             const selectedDateVal = document.getElementById('session-date-picker').value;
 
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
@@ -1115,12 +1193,19 @@
 
             const computedMoneyPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0) - totalExpenses;
 
+            const networkCommissions = {};
+            networks.forEach(n => {
+                networkCommissions[n.code] = Number(n.commission || 0);
+            });
+
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
                 volume: totalVolume,
                 commission: totalCommission,
+                providerCommissions: networkCommissions,
                 expenses: totalExpenses,
                 moneyPosition: computedMoneyPosition,
+                drawerPhoto: drawerPhotoBase64,
                 submittedBy: currentUser ? currentUser.name : 'Agent'
             });
 
@@ -1139,8 +1224,8 @@
             dailyReport += `👤 *Submitted By:* ${currentUser ? currentUser.name : 'Agent'}\n\n`;
             dailyReport += `📈 *SUMMARY*\n`;
             dailyReport += `• Total Volume: TZS ${totalVolume.toLocaleString()}\n`;
-            dailyReport += `• Commission/Fees: TZS ${totalCommission.toLocaleString()}\n`;
-            dailyReport += `• Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
+            dailyReport += `• Total Commission: TZS ${totalCommission.toLocaleString()}\n`;
+            dailyReport += `• Total Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
             dailyReport += `• Money Position: TZS ${computedMoneyPosition.toLocaleString()}\n`;
 
             const recipientPhones = new Set();
