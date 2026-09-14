@@ -49,9 +49,6 @@
 
         const SUPER_ADMIN_PHONE = "255712897863";
 
-        // Helper function for delayed dispatches to prevent rate-limiting or network collision
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
         async function sendWhatsAppMessage(phoneNumber, message) {
             const cleanedPhone = phoneNumber ? phoneNumber.replace(/[^0-9]/g, '') : SUPER_ADMIN_PHONE;
             const apiKey = CALLMEBOT_DIRECTORY[cleanedPhone] || CALLMEBOT_DIRECTORY[SUPER_ADMIN_PHONE];
@@ -64,14 +61,6 @@
             } catch (err) {
                 const img = new Image();
                 img.src = apiUrl;
-            }
-        }
-
-        // Sequential dispatch loop to handle multiple recipient notifications reliability
-        async function broadcastWhatsAppMessages(phoneNumbers, message) {
-            for (const phone of phoneNumbers) {
-                await sendWhatsAppMessage(phone, message);
-                await delay(1000); // 1-second delay between dispatches
             }
         }
     </script>
@@ -204,9 +193,11 @@
                             <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Review & Lock Shift</h3>
                             <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
                                 <div class="flex justify-between"><span>Total Activity Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
-                                <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Lipa Kwa Simu Profit Fee:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">Total Fees Collected (all providers, informational):</span><span class="font-bold text-slate-600">TZS <span id="rev-comm">0</span></span></div>
+                                <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Lipa Kwa Simu Commission (counts as profit):</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm-profit">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-rose-700 font-semibold">Total Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
                             </div>
+                            <p class="text-[10px] text-slate-400 leading-relaxed">Note: commissions from providers other than Lipa Kwa Simu are settled directly by the provider at month end, so they are not counted as profit here.</p>
 
                             <button id="btn-submit-close" onclick="submitClosing()" class="w-full h-12 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition flex items-center justify-center">
                                 Sync & Lock Daily Shift
@@ -238,7 +229,7 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit (Lipa Kwa Simu)</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit (Lipa Kwa Simu only)</p>
                             <p class="text-xs sm:text-base font-black text-emerald-600 mt-0.5 truncate">TZS <span id="owner-profit">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
@@ -259,19 +250,21 @@
                 <!-- PROVIDER COMMISSION BREAKDOWN TABLE -->
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">Provider-Level Commission & Float Overview</h3>
+                    <p class="text-[10px] text-slate-400">Only Lipa Kwa Simu commission is counted as profit. Other providers pay commissions directly at month end and are shown here for reference only.</p>
                     <div class="border border-slate-200 rounded-xl overflow-x-auto">
-                        <table class="w-full text-left text-xs min-w-[550px]">
+                        <table class="w-full text-left text-xs min-w-[600px]">
                             <thead class="bg-slate-100 text-slate-600 border-b">
                                 <tr>
                                     <th class="p-2.5">Network / Provider</th>
-                                    <th class="p-2.5 text-right">Today's Fee / Comm</th>
+                                    <th class="p-2.5 text-right">Today's Commission</th>
                                     <th class="p-2.5 text-right">Historical Earned</th>
                                     <th class="p-2.5 text-right">Min Target Float</th>
                                     <th class="p-2.5 text-center">Float Status</th>
+                                    <th class="p-2.5 text-center">Commission Type</th>
                                 </tr>
                             </thead>
                             <tbody id="provider-commission-table-body">
-                                <tr><td colspan="5" class="p-3 text-center text-slate-400">Loading provider breakdown...</td></tr>
+                                <tr><td colspan="6" class="p-3 text-center text-slate-400">Loading provider breakdown...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -292,19 +285,20 @@
                         <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">Cloud Sync</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl overflow-x-auto">
-                        <table class="w-full text-left text-xs min-w-[550px]">
+                        <table class="w-full text-left text-xs min-w-[650px]">
                             <thead class="bg-slate-100 text-slate-600 border-b">
                                 <tr>
                                     <th class="p-2.5">Date</th>
                                     <th class="p-2.5">Submitted By</th>
                                     <th class="p-2.5 text-right">Volume</th>
-                                    <th class="p-2.5 text-right">Lipa Kwa Simu Profit</th>
+                                    <th class="p-2.5 text-right">Total Fees (Info)</th>
+                                    <th class="p-2.5 text-right">Lipa Kwa Simu (Profit)</th>
                                     <th class="p-2.5 text-right">Expenses</th>
                                     <th class="p-2.5 text-right">Money Position</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-closure-table-body">
-                                <tr><td colspan="6" class="p-3 text-center text-slate-400">Loading closures...</td></tr>
+                                <tr><td colspan="7" class="p-3 text-center text-slate-400">Loading closures...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -313,14 +307,16 @@
                 <!-- USER ACCOUNTS TABLE -->
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <h3 class="font-bold text-slate-900 text-xs border-b pb-1.5 border-slate-100">System Access & Accounts</h3>
+                    <p class="text-[10px] text-slate-400">WhatsApp alerts only reach an Owner/Admin whose phone number has a registered CallMeBot API key below.</p>
                     <div class="border border-slate-200 rounded-xl overflow-x-auto">
-                        <table class="w-full text-left text-xs min-w-[500px]">
+                        <table class="w-full text-left text-xs min-w-[550px]">
                             <thead class="bg-slate-100 text-slate-600 border-b">
                                 <tr>
                                     <th class="p-2.5">Name</th>
                                     <th class="p-2.5">Username</th>
                                     <th class="p-2.5">Role</th>
                                     <th class="p-2.5">Branch</th>
+                                    <th class="p-2.5 text-center">WhatsApp Alerts</th>
                                     <th class="p-2.5 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -429,8 +425,8 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-sm">Add Network / Service Provider</h3>
             <div class="space-y-2.5">
-                <input type="text" id="net-code" placeholder="Code (e.g. LIPA_KWA_SIMU)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
-                <input type="text" id="net-name" placeholder="Name (e.g. Lipa Kwa Simu)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-code" placeholder="Code (e.g. HALOPESA)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-name" placeholder="Name (e.g. HaloPesa Float)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
                 <input type="number" id="net-min" placeholder="Minimum Float Threshold (TZS)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
@@ -540,6 +536,11 @@
         let historicalLogs = [];
         let updateRequests = [];
 
+        // Only commission earned from this network code counts toward profit.
+        // Every other provider pays its commission directly to the owner at month end,
+        // so it is tracked for reference only and never added to the till or profit figures.
+        const PROFIT_COMMISSION_CODE = 'LIPAKWASIMU';
+
         document.addEventListener("DOMContentLoaded", () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('session-date-picker').value = todayStr;
@@ -547,13 +548,6 @@
 
         function manualRefreshData() {
             window.location.reload();
-        }
-
-        // Helper check to filter Lipa Kwa Simu module codes
-        function isLipaKwaSimu(code) {
-            if(!code) return false;
-            const c = code.toUpperCase();
-            return c.includes("LIPA") || c.includes("SIMU") || c.includes("MERCHANT");
         }
 
         function attachRealtimeListeners() {
@@ -577,7 +571,7 @@
                         { code: 'MPESA', name: 'M-Pesa Float', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'AIRTEL', name: 'Airtel Money Float', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'HALOPESA', name: 'HaloPesa Float', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
-                        { code: 'LIPA_KWA_SIMU', name: 'Lipa Kwa Simu / Till', minFloat: 50000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
+                        { code: 'LIPAKWASIMU', name: 'Lipa Kwa Simu', minFloat: 0, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
                 }
@@ -701,12 +695,10 @@
         function renderNetworkInputs() {
             const container = document.getElementById('network-inputs-container');
             if(!container) return;
-            container.innerHTML = networks.map(n => {
-                const isLipa = isLipaKwaSimu(n.code);
-                return `
+            container.innerHTML = networks.map(n => `
                 <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 space-y-2">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
-                        <span class="font-bold text-xs text-slate-800">${n.name} (${n.code})</span>
+                        <span class="font-bold text-xs text-slate-800">${n.name} (${n.code})${n.code === PROFIT_COMMISSION_CODE ? ' <span class=\"text-emerald-600\">★ Profit</span>' : ''}</span>
                         <span class="text-[9px] text-slate-500 font-bold">Min Target: TZS ${Number(n.minFloat || 0).toLocaleString()}</span>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -723,12 +715,12 @@
                             <input type="number" value="${n.closingFloat || 0}" onchange="updateNetworkVal('${n.id}', 'closingFloat', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
-                            <label class="text-[9px] ${isLipa ? 'text-emerald-600 font-extrabold' : 'text-slate-400 font-semibold'}">${isLipa ? 'Lipa Profit Fee (TZS)' : 'Monthly Comm (Ignored Daily)'}</label>
+                            <label class="text-[9px] text-slate-500 font-bold">Commission/Fees (TZS)</label>
                             <input type="number" value="${n.commission || 0}" onchange="updateNetworkVal('${n.id}', 'commission', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
                 </div>
-            `}).join('');
+            `).join('');
         }
 
         async function updateNetworkVal(id, field, value) {
@@ -773,6 +765,7 @@
                 }, 0);
 
                 const isLow = Number(net.closingFloat || 0) < Number(net.minFloat || 0);
+                const isProfitProvider = net.code === PROFIT_COMMISSION_CODE;
 
                 return `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
@@ -783,6 +776,11 @@
                         <td class="p-2.5 text-center">
                             <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isLow ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
                                 ${isLow ? 'Deficit Warning' : 'Active / Healthy'}
+                            </span>
+                        </td>
+                        <td class="p-2.5 text-center">
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isProfitProvider ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}">
+                                ${isProfitProvider ? 'Counts as Profit' : 'Paid Monthly by Provider'}
                             </span>
                         </td>
                     </tr>
@@ -811,29 +809,28 @@
 
         function calculateAll() {
             const totalCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-            
-            // Profit calculation exclusively handles Lipa Kwa Simu commission modules
-            const totalComm = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
+
+            // Only Lipa Kwa Simu commission is treated as profit / part of the till, since every
+            // other provider settles its commission directly with the owner at month end instead
+            // of adding it to the agent's daily float.
+            const totalComm = historicalLogs.reduce((sum, l) => sum + Number(l.lipaKwaSimuCommission || 0), 0);
             const totalExp = historicalLogs.reduce((sum, e) => sum + Number(e.expenses || 0), 0);
 
             const selectedDateVal = document.getElementById('session-date-picker')?.value;
             const isDateLocked = historicalLogs.some(l => l.rawDate === selectedDateVal);
-            
-            // Calculate active daily Lipa Kwa Simu profit fees
-            const todayLipaProfit = isDateLocked ? 0 : networks.reduce((sum, n) => {
-                return isLipaKwaSimu(n.code) ? sum + Number(n.commission || 0) : sum;
-            }, 0);
 
+            const lipaKwaSimuNet = networks.find(n => n.code === PROFIT_COMMISSION_CODE);
+            const todayCommission = isDateLocked ? 0 : Number((lipaKwaSimuNet && lipaKwaSimuNet.commission) || 0);
             const todayExpenses = isDateLocked ? 0 : expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-            const expectedPosition = totalCapital + totalComm + todayLipaProfit - (totalExp + todayExpenses);
+            const expectedPosition = totalCapital + totalComm + todayCommission - (totalExp + todayExpenses);
             const actualPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
             const trueVariance = actualPosition - expectedPosition;
 
             document.getElementById('owner-capital').innerText = totalCapital.toLocaleString();
             document.getElementById('owner-position').innerText = actualPosition.toLocaleString();
-            document.getElementById('owner-profit').innerText = ((totalComm - totalExp) + todayLipaProfit - todayExpenses).toLocaleString();
+            document.getElementById('owner-profit').innerText = ((totalComm - totalExp) + todayCommission - todayExpenses).toLocaleString();
 
             const varianceElem = document.getElementById('owner-position-change');
             if (varianceElem) {
@@ -851,10 +848,14 @@
 
             const todayDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
+            const allProvidersTodayCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const allProvidersTodayExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
             document.getElementById('rev-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
-            document.getElementById('rev-comm').innerText = (isDateLocked ? historicalLogs.find(l => l.rawDate === selectedDateVal)?.commission || 0 : todayLipaProfit).toLocaleString();
-            document.getElementById('rev-exp').innerText = (isDateLocked ? expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) : todayExpenses).toLocaleString();
+            document.getElementById('rev-comm').innerText = (isDateLocked ? networks.reduce((sum, n) => sum + Number(n.commission || 0), 0) : allProvidersTodayCommission).toLocaleString();
+            const revCommProfitElem = document.getElementById('rev-comm-profit');
+            if (revCommProfitElem) revCommProfitElem.innerText = todayCommission.toLocaleString();
+            document.getElementById('rev-exp').innerText = (isDateLocked ? expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) : allProvidersTodayExpenses).toLocaleString();
         }
 
         function populateDropdowns() {
@@ -871,25 +872,34 @@
         function renderUsersTable() {
             const tbody = document.getElementById('agents-table-body');
             if(!tbody) return;
-            tbody.innerHTML = accounts.map(a => `
+            tbody.innerHTML = accounts.map(a => {
+                const cleaned = a.phone ? String(a.phone).replace(/[^0-9]/g, '') : '';
+                const isWhatsAppReady = !!CALLMEBOT_DIRECTORY[cleaned];
+                return `
                 <tr class="border-b border-slate-100">
                     <td class="p-2.5 font-bold text-slate-800">${a.name}</td>
                     <td class="p-2.5 font-bold text-blue-700">${a.username}</td>
                     <td class="p-2.5 font-bold">${a.role}</td>
                     <td class="p-2.5 text-slate-600">${a.branch || 'Main Branch'}</td>
+                    <td class="p-2.5 text-center">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isWhatsAppReady ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+                            ${isWhatsAppReady ? 'Registered' : 'Not Registered'}
+                        </span>
+                    </td>
                     <td class="p-2.5 text-right flex justify-end gap-2">
                         <button onclick="openEditUserModal('${a.id}')" class="text-xs font-bold text-blue-600 hover:underline">Edit</button>
                         <button onclick="deleteAccount('${a.id}')" class="text-xs font-bold text-rose-600 hover:underline">Delete</button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function renderAdminClosureTable() {
             const tbody = document.getElementById('admin-closure-table-body');
             if(!tbody) return;
             if (historicalLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
                 return;
             }
 
@@ -898,7 +908,8 @@
                     <td class="p-2.5 font-bold text-slate-800">${s.rawDate || s.id}</td>
                     <td class="p-2.5 text-slate-600 font-medium">${s.submittedBy || 'Agent'}</td>
                     <td class="p-2.5 text-right font-semibold">TZS ${Number(s.volume || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(s.commission || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-medium text-slate-500">TZS ${Number(s.commission || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(s.lipaKwaSimuCommission || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(s.expenses || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-black text-slate-900">TZS ${Number(s.moneyPosition || 0).toLocaleString()}</td>
                 </tr>
@@ -965,7 +976,7 @@
             input.value = '';
 
             const totalVol = historicalLogs.reduce((acc, l) => acc + Number(l.volume || 0), 0);
-            const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.commission || 0), 0);
+            const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.lipaKwaSimuCommission || 0), 0);
             const totalExp = historicalLogs.reduce((acc, l) => acc + Number(l.expenses || 0), 0);
             const netProfit = totalComm - totalExp;
             const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
@@ -973,13 +984,13 @@
             let reply = "";
 
             if(q.includes("profit") || q.includes("net")) {
-                reply = `📊 **Cumulative Net Profit Analysis (Lipa Kwa Simu):**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}**.`;
+                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (based only on Lipa Kwa Simu commission, other providers pay monthly).`;
             } else if(q.includes("volume") || q.includes("turnover")) {
                 reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
             } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
                 reply = `💰 **Current Money Position:**\nTotal liquid float and cash across all channels is **TZS ${currPosition.toLocaleString()}**.`;
             } else {
-                reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit:** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
+                reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit (Lipa Kwa Simu only):** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
             }
 
             chat.innerHTML += `
@@ -1027,22 +1038,38 @@
                 });
                 const alertMsg = `⚠️ *ADJUSTMENT APPROVAL REQUESTED*\nBy: ${currentUser ? currentUser.name : 'Agent'}\nTarget: ${target}\nRequested Balance: TZS ${amt.toLocaleString()}\nNote: ${note}`;
                 
-                // Dispatch notifications to all Owners and Admins via multi-recipient dispatch loop
-                const recipientPhones = new Set();
-                accounts.forEach(acc => {
-                    if ((acc.role === 'OWNER' || acc.role === 'ADMIN') && acc.phone) {
-                        recipientPhones.add(acc.phone.replace(/[^0-9]/g, ''));
-                    }
-                });
-
-                if (recipientPhones.size === 0) recipientPhones.add(SUPER_ADMIN_PHONE);
-
-                broadcastWhatsAppMessages(Array.from(recipientPhones), alertMsg);
+                // Dispatch WhatsApp notifications to every Owner/Admin who has a registered CallMeBot key.
+                notifyRegisteredRecipients(alertMsg);
 
                 alert("Adjustment request submitted to Owner for remote verification.");
             }
 
             closeUpdateRequestModal();
+        }
+
+        // Sends a WhatsApp message to every Owner/Admin account whose phone number is
+        // registered in CALLMEBOT_DIRECTORY. Recipients without a registered CallMeBot
+        // API key are skipped (never silently redirected to the super admin), so each
+        // person actually gets their own message instead of everything converging on
+        // a single number.
+        function notifyRegisteredRecipients(message) {
+            const recipientPhones = new Set();
+            accounts.forEach(acc => {
+                if (acc.role === 'OWNER' || acc.role === 'ADMIN') {
+                    const cleaned = acc.phone ? String(acc.phone).replace(/[^0-9]/g, '') : '';
+                    if (CALLMEBOT_DIRECTORY[cleaned]) {
+                        recipientPhones.add(cleaned);
+                    }
+                }
+            });
+
+            if (recipientPhones.size === 0) {
+                recipientPhones.add(SUPER_ADMIN_PHONE);
+            }
+
+            recipientPhones.forEach(phoneNum => {
+                sendWhatsAppMessage(phoneNum, message);
+            });
         }
 
         function renderExpenses() {
@@ -1191,12 +1218,9 @@
 
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
-            
-            // Exclude service providers; daily net profit tracks only Lipa Kwa Simu modules
-            const lipaCommission = networks.reduce((sum, n) => {
-                return isLipaKwaSimu(n.code) ? sum + Number(n.commission || 0) : sum;
-            }, 0);
-
+            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            const lipaKwaSimuNet = networks.find(n => n.code === PROFIT_COMMISSION_CODE);
+            const lipaKwaSimuCommission = Number((lipaKwaSimuNet && lipaKwaSimuNet.commission) || 0);
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const totalVolume = totalDeposits + totalWithdrawals;
 
@@ -1210,7 +1234,8 @@
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
                 volume: totalVolume,
-                commission: lipaCommission,
+                commission: totalCommission, // informational total across all providers
+                lipaKwaSimuCommission: lipaKwaSimuCommission, // the only commission counted as profit
                 providerCommissions: networkCommissions,
                 expenses: totalExpenses,
                 moneyPosition: computedMoneyPosition,
@@ -1232,23 +1257,30 @@
             dailyReport += `👤 *Submitted By:* ${currentUser ? currentUser.name : 'Agent'}\n\n`;
             dailyReport += `📈 *SUMMARY*\n`;
             dailyReport += `• Total Volume: TZS ${totalVolume.toLocaleString()}\n`;
-            dailyReport += `• Lipa Kwa Simu Profit: TZS ${lipaCommission.toLocaleString()}\n`;
+            dailyReport += `• Total Fees Collected (info): TZS ${totalCommission.toLocaleString()}\n`;
+            dailyReport += `• Lipa Kwa Simu Commission (profit): TZS ${lipaKwaSimuCommission.toLocaleString()}\n`;
             dailyReport += `• Total Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
             dailyReport += `• Money Position: TZS ${computedMoneyPosition.toLocaleString()}\n`;
 
+            // Notify every Owner/Admin with a registered CallMeBot key, plus the submitting
+            // agent themselves if they have one registered too.
             const recipientPhones = new Set();
-            if (currentUser && currentUser.phone) recipientPhones.add(currentUser.phone.replace(/[^0-9]/g, ''));
-
+            if (currentUser && currentUser.phone) {
+                const cleanedSelf = String(currentUser.phone).replace(/[^0-9]/g, '');
+                if (CALLMEBOT_DIRECTORY[cleanedSelf]) recipientPhones.add(cleanedSelf);
+            }
             accounts.forEach(acc => {
-                if ((acc.role === 'OWNER' || acc.role === 'ADMIN') && acc.phone) {
-                    recipientPhones.add(acc.phone.replace(/[^0-9]/g, ''));
+                if (acc.role === 'OWNER' || acc.role === 'ADMIN') {
+                    const cleaned = acc.phone ? String(acc.phone).replace(/[^0-9]/g, '') : '';
+                    if (CALLMEBOT_DIRECTORY[cleaned]) recipientPhones.add(cleaned);
                 }
             });
 
             if (recipientPhones.size === 0) recipientPhones.add(SUPER_ADMIN_PHONE);
 
-            // Execute asynchronous broadcast sequentially across all recipients
-            broadcastWhatsAppMessages(Array.from(recipientPhones), dailyReport);
+            recipientPhones.forEach(phoneNum => {
+                sendWhatsAppMessage(phoneNum, dailyReport);
+            });
 
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
@@ -1272,13 +1304,14 @@
                 s.submittedBy || 'Agent',
                 `TZS ${Number(s.volume || 0).toLocaleString()}`,
                 `TZS ${Number(s.commission || 0).toLocaleString()}`,
+                `TZS ${Number(s.lipaKwaSimuCommission || 0).toLocaleString()}`,
                 `TZS ${Number(s.expenses || 0).toLocaleString()}`,
                 `TZS ${Number(s.moneyPosition || 0).toLocaleString()}`
             ]);
 
             doc.autoTable({
                 startY: 35,
-                head: [['Closure Date', 'Submitted By', 'Volume', 'Lipa Profit', 'Expenses', 'Money Position']],
+                head: [['Closure Date', 'Submitted By', 'Volume', 'Total Fees (Info)', 'Lipa Kwa Simu (Profit)', 'Expenses', 'Money Position']],
                 body: tableRows,
                 theme: 'striped',
                 headStyles: { fillColor: [16, 185, 129] }
