@@ -158,7 +158,7 @@
                     <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:col-span-1">
                         <button onclick="setStep(1)" id="step-btn-1" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm transition">1. Balances</button>
                         <button onclick="setStep(2)" id="step-btn-2" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">2. Expenses</button>
-                        <button onclick="setStep(3)" id="step-btn-3" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">3. Proof & Lock</button>
+                        <button onclick="setStep(3)" id="step-btn-3" class="flex-1 min-w-[90px] h-10 text-center md:text-left px-3 rounded-xl font-bold text-[11px] uppercase text-slate-600 hover:bg-slate-50 transition">3. Review & Lock</button>
                     </div>
 
                     <div class="md:col-span-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -185,24 +185,16 @@
                                     <tbody id="expense-table-body"></tbody>
                                 </table>
                             </div>
-                            <button onclick="setStep(3)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Proof & Lock →</button>
+                            <button onclick="setStep(3)" class="w-full h-12 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center">Proceed to Review & Lock →</button>
                         </div>
 
                         <!-- Step 3 -->
                         <div id="step-3" class="space-y-3 hidden">
-                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Drawer Photo Proof & Lock Shift</h3>
-                            <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                            <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Review & Lock Shift</h3>
+                            <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
                                 <div class="flex justify-between"><span>Total Activity Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Total Commission / Fees:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-rose-700 font-semibold">Total Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
-                            </div>
-
-                            <div class="space-y-1.5 pt-1">
-                                <label class="block text-[11px] font-bold text-slate-700 uppercase">Attach Physical Cash Drawer Photo Proof <span class="text-rose-600">*</span></label>
-                                <input type="file" id="drawer-photo-proof" accept="image/*" onchange="previewDrawerPhoto(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1">
-                                <div id="photo-preview-container" class="hidden mt-2">
-                                    <img id="photo-preview-img" class="h-28 rounded-xl border border-slate-300 object-cover shadow-sm">
-                                </div>
                             </div>
 
                             <button id="btn-submit-close" onclick="submitClosing()" class="w-full h-12 bg-emerald-600 text-white font-black text-sm rounded-xl hover:bg-emerald-700 shadow-lg transition flex items-center justify-center">
@@ -298,11 +290,10 @@
                                     <th class="p-2.5 text-right">Commission</th>
                                     <th class="p-2.5 text-right">Expenses</th>
                                     <th class="p-2.5 text-right">Money Position</th>
-                                    <th class="p-2.5 text-center">Proof Image</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-closure-table-body">
-                                <tr><td colspan="7" class="p-3 text-center text-slate-400">Loading closures...</td></tr>
+                                <tr><td colspan="6" class="p-3 text-center text-slate-400">Loading closures...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -537,7 +528,6 @@
         let capitalLedger = [];
         let historicalLogs = [];
         let updateRequests = [];
-        let drawerPhotoBase64 = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -546,19 +536,6 @@
 
         function manualRefreshData() {
             window.location.reload();
-        }
-
-        function previewDrawerPhoto(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    drawerPhotoBase64 = e.target.result;
-                    document.getElementById('photo-preview-img').src = drawerPhotoBase64;
-                    document.getElementById('photo-preview-container').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
         }
 
         function attachRealtimeListeners() {
@@ -603,8 +580,9 @@
                 calculateAll();
             });
 
-            db.collection("dailySummaries").orderBy("rawDate", "asc").onSnapshot(snapshot => {
+            db.collection("dailySummaries").onSnapshot(snapshot => {
                 historicalLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                historicalLogs.sort((a, b) => (b.rawDate || '').localeCompare(a.rawDate || ''));
                 renderAdminClosureTable();
                 renderProviderCommissionTable();
                 calculateAll();
@@ -884,28 +862,20 @@
             const tbody = document.getElementById('admin-closure-table-body');
             if(!tbody) return;
             if (historicalLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400">No daily closures submitted yet.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = historicalLogs.map(s => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                    <td class="p-2.5 font-bold text-slate-800">${s.rawDate}</td>
+                    <td class="p-2.5 font-bold text-slate-800">${s.rawDate || s.id}</td>
                     <td class="p-2.5 text-slate-600 font-medium">${s.submittedBy || 'Agent'}</td>
                     <td class="p-2.5 text-right font-semibold">TZS ${Number(s.volume || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-bold text-emerald-600">TZS ${Number(s.commission || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-bold text-rose-600">TZS ${Number(s.expenses || 0).toLocaleString()}</td>
                     <td class="p-2.5 text-right font-black text-slate-900">TZS ${Number(s.moneyPosition || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-center">
-                        ${s.drawerPhoto ? `<button onclick="viewPhotoModal('${s.drawerPhoto}')" class="text-xs font-bold text-blue-600 hover:underline">View Photo</button>` : `<span class="text-slate-400 italic">None</span>`}
-                    </td>
                 </tr>
             `).join('');
-        }
-
-        function viewPhotoModal(photoUrl) {
-            const w = window.open("");
-            w.document.write(`<img src="${photoUrl}" style="max-width:100%; height:auto;" />`);
         }
 
         function renderUpdateRequests() {
@@ -1029,7 +999,14 @@
                     createdAt: new Date()
                 });
                 const alertMsg = `⚠️ *ADJUSTMENT APPROVAL REQUESTED*\nBy: ${currentUser ? currentUser.name : 'Agent'}\nTarget: ${target}\nRequested Balance: TZS ${amt.toLocaleString()}\nNote: ${note}`;
-                sendWhatsAppMessage(SUPER_ADMIN_PHONE, alertMsg);
+                
+                // Dispatch text notifications to Owner & Admin
+                accounts.forEach(acc => {
+                    if (acc.role === 'OWNER' || acc.role === 'ADMIN') {
+                        sendWhatsAppMessage(acc.phone, alertMsg);
+                    }
+                });
+
                 alert("Adjustment request submitted to Owner for remote verification.");
             }
 
@@ -1178,11 +1155,6 @@
         }
 
         async function submitClosing() {
-            if (!drawerPhotoBase64) {
-                alert("SECURITY NOTICE: You must attach a physical cash drawer photo before submitting the daily shift!");
-                return;
-            }
-
             const selectedDateVal = document.getElementById('session-date-picker').value;
 
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
@@ -1205,7 +1177,6 @@
                 providerCommissions: networkCommissions,
                 expenses: totalExpenses,
                 moneyPosition: computedMoneyPosition,
-                drawerPhoto: drawerPhotoBase64,
                 submittedBy: currentUser ? currentUser.name : 'Agent'
             });
 
@@ -1258,10 +1229,10 @@
             doc.setFontSize(10);
             doc.text(`Period: ${monthYear} | Exported: ${now.toLocaleDateString()}`, 14, 27);
 
-            const sortedLogs = [...historicalLogs].sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+            const sortedLogs = [...historicalLogs].sort((a, b) => (a.rawDate || '').localeCompare(b.rawDate || ''));
 
             const tableRows = sortedLogs.map(s => [
-                s.rawDate,
+                s.rawDate || s.id,
                 s.submittedBy || 'Agent',
                 `TZS ${Number(s.volume || 0).toLocaleString()}`,
                 `TZS ${Number(s.commission || 0).toLocaleString()}`,
@@ -1282,3 +1253,4 @@
     </script>
 </body>
 </html>
+
