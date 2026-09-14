@@ -49,6 +49,9 @@
 
         const SUPER_ADMIN_PHONE = "255712897863";
 
+        // Helper function for delayed dispatches to prevent rate-limiting or network collision
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
         async function sendWhatsAppMessage(phoneNumber, message) {
             const cleanedPhone = phoneNumber ? phoneNumber.replace(/[^0-9]/g, '') : SUPER_ADMIN_PHONE;
             const apiKey = CALLMEBOT_DIRECTORY[cleanedPhone] || CALLMEBOT_DIRECTORY[SUPER_ADMIN_PHONE];
@@ -61,6 +64,14 @@
             } catch (err) {
                 const img = new Image();
                 img.src = apiUrl;
+            }
+        }
+
+        // Sequential dispatch loop to handle multiple recipient notifications reliability
+        async function broadcastWhatsAppMessages(phoneNumbers, message) {
+            for (const phone of phoneNumbers) {
+                await sendWhatsAppMessage(phone, message);
+                await delay(1000); // 1-second delay between dispatches
             }
         }
     </script>
@@ -193,7 +204,7 @@
                             <h3 class="font-bold text-slate-900 border-b pb-1.5 text-xs">3. Review & Lock Shift</h3>
                             <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
                                 <div class="flex justify-between"><span>Total Activity Volume:</span><span class="font-bold text-slate-800">TZS <span id="rev-volume">0</span></span></div>
-                                <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Total Commission / Fees:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
+                                <div class="flex justify-between"><span class="text-emerald-700 font-semibold">Lipa Kwa Simu Profit Fee:</span><span class="font-bold text-emerald-700">TZS <span id="rev-comm">0</span></span></div>
                                 <div class="flex justify-between"><span class="text-rose-700 font-semibold">Total Expenses:</span><span class="font-bold text-rose-700">TZS <span id="rev-exp">0</span></span></div>
                             </div>
 
@@ -227,7 +238,7 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cumulative Net Profit (Lipa Kwa Simu)</p>
                             <p class="text-xs sm:text-base font-black text-emerald-600 mt-0.5 truncate">TZS <span id="owner-profit">0</span></p>
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
@@ -253,7 +264,7 @@
                             <thead class="bg-slate-100 text-slate-600 border-b">
                                 <tr>
                                     <th class="p-2.5">Network / Provider</th>
-                                    <th class="p-2.5 text-right">Today's Commission</th>
+                                    <th class="p-2.5 text-right">Today's Fee / Comm</th>
                                     <th class="p-2.5 text-right">Historical Earned</th>
                                     <th class="p-2.5 text-right">Min Target Float</th>
                                     <th class="p-2.5 text-center">Float Status</th>
@@ -287,7 +298,7 @@
                                     <th class="p-2.5">Date</th>
                                     <th class="p-2.5">Submitted By</th>
                                     <th class="p-2.5 text-right">Volume</th>
-                                    <th class="p-2.5 text-right">Commission</th>
+                                    <th class="p-2.5 text-right">Lipa Kwa Simu Profit</th>
                                     <th class="p-2.5 text-right">Expenses</th>
                                     <th class="p-2.5 text-right">Money Position</th>
                                 </tr>
@@ -418,8 +429,8 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200 max-w-md w-full space-y-3 shadow-2xl">
             <h3 class="font-bold text-slate-900 text-sm">Add Network / Service Provider</h3>
             <div class="space-y-2.5">
-                <input type="text" id="net-code" placeholder="Code (e.g. HALOPESA)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
-                <input type="text" id="net-name" placeholder="Name (e.g. HaloPesa Float)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-code" placeholder="Code (e.g. LIPA_KWA_SIMU)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-emerald-500">
+                <input type="text" id="net-name" placeholder="Name (e.g. Lipa Kwa Simu)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
                 <input type="number" id="net-min" placeholder="Minimum Float Threshold (TZS)" class="w-full h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex justify-end gap-2 border-t pt-2.5">
@@ -538,6 +549,13 @@
             window.location.reload();
         }
 
+        // Helper check to filter Lipa Kwa Simu module codes
+        function isLipaKwaSimu(code) {
+            if(!code) return false;
+            const c = code.toUpperCase();
+            return c.includes("LIPA") || c.includes("SIMU") || c.includes("MERCHANT");
+        }
+
         function attachRealtimeListeners() {
             db.collection("accounts").onSnapshot(snapshot => {
                 accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -558,7 +576,8 @@
                         { code: 'DRAWER', name: 'Physical Cash Drawer', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'MPESA', name: 'M-Pesa Float', minFloat: 300000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
                         { code: 'AIRTEL', name: 'Airtel Money Float', minFloat: 250000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
-                        { code: 'HALOPESA', name: 'HaloPesa Float', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
+                        { code: 'HALOPESA', name: 'HaloPesa Float', minFloat: 100000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 },
+                        { code: 'LIPA_KWA_SIMU', name: 'Lipa Kwa Simu / Till', minFloat: 50000, deposits: 0, withdrawals: 0, closingFloat: 0, commission: 0 }
                     ];
                     defaults.forEach(n => db.collection("networks").doc(n.code).set(n));
                 }
@@ -682,7 +701,9 @@
         function renderNetworkInputs() {
             const container = document.getElementById('network-inputs-container');
             if(!container) return;
-            container.innerHTML = networks.map(n => `
+            container.innerHTML = networks.map(n => {
+                const isLipa = isLipaKwaSimu(n.code);
+                return `
                 <div class="p-3 border border-slate-200 rounded-xl bg-slate-50 space-y-2">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
                         <span class="font-bold text-xs text-slate-800">${n.name} (${n.code})</span>
@@ -702,12 +723,12 @@
                             <input type="number" value="${n.closingFloat || 0}" onchange="updateNetworkVal('${n.id}', 'closingFloat', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
-                            <label class="text-[9px] text-slate-500 font-bold">Commission/Fees (TZS)</label>
+                            <label class="text-[9px] ${isLipa ? 'text-emerald-600 font-extrabold' : 'text-slate-400 font-semibold'}">${isLipa ? 'Lipa Profit Fee (TZS)' : 'Monthly Comm (Ignored Daily)'}</label>
                             <input type="number" value="${n.commission || 0}" onchange="updateNetworkVal('${n.id}', 'commission', this.value)" class="w-full h-10 p-1.5 border border-slate-300 rounded-lg bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         async function updateNetworkVal(id, field, value) {
@@ -790,23 +811,29 @@
 
         function calculateAll() {
             const totalCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+            
+            // Profit calculation exclusively handles Lipa Kwa Simu commission modules
             const totalComm = historicalLogs.reduce((sum, l) => sum + Number(l.commission || 0), 0);
             const totalExp = historicalLogs.reduce((sum, e) => sum + Number(e.expenses || 0), 0);
 
             const selectedDateVal = document.getElementById('session-date-picker')?.value;
             const isDateLocked = historicalLogs.some(l => l.rawDate === selectedDateVal);
             
-            const todayCommission = isDateLocked ? 0 : networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            // Calculate active daily Lipa Kwa Simu profit fees
+            const todayLipaProfit = isDateLocked ? 0 : networks.reduce((sum, n) => {
+                return isLipaKwaSimu(n.code) ? sum + Number(n.commission || 0) : sum;
+            }, 0);
+
             const todayExpenses = isDateLocked ? 0 : expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-            const expectedPosition = totalCapital + totalComm + todayCommission - (totalExp + todayExpenses);
+            const expectedPosition = totalCapital + totalComm + todayLipaProfit - (totalExp + todayExpenses);
             const actualPosition = networks.reduce((sum, n) => sum + Number(n.closingFloat || 0), 0);
 
             const trueVariance = actualPosition - expectedPosition;
 
             document.getElementById('owner-capital').innerText = totalCapital.toLocaleString();
             document.getElementById('owner-position').innerText = actualPosition.toLocaleString();
-            document.getElementById('owner-profit').innerText = ((totalComm - totalExp) + todayCommission - todayExpenses).toLocaleString();
+            document.getElementById('owner-profit').innerText = ((totalComm - totalExp) + todayLipaProfit - todayExpenses).toLocaleString();
 
             const varianceElem = document.getElementById('owner-position-change');
             if (varianceElem) {
@@ -826,7 +853,7 @@
             const todayWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
 
             document.getElementById('rev-volume').innerText = (todayDeposits + todayWithdrawals).toLocaleString();
-            document.getElementById('rev-comm').innerText = (isDateLocked ? networks.reduce((sum, n) => sum + Number(n.commission || 0), 0) : todayCommission).toLocaleString();
+            document.getElementById('rev-comm').innerText = (isDateLocked ? historicalLogs.find(l => l.rawDate === selectedDateVal)?.commission || 0 : todayLipaProfit).toLocaleString();
             document.getElementById('rev-exp').innerText = (isDateLocked ? expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0) : todayExpenses).toLocaleString();
         }
 
@@ -946,7 +973,7 @@
             let reply = "";
 
             if(q.includes("profit") || q.includes("net")) {
-                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (Historical Net Profit).`;
+                reply = `📊 **Cumulative Net Profit Analysis (Lipa Kwa Simu):**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}**.`;
             } else if(q.includes("volume") || q.includes("turnover")) {
                 reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
             } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
@@ -1000,12 +1027,17 @@
                 });
                 const alertMsg = `⚠️ *ADJUSTMENT APPROVAL REQUESTED*\nBy: ${currentUser ? currentUser.name : 'Agent'}\nTarget: ${target}\nRequested Balance: TZS ${amt.toLocaleString()}\nNote: ${note}`;
                 
-                // Dispatch text notifications to Owner & Admin
+                // Dispatch notifications to all Owners and Admins via multi-recipient dispatch loop
+                const recipientPhones = new Set();
                 accounts.forEach(acc => {
-                    if (acc.role === 'OWNER' || acc.role === 'ADMIN') {
-                        sendWhatsAppMessage(acc.phone, alertMsg);
+                    if ((acc.role === 'OWNER' || acc.role === 'ADMIN') && acc.phone) {
+                        recipientPhones.add(acc.phone.replace(/[^0-9]/g, ''));
                     }
                 });
+
+                if (recipientPhones.size === 0) recipientPhones.add(SUPER_ADMIN_PHONE);
+
+                broadcastWhatsAppMessages(Array.from(recipientPhones), alertMsg);
 
                 alert("Adjustment request submitted to Owner for remote verification.");
             }
@@ -1159,7 +1191,12 @@
 
             const totalDeposits = networks.reduce((sum, n) => sum + Number(n.deposits || 0), 0);
             const totalWithdrawals = networks.reduce((sum, n) => sum + Number(n.withdrawals || 0), 0);
-            const totalCommission = networks.reduce((sum, n) => sum + Number(n.commission || 0), 0);
+            
+            // Exclude service providers; daily net profit tracks only Lipa Kwa Simu modules
+            const lipaCommission = networks.reduce((sum, n) => {
+                return isLipaKwaSimu(n.code) ? sum + Number(n.commission || 0) : sum;
+            }, 0);
+
             const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
             const totalVolume = totalDeposits + totalWithdrawals;
 
@@ -1173,7 +1210,7 @@
             await db.collection("dailySummaries").doc(selectedDateVal).set({
                 rawDate: selectedDateVal,
                 volume: totalVolume,
-                commission: totalCommission,
+                commission: lipaCommission,
                 providerCommissions: networkCommissions,
                 expenses: totalExpenses,
                 moneyPosition: computedMoneyPosition,
@@ -1195,24 +1232,23 @@
             dailyReport += `👤 *Submitted By:* ${currentUser ? currentUser.name : 'Agent'}\n\n`;
             dailyReport += `📈 *SUMMARY*\n`;
             dailyReport += `• Total Volume: TZS ${totalVolume.toLocaleString()}\n`;
-            dailyReport += `• Total Commission: TZS ${totalCommission.toLocaleString()}\n`;
+            dailyReport += `• Lipa Kwa Simu Profit: TZS ${lipaCommission.toLocaleString()}\n`;
             dailyReport += `• Total Expenses: TZS ${totalExpenses.toLocaleString()}\n`;
             dailyReport += `• Money Position: TZS ${computedMoneyPosition.toLocaleString()}\n`;
 
             const recipientPhones = new Set();
-            if (currentUser && currentUser.phone) recipientPhones.add(currentUser.phone);
+            if (currentUser && currentUser.phone) recipientPhones.add(currentUser.phone.replace(/[^0-9]/g, ''));
 
             accounts.forEach(acc => {
                 if ((acc.role === 'OWNER' || acc.role === 'ADMIN') && acc.phone) {
-                    recipientPhones.add(acc.phone);
+                    recipientPhones.add(acc.phone.replace(/[^0-9]/g, ''));
                 }
             });
 
             if (recipientPhones.size === 0) recipientPhones.add(SUPER_ADMIN_PHONE);
 
-            recipientPhones.forEach(phoneNum => {
-                sendWhatsAppMessage(phoneNum, dailyReport);
-            });
+            // Execute asynchronous broadcast sequentially across all recipients
+            broadcastWhatsAppMessages(Array.from(recipientPhones), dailyReport);
 
             document.getElementById('agent-form-container').classList.add('hidden');
             document.getElementById('agent-success').classList.remove('hidden');
@@ -1242,7 +1278,7 @@
 
             doc.autoTable({
                 startY: 35,
-                head: [['Closure Date', 'Submitted By', 'Volume', 'Commission / Fees', 'Expenses', 'Money Position']],
+                head: [['Closure Date', 'Submitted By', 'Volume', 'Lipa Profit', 'Expenses', 'Money Position']],
                 body: tableRows,
                 theme: 'striped',
                 headStyles: { fillColor: [16, 185, 129] }
