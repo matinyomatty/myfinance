@@ -29,12 +29,12 @@
         html {
             scroll-padding-top: env(safe-area-inset-top, 0px);
         }
-        /* Keep everything clear of the iPhone status bar / home indicator when
-           installed as a home-screen app or viewed full-screen. Without this the
-           sticky header renders underneath the notch/status bar and becomes
-           invisible/unreachable, which is the "top parts cut off" issue. */
+        /* The header itself (dark bg) extends its own background up under the
+           notch/status bar via padding-top, instead of the page body doing it —
+           that way there's no mismatched light-colored strip behind the status
+           bar, just one continuous dark bar with the header content sitting
+           safely below the notch. */
         body {
-            padding-top: env(safe-area-inset-top, 0px);
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         #view-login {
@@ -43,7 +43,7 @@
             min-height: 100svh;
         }
         header.app-header {
-            top: env(safe-area-inset-top, 0px);
+            padding-top: calc(env(safe-area-inset-top, 0px) + 0.625rem);
         }
     </style>
 </head>
@@ -123,7 +123,7 @@
 
     <!-- MAIN APP DASHBOARD VIEW -->
     <div id="view-app" class="hidden min-h-screen w-full flex flex-col">
-        <header class="app-header bg-slate-900 text-white px-3 py-2.5 sticky top-0 shadow-md shrink-0 w-full z-40">
+        <header class="app-header bg-slate-900 text-white px-3 pb-2.5 sticky top-0 shadow-md shrink-0 w-full z-40">
             <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                     <div class="bg-emerald-500 text-slate-900 font-black p-1.5 rounded-xl text-base shadow-sm">W</div>
