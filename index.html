@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <title>Wakala Pro - Remote Accounting & Control Standard</title>
     
     <!-- Tailwind CSS Framework CDN -->
@@ -383,12 +383,12 @@
             <div id="ai-messages-container" class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 text-xs">
                 <div class="bg-white p-3 rounded-xl border border-slate-200 text-slate-700 space-y-1.5 shadow-sm">
                     <p class="font-bold text-emerald-600 text-[11px]">👋 Hello! I am your Wakala AI Financial Assistant.</p>
-                    <p class="text-[11px] leading-relaxed">Ask me anything about your money positions, agent trends, volume analysis, or total net profit margins!</p>
+                    <p class="text-[11px] leading-relaxed">I compute real answers from your live data — not canned responses. Try: "profit this month", "is Airtel low", "best day this week", "any advice?", or ask about a specific provider by name.</p>
                 </div>
             </div>
 
             <div class="p-2.5 bg-white border-t border-slate-200 flex gap-2">
-                <input type="text" id="ai-input-query" onkeydown="if(event.key==='Enter') sendAiQuery()" placeholder="Ask AI e.g. 'What is our net profit so far?'" class="flex-1 h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
+                <input type="text" id="ai-input-query" onkeydown="if(event.key==='Enter') sendAiQuery()" placeholder="e.g. 'is Airtel low' or 'profit this month'" class="flex-1 h-11 p-2.5 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-500">
                 <button onclick="sendAiQuery()" class="px-4 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center">Ask</button>
             </div>
         </div>
@@ -985,43 +985,221 @@
             document.getElementById('modal-ai-assistant').classList.toggle('hidden');
         }
 
+        // ---- AI Financial Assistant: real computed analysis over live Firestore data ----
+        // This is a rule-based analysis engine, not a hosted LLM — there is no way to
+        // safely call a third-party AI API from a client-side app like this without
+        // exposing an API key to every visitor. Instead this actually reads and
+        // computes over your live data (date ranges, per-provider lookups, deficit
+        // detection, best/worst day, recommendations) rather than repeating a fixed
+        // set of canned totals like the previous version did.
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function formatTZS(n) {
+            return 'TZS ' + Math.round(Number(n) || 0).toLocaleString();
+        }
+
+        function mdToHtml(text) {
+            return escapeHtml(text)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function detectDateRange(q) {
+            if (/\byesterday\b/.test(q)) return { key: 'yesterday', label: 'Yesterday' };
+            if (/\btoday\b/.test(q)) return { key: 'today', label: 'Today' };
+            if (/\bthis week\b|\blast 7 days\b|\bpast week\b/.test(q)) return { key: 'week', label: 'the last 7 days' };
+            if (/\blast month\b|\bprevious month\b/.test(q)) return { key: 'lastmonth', label: 'last month' };
+            if (/\bthis month\b|\bmonth to date\b|\bmtd\b/.test(q)) return { key: 'month', label: 'this month' };
+            return { key: 'all', label: 'all time' };
+        }
+
+        function logsForRange(rangeKey) {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            if (rangeKey === 'today') return historicalLogs.filter(l => l.rawDate === todayStr);
+            if (rangeKey === 'yesterday') {
+                const y = new Date(now); y.setDate(y.getDate() - 1);
+                const yStr = y.toISOString().split('T')[0];
+                return historicalLogs.filter(l => l.rawDate === yStr);
+            }
+            if (rangeKey === 'week') {
+                const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+                const weekAgoStr = weekAgo.toISOString().split('T')[0];
+                return historicalLogs.filter(l => (l.rawDate || '') >= weekAgoStr);
+            }
+            if (rangeKey === 'month') {
+                const ym = todayStr.slice(0, 7);
+                return historicalLogs.filter(l => (l.rawDate || '').startsWith(ym));
+            }
+            if (rangeKey === 'lastmonth') {
+                const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const ym = d.toISOString().slice(0, 7);
+                return historicalLogs.filter(l => (l.rawDate || '').startsWith(ym));
+            }
+            return historicalLogs;
+        }
+
+        function summarizeLogs(logs) {
+            const volume = logs.reduce((s, l) => s + Number(l.volume || 0), 0);
+            const fees = logs.reduce((s, l) => s + Number(l.commission || 0), 0);
+            const profit = logs.reduce((s, l) => s + Number(l.lipaKwaSimuCommission || 0), 0);
+            const expensesTotal = logs.reduce((s, l) => s + Number(l.expenses || 0), 0);
+            return {
+                volume, fees, profit, expenses: expensesTotal,
+                netProfit: profit - expensesTotal,
+                count: logs.length,
+                avgVolume: logs.length ? volume / logs.length : 0
+            };
+        }
+
+        function findMatchingNetwork(q) {
+            return networks.find(n => {
+                const code = (n.code || '').toLowerCase();
+                const name = (n.name || '').toLowerCase();
+                return (code && q.includes(code)) || (name && q.includes(name));
+            });
+        }
+
+        function buildAiReply(rawQuery) {
+            const q = rawQuery.toLowerCase();
+            const range = detectDateRange(q);
+            const rangeLogs = logsForRange(range.key);
+            const s = summarizeLogs(rangeLogs);
+            const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
+            const totalCapital = capitalLedger.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+            const lowNetworks = networks.filter(n => Number(n.closingFloat || 0) < Number(n.minFloat || 0));
+
+            // Provider-specific lookup (e.g. "how is Airtel doing", "Mpesa balance")
+            const matchedNetwork = findMatchingNetwork(q);
+            if (matchedNetwork && /float|balance|commission|status|doing|how is/.test(q)) {
+                const isLow = Number(matchedNetwork.closingFloat || 0) < Number(matchedNetwork.minFloat || 0);
+                const isProfitProvider = matchedNetwork.code === PROFIT_COMMISSION_CODE;
+                const historicalEarned = historicalLogs.reduce((sum, log) => sum + Number((log.providerCommissions && log.providerCommissions[matchedNetwork.code]) || 0), 0);
+                return `📍 **${matchedNetwork.name} (${matchedNetwork.code})**\n`
+                    + `• Closing Balance: **${formatTZS(matchedNetwork.closingFloat)}**\n`
+                    + `• Minimum Target: ${formatTZS(matchedNetwork.minFloat)}\n`
+                    + `• Status: ${isLow ? '⚠️ Below minimum — consider topping up' : '✅ Healthy'}\n`
+                    + `• Today's Commission: ${formatTZS(matchedNetwork.commission)}\n`
+                    + `• Historical Commission Earned: ${formatTZS(historicalEarned)}${isProfitProvider ? ' (counts as profit)' : ' (paid monthly by provider, not counted as profit)'}`;
+            }
+
+            // Low balance / deficit / top-up needed
+            if (/\blow\b|\bdeficit\b|top ?up|\bshortfall\b|\brunning out\b/.test(q)) {
+                if (lowNetworks.length === 0) {
+                    return `✅ **All networks are above their minimum float threshold.** No top-ups needed right now.`;
+                }
+                const lines = lowNetworks.map(n => `• **${n.name} (${n.code})**: ${formatTZS(n.closingFloat)} — needs ${formatTZS(Number(n.minFloat || 0) - Number(n.closingFloat || 0))} more to reach the ${formatTZS(n.minFloat)} minimum`);
+                return `⚠️ **${lowNetworks.length} network(s) below minimum float:**\n` + lines.join('\n');
+            }
+
+            // Expenses
+            if (q.includes('expense') || q.includes('spend') || q.includes('cost')) {
+                const todayExpTotal = expenses.reduce((s2, e) => s2 + Number(e.amount || 0), 0);
+                const lines = expenses.length ? expenses.map(e => `• ${e.note}: ${formatTZS(e.amount)}`).join('\n') : '• No expenses logged in the current open session';
+                return `💸 **Expenses — ${range.label}:** ${formatTZS(s.expenses)} across ${s.count} closure(s).\n\n**Current open session (${formatTZS(todayExpTotal)}):**\n${lines}`;
+            }
+
+            // Best / worst day
+            if (/\bbest day\b|\btop day\b|\bhighest\b/.test(q)) {
+                if (historicalLogs.length === 0) return `No closures logged yet to compare.`;
+                const metric = q.includes('volume') ? 'volume' : (q.includes('expense') ? 'expenses' : 'lipaKwaSimuCommission');
+                const best = [...historicalLogs].sort((a, b) => Number(b[metric] || 0) - Number(a[metric] || 0))[0];
+                return `🏆 **Best day by ${metric === 'lipaKwaSimuCommission' ? 'profit' : metric}:** ${best.rawDate} — ${formatTZS(best[metric])}`;
+            }
+            if (/\bworst day\b|\blowest\b/.test(q)) {
+                if (historicalLogs.length === 0) return `No closures logged yet to compare.`;
+                const metric = q.includes('volume') ? 'volume' : (q.includes('expense') ? 'expenses' : 'lipaKwaSimuCommission');
+                const worst = [...historicalLogs].sort((a, b) => Number(a[metric] || 0) - Number(b[metric] || 0))[0];
+                return `📉 **Worst day by ${metric === 'lipaKwaSimuCommission' ? 'profit' : metric}:** ${worst.rawDate} — ${formatTZS(worst[metric])}`;
+            }
+
+            // WhatsApp / alerts registration status
+            if (q.includes('whatsapp') || q.includes('alert') || q.includes('notification')) {
+                const isAdmin = a => a.role === 'OWNER' || a.role === 'ADMIN';
+                const isRegistered = a => !!CALLMEBOT_DIRECTORY[(a.phone || '').replace(/[^0-9]/g, '')];
+                const registered = accounts.filter(a => isAdmin(a) && isRegistered(a));
+                const unregistered = accounts.filter(a => isAdmin(a) && !isRegistered(a));
+                return `📱 **WhatsApp Alerts**\n• Registered (${registered.length}): ${registered.map(a => a.name).join(', ') || 'none'}\n• Not registered (${unregistered.length}): ${unregistered.map(a => a.name).join(', ') || 'none'}`;
+            }
+
+            // Capital
+            if (q.includes('capital')) {
+                return `🏦 **Capital Baseline:** ${formatTZS(totalCapital)} across ${capitalLedger.length} injection(s).`;
+            }
+
+            // Variance / audit / reconciliation
+            if (q.includes('variance') || q.includes('audit') || q.includes('discrepancy') || q.includes('reconcil')) {
+                const expected = totalCapital + s.profit - s.expenses;
+                const variance = currPosition - expected;
+                const status = variance < 0 ? `⚠️ Deficit of ${formatTZS(Math.abs(variance))}` : (variance > 0 ? `Surplus of ${formatTZS(variance)}` : 'Balanced');
+                return `🔍 **Audit Variance (${range.label}):** ${status}\nExpected position: ${formatTZS(expected)}\nActual float: ${formatTZS(currPosition)}`;
+            }
+
+            // Advice / recommendations
+            if (q.includes('advice') || q.includes('recommend') || q.includes('should i') || q.includes('suggest')) {
+                const lines = [];
+                if (lowNetworks.length) lines.push(`• Top up ${lowNetworks.map(n => n.name).join(', ')} — below minimum float`);
+                if (s.netProfit < 0) lines.push(`• Expenses exceeded Lipa Kwa Simu profit over ${range.label} — review spending`);
+                const isAdmin = a => a.role === 'OWNER' || a.role === 'ADMIN';
+                const isRegistered = a => !!CALLMEBOT_DIRECTORY[(a.phone || '').replace(/[^0-9]/g, '')];
+                const unregistered = accounts.filter(a => isAdmin(a) && !isRegistered(a));
+                if (unregistered.length) lines.push(`• ${unregistered.length} Owner/Admin account(s) not registered for WhatsApp alerts`);
+                if (!lines.length) lines.push(`• Everything looks healthy — no urgent action needed`);
+                return `💡 **Recommendations:**\n` + lines.join('\n');
+            }
+
+            // Profit
+            if (q.includes('profit') || (q.includes('net') && !q.includes('network'))) {
+                return `📊 **Net Profit — ${range.label}:** ${formatTZS(s.netProfit)}\n(Lipa Kwa Simu commission ${formatTZS(s.profit)} minus expenses ${formatTZS(s.expenses)}. Other providers' fees are paid monthly and aren't counted here.)`;
+            }
+
+            // Volume
+            if (q.includes('volume') || q.includes('turnover')) {
+                return `📈 **Volume — ${range.label}:** ${formatTZS(s.volume)} across ${s.count} closure(s)${s.count ? `, averaging ${formatTZS(s.avgVolume)}/day` : ''}.`;
+            }
+
+            // General position / float / balance
+            if (q.includes('position') || q.includes('balance') || q.includes('float')) {
+                return `💰 **Current Money Position:** ${formatTZS(currPosition)} across ${networks.length} network(s).${lowNetworks.length ? `\n⚠️ ${lowNetworks.length} network(s) below minimum float.` : ' ✅ All networks healthy.'}`;
+            }
+
+            // Default: full dashboard-style summary + example prompts
+            return `💡 **Wakala AI Summary — ${range.label}:**\n`
+                + `• Money Position: ${formatTZS(currPosition)}\n`
+                + `• Net Profit: ${formatTZS(s.netProfit)}\n`
+                + `• Volume: ${formatTZS(s.volume)}\n`
+                + `• Closures: ${s.count}\n`
+                + `${lowNetworks.length ? `⚠️ ${lowNetworks.length} network(s) need a top-up.\n` : ''}`
+                + `\nTry asking: "profit this month", "is Airtel low", "best day this week", "any advice?"`;
+        }
+
         function sendAiQuery() {
             const input = document.getElementById('ai-input-query');
-            const q = input.value.trim().toLowerCase();
-            if(!q) return;
+            const rawQuery = input.value.trim();
+            if (!rawQuery) return;
 
             const chat = document.getElementById('ai-messages-container');
-            
+
             chat.innerHTML += `
                 <div class="flex justify-end">
-                    <div class="bg-emerald-600 text-white p-2.5 rounded-xl max-w-[80%] font-medium">${input.value}</div>
+                    <div class="bg-emerald-600 text-white p-2.5 rounded-xl max-w-[80%] font-medium">${escapeHtml(rawQuery)}</div>
                 </div>
             `;
-            
+
             input.value = '';
 
-            const totalVol = historicalLogs.reduce((acc, l) => acc + Number(l.volume || 0), 0);
-            const totalComm = historicalLogs.reduce((acc, l) => acc + Number(l.lipaKwaSimuCommission || 0), 0);
-            const totalExp = historicalLogs.reduce((acc, l) => acc + Number(l.expenses || 0), 0);
-            const netProfit = totalComm - totalExp;
-            const currPosition = networks.reduce((acc, n) => acc + Number(n.closingFloat || 0), 0);
-            
-            let reply = "";
-
-            if(q.includes("profit") || q.includes("net")) {
-                reply = `📊 **Cumulative Net Profit Analysis:**\nTotal Net Profit is **TZS ${netProfit.toLocaleString()}** (based only on Lipa Kwa Simu commission, other providers pay monthly).`;
-            } else if(q.includes("volume") || q.includes("turnover")) {
-                reply = `📈 **Volume Insights:**\nTotal historical transaction volume is **TZS ${totalVol.toLocaleString()}** across ${historicalLogs.length} shift closures.`;
-            } else if(q.includes("position") || q.includes("balance") || q.includes("float")) {
-                reply = `💰 **Current Money Position:**\nTotal liquid float and cash across all channels is **TZS ${currPosition.toLocaleString()}**.`;
-            } else {
-                reply = `💡 **Wakala AI Summary:**\n• **Money Position:** TZS ${currPosition.toLocaleString()}\n• **Net Profit (Lipa Kwa Simu only):** TZS ${netProfit.toLocaleString()}\n• **Total Volume:** TZS ${totalVol.toLocaleString()}\n• **Total Closures:** ${historicalLogs.length}`;
-            }
+            const reply = buildAiReply(rawQuery);
 
             chat.innerHTML += `
                 <div class="flex justify-start">
                     <div class="bg-white border border-slate-200 p-2.5 rounded-xl max-w-[85%] text-slate-800 space-y-1 shadow-sm leading-relaxed">
-                        ${reply.replace(/\n/g, '<br>')}
+                        ${mdToHtml(reply)}
                     </div>
                 </div>
             `;
