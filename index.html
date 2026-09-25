@@ -1177,15 +1177,26 @@
                 if (!yesterdayData) {
                     trendBlock = `**Today vs Yesterday:** no closure recorded for yesterday (${yesterdayStr}) to compare against yet.`;
                 } else {
-                    const diff = todayData.profit - yesterdayData.profit;
-                    let verdict;
-                    if (Math.abs(diff) < 1) verdict = "➡️ Flat — about the same as yesterday, you're stuck at this level";
-                    else if (diff > 0) verdict = `📈 Up ${formatTZS(diff)} vs yesterday — you're making more profit`;
-                    else verdict = `📉 Down ${formatTZS(Math.abs(diff))} vs yesterday — profit has dropped`;
+                    const profitDiff = todayData.profit - yesterdayData.profit;
+                    let profitVerdict;
+                    if (Math.abs(profitDiff) < 1) profitVerdict = "➡️ Flat — about the same profit as yesterday, you're stuck at this level";
+                    else if (profitDiff > 0) profitVerdict = `📈 Up ${formatTZS(profitDiff)} vs yesterday — you're making more profit`;
+                    else profitVerdict = `📉 Down ${formatTZS(Math.abs(profitDiff))} vs yesterday — profit has dropped`;
+
+                    // Money position should ideally climb day over day (it's the
+                    // clearest sign you're actually growing, not just breaking even).
+                    const positionDiff = todayData.position - yesterdayData.position;
+                    let positionVerdict;
+                    if (Math.abs(positionDiff) < 1) positionVerdict = "➡️ Flat — your float hasn't grown since yesterday, you're stuck";
+                    else if (positionDiff > 0) positionVerdict = `📈 Up ${formatTZS(positionDiff)} — your money position is growing, good sign`;
+                    else positionVerdict = `📉 Down ${formatTZS(Math.abs(positionDiff))} — your money position shrank, worth investigating`;
+
                     trendBlock = `**Today vs Yesterday:**\n`
-                        + `• Today${todayData.locked ? '' : ' (session still open)'}: ${formatTZS(todayData.profit)} net profit\n`
-                        + `• Yesterday: ${formatTZS(yesterdayData.profit)} net profit\n`
-                        + `• ${verdict}`;
+                        + `• Net Profit — Today${todayData.locked ? '' : ' (session still open)'}: ${formatTZS(todayData.profit)}, Yesterday: ${formatTZS(yesterdayData.profit)}\n`
+                        + `• ${profitVerdict}\n\n`
+                        + `**Money Position (should ideally rise daily):**\n`
+                        + `• Today${todayData.locked ? '' : ' (session still open)'}: ${formatTZS(todayData.position)}, Yesterday: ${formatTZS(yesterdayData.position)}\n`
+                        + `• ${positionVerdict}`;
                 }
 
                 const expected = totalCapital + s.profit - s.expenses;
