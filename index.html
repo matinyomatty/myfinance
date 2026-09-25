@@ -1066,6 +1066,35 @@
             });
         }
 
+        // Net profit (and money position, where known) for a single calendar day.
+        // For "today" specifically, if the shift hasn't been locked yet this reads
+        // the live unlocked network/expense data instead of waiting for a closure.
+        function dayNetProfit(dateStr) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (dateStr === todayStr) {
+                const lockedToday = historicalLogs.find(l => l.rawDate === todayStr);
+                if (lockedToday) {
+                    return {
+                        profit: Number(lockedToday.lipaKwaSimuCommission || 0) - Number(lockedToday.expenses || 0),
+                        position: Number(lockedToday.moneyPosition || 0),
+                        locked: true
+                    };
+                }
+                const lipaKwaSimuNet = networks.find(n => n.code === PROFIT_COMMISSION_CODE);
+                const liveCommission = Number((lipaKwaSimuNet && lipaKwaSimuNet.commission) || 0);
+                const liveExpenses = expenses.reduce((s2, e) => s2 + Number(e.amount || 0), 0);
+                const livePosition = networks.reduce((s2, n) => s2 + Number(n.closingFloat || 0), 0);
+                return { profit: liveCommission - liveExpenses, position: livePosition, locked: false };
+            }
+            const log = historicalLogs.find(l => l.rawDate === dateStr);
+            if (!log) return null;
+            return {
+                profit: Number(log.lipaKwaSimuCommission || 0) - Number(log.expenses || 0),
+                position: Number(log.moneyPosition || 0),
+                locked: true
+            };
+        }
+
         function buildAiReply(rawQuery) {
             const q = rawQuery.toLowerCase();
             const range = detectDateRange(q);
@@ -1133,12 +1162,37 @@
                 return `🏦 **Capital Baseline:** ${formatTZS(totalCapital)} across ${capitalLedger.length} injection(s).`;
             }
 
-            // Variance / audit / reconciliation
-            if (q.includes('variance') || q.includes('audit') || q.includes('discrepancy') || q.includes('reconcil')) {
+            // Variance / audit / reconciliation — leads with today-vs-yesterday trend
+            // (so you can tell at a glance whether you're up, down, or stuck) then
+            // the till reconciliation (expected vs actual cash position).
+            if (q.includes('variance') || q.includes('audit') || q.includes('discrepancy') || q.includes('reconcil') || /\btrend\b|\bstuck\b|profit or loss|making (money|profit)/.test(q)) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const y = new Date(); y.setDate(y.getDate() - 1);
+                const yesterdayStr = y.toISOString().split('T')[0];
+
+                const todayData = dayNetProfit(todayStr);
+                const yesterdayData = dayNetProfit(yesterdayStr);
+
+                let trendBlock;
+                if (!yesterdayData) {
+                    trendBlock = `**Today vs Yesterday:** no closure recorded for yesterday (${yesterdayStr}) to compare against yet.`;
+                } else {
+                    const diff = todayData.profit - yesterdayData.profit;
+                    let verdict;
+                    if (Math.abs(diff) < 1) verdict = "➡️ Flat — about the same as yesterday, you're stuck at this level";
+                    else if (diff > 0) verdict = `📈 Up ${formatTZS(diff)} vs yesterday — you're making more profit`;
+                    else verdict = `📉 Down ${formatTZS(Math.abs(diff))} vs yesterday — profit has dropped`;
+                    trendBlock = `**Today vs Yesterday:**\n`
+                        + `• Today${todayData.locked ? '' : ' (session still open)'}: ${formatTZS(todayData.profit)} net profit\n`
+                        + `• Yesterday: ${formatTZS(yesterdayData.profit)} net profit\n`
+                        + `• ${verdict}`;
+                }
+
                 const expected = totalCapital + s.profit - s.expenses;
                 const variance = currPosition - expected;
                 const status = variance < 0 ? `⚠️ Deficit of ${formatTZS(Math.abs(variance))}` : (variance > 0 ? `Surplus of ${formatTZS(variance)}` : 'Balanced');
-                return `🔍 **Audit Variance (${range.label}):** ${status}\nExpected position: ${formatTZS(expected)}\nActual float: ${formatTZS(currPosition)}`;
+
+                return `🔍 **Audit Variance**\n${trendBlock}\n\n**Till Reconciliation (${range.label}):** ${status}\nExpected position: ${formatTZS(expected)}\nActual float: ${formatTZS(currPosition)}`;
             }
 
             // Advice / recommendations
